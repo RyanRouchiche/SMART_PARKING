@@ -1,0 +1,46 @@
+# virual environnement
+parking_env/
+
+#  python dependencies
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+
+# logs and temp files
+*.log
+*.out
+*.pid
+*.swp
+*.swo
+*.sqlite3
+db.sqlite3
+*.bak
+
+# IDE files
+.vscode/
+.idea/
+*.iml
+
+# migrations django files
+migrations/
+!migrations/__init__.py
+
+# config files
+.env
+config.json
+secrets.json
+
+# static media files
+staticfiles/
+media/
+
+# files created by test tools
+.coverage
+*.cover
+nosetests.xml
+tests.xml
+
+
+smart_parking/parking/logic/Data/
+smart_parking/parking/logic/cropped_spots/
