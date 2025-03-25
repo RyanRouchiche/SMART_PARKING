@@ -44,3 +44,4 @@ tests.xml
 
 smart_parking/parking/logic/Data/
 smart_parking/parking/logic/cropped_spots/
+smart_parking/cropped_spots/
