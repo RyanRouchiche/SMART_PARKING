@@ -53,23 +53,23 @@ def pick_up_spot_api(request):
 
 @api_view(['POST'])
 def save_spot_coordinates_api(request):
-    print("Incoming data:", request.data)  # Debugging: Print the incoming data
+    print("ncoming data:", request.data)  
     serializer = FloorSerializer(data=request.data, many=True)
     if serializer.is_valid():
         validated_data = serializer.validated_data
-        print("Validated data:", validated_data)  # Debugging: Print the validated data
+        print("Validated data:", validated_data)  
 
-        # Define the path to the JSON file inside the logic/Spots folder of the parking app
+        #  the path to the JSON file inside the logic/Spots folder of the parking app
         json_file_path = os.path.join(
             settings.BASE_DIR, "parking/logic/Spots/coordinates.json"
         )
 
-        # Ensure the directory exists
+        #  directory exists
         directory = os.path.dirname(json_file_path)
         if not os.path.exists(directory):
             os.makedirs(directory)
 
-        # Load existing data from the JSON file
+        #  existing data from the JSON file
         if os.path.exists(json_file_path):
             with open(json_file_path, "r", encoding="utf-8") as file:
                 try:
@@ -79,16 +79,16 @@ def save_spot_coordinates_api(request):
         else:
             data = []
 
-        # Append the new data to the existing data
+        #  new data to the existing data
         data.extend(validated_data)
 
-        # Write the updated data back to the JSON file
+        #  updated data back to the JSON file
         with open(json_file_path, "w", encoding="utf-8") as file:
             json.dump(data, file, indent=4, ensure_ascii=False)
 
         return Response({"message": "Spots saved successfully"}, status=status.HTTP_201_CREATED)
 
-    print("Errors:", serializer.errors)  # Debugging: Print validation errors
+    print("Errors:", serializer.errors)  
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
@@ -96,20 +96,19 @@ def Video_Feed_api(request) :
 
     
     def generate_frames():
-        frame_nmr = 0  # Frame counter
+        frame_nmr = 0  #
         while True:
             for floor, cam in detector.camera_objects.items():
-                frame = cam.getFrame()  # Get a frame from the video or camera
+                frame = cam.getFrame()  #  frame from the video or camera
                 if frame is None:
                     print(f"Error: Unable to capture a frame from the camera on floor {floor}")
                     continue
 
-                available_spots = 0  # Counter for available spots
+                available_spots = 0 
 
-                # Convert floor to string to match the keys in spots_coordinates
                 floor_str = str(floor)
 
-                # Check if the floor exists in spots_coordinates
+        
                 print("spots_coordinates:", detector.spots_coordinates)
                 print("floor:", floor_str)
 
@@ -117,18 +116,17 @@ def Video_Feed_api(request) :
                     print(f"Error: Floor {floor_str} not found in spots_coordinates.")
                     continue
 
-                # Refresh parking spot status every 50 frames to reduce CPU usage
                 if frame_nmr % 50 == 0:
                     for spot_name, points in detector.spots_coordinates[floor_str].items():
                         detector.spots_status[floor_str][spot_name] = detector.empty_or_not()
 
-                # Mark parking spots and count available spots
+                #  parking spots and count available spots
                 available_spots = detector.markSpot(frame, floor_str, available_spots)
 
-                # Display available spots on the frame
+                #  available spots on the frame
                 detector.displayStatusSpot(frame, available_spots)
 
-                # Encode the frame as JPEG
+                #  the frame as JPEG
                 _, buffer = cv2.imencode('.jpg', frame)
                 frame = buffer.tobytes()
 
