@@ -182,7 +182,8 @@ def test_system():
 
                     # crop spot in the frames these spots are going to be fed to the model
                     spot_crop = frame[y_min:y_max, x_min:x_max]
-
+                    
+   
                     # chekc if the cropping is valid
                     if spot_crop.size == 0:
                         print(f"Error: Empty image for {spot_name} on floor {floor}")
@@ -191,6 +192,7 @@ def test_system():
                     # Save the cropped parking spot frame this tezp is also optionnel just to see the cropping images are good or not
                     save_path = os.path.join(output_dir, f"{floor}_{spot_name}.jpg")
                     cv2.imwrite(save_path, spot_crop)
+                    print(f"Spot {spot_name} floor {floor} saved in {save_path}")
 
                     # decide the spot status (0 = occupied, 1 = empty)
                     spot_status = spots_status[floor][spot_name]
