@@ -5,11 +5,13 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 
+
+
 urlpatterns = [
-   
-    path('api/pickupSpot' , views.pick_up_spot_api , name='PickUpSpot'),
-    path('api/saveSpotCoordinates/' , views.save_spot_coordinates_api , name='SaveSpotCoordinates'),
-    path('api/VideoFeed/' , views.Video_Feed_api , name='VideoFeed'),
+    path('api/pickupSpot/', views.pick_up_spot_api, name='PickUpSpot'),
+    path('api/saveSpotCoordinates/', views.save_spot_coordinates_api, name='SaveSpotCoordinates'),
+    path('api/VideoFeed/', views.Video_Feed_api, name='VideoFeed'),
+    path('api/getParkingData/', views.get_parking_data_api, name='GetParkingData'),
 ]
 
 if settings.DEBUG:

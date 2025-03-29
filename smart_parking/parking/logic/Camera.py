@@ -24,3 +24,7 @@ class Camera:
     def reset(self):
         if self.cap.isOpened():
             self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)  # Reset to the first frame
+            
+    def restart(self):
+        self.cap.release()
+        self.cap = cv2.VideoCapture(self.video_path)
