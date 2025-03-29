@@ -1,3 +1,4 @@
+from venv import logger
 import cv2
 import json
 import numpy as np
@@ -13,6 +14,8 @@ from .logic.Draw import Draw
 from django.conf import settings
 import os
 from .logic.serializers import FloorSerializer
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 
 
@@ -91,52 +94,100 @@ def save_spot_coordinates_api(request):
     print("Errors:", serializer.errors)  
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET'])
-def Video_Feed_api(request) : 
 
-    
-    def generate_frames():
-        frame_nmr = 0  #
-        while True:
-            for floor, cam in detector.camera_objects.items():
-                frame = cam.getFrame()  #  frame from the video or camera
+
+
+
+
+@api_view(['GET'])
+def Video_Feed_api(request):
+    # Check if the 'floor' parameter is provided
+    floor = request.GET.get('floor')
+
+    if not floor:
+        # If no floor is specified, render the stream_feed.html template
+        return render(request, 'stream_feed.html')
+
+    try:
+        # Convert the floor parameter to an integer
+        floor = int(floor)
+
+        # Validate the floor parameter
+        if floor not in detector.camera_objects:
+            return Response({'error': 'Invalid floor parameter'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Function to generate video frames for the specified floor
+        def generate_frames():
+            frame_nmr = 0  # Frame counter
+            cam = detector.camera_objects[floor]  # Get the camera for the floor
+
+            while True:
+                frame = cam.getFrame()  # Capture a frame from the camera
                 if frame is None:
-                    print(f"Error: Unable to capture a frame from the camera on floor {floor}")
+                    print(f"Error: Unable to capture a frame for floor {floor}")
                     continue
 
-                available_spots = 0 
-
+                available_spots = 0  # Counter for available spots
                 floor_str = str(floor)
-
-        
-                print("spots_coordinates:", detector.spots_coordinates)
-                print("floor:", floor_str)
 
                 if floor_str not in detector.spots_coordinates:
                     print(f"Error: Floor {floor_str} not found in spots_coordinates.")
                     continue
 
-                if frame_nmr % 50 == 0:
+                # Update parking spot statuses every 20 frames
+                if frame_nmr % 20 == 0:
                     for spot_name, points in detector.spots_coordinates[floor_str].items():
                         detector.spots_status[floor_str][spot_name] = detector.empty_or_not()
 
-                #  parking spots and count available spots
+                # Mark parking spots and count available spots
                 available_spots = detector.markSpot(frame, floor_str, available_spots)
 
-                #  available spots on the frame
+                # Display parking spot information on the frame
                 detector.displayStatusSpot(frame, available_spots)
 
-                #  the frame as JPEG
+                # Encode the frame as JPEG
                 _, buffer = cv2.imencode('.jpg', frame)
                 frame = buffer.tobytes()
 
                 # Yield the frame as part of the video stream
                 yield (b'--frame\r\n'
-                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+                       b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
-            frame_nmr += 1
-      
-    return StreamingHttpResponse(
-        generate_frames(),
-        content_type='multipart/x-mixed-replace; boundary=frame'
-    )
+                frame_nmr += 1
+
+        # Return the video stream as a response
+        return StreamingHttpResponse(
+            generate_frames(),
+            content_type='multipart/x-mixed-replace; boundary=frame'
+        )
+
+    except ValueError:
+        # Handle invalid floor parameter (e.g., non-integer values)
+        return Response({'error': 'Invalid floor parameter'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+    
+@api_view(['GET'])
+def get_parking_data_api(request):
+    available_floors = list(detector.camera_objects.keys())  
+
+    available_spots_data = {
+        floor: sum(1 for spot_status in detector.spots_status.get(str(floor), {}).values() if spot_status)
+        for floor in available_floors
+    }
+
+    return Response({
+        'floors': available_floors,
+        'available_spots_data': available_spots_data
+    }, status=status.HTTP_200_OK)
+    
+    
+
+
+
+
+
+

@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-7n(9#9xhljewr2(3%spxgf^j)m+z_ks%=c_2m_mmue^86$vtqo
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['105.103.81.142', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['127.0.0.1']
 
 
 
@@ -41,7 +41,18 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'parking',
     'rest_framework',
+    
 ]
+ASGI_APPLICATION = 'smart_parking.asgi.application'
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],  
+        },
+    },
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

@@ -104,12 +104,7 @@ class Detector:
 
         return available_spots
 
-    # function to display the total number of available spots
-    # def displayStatusSpot(self, frame, available_spots):
-    #     total_spots = sum(len(spots) for spots in self.spots_coordinates.values())  # Count all parking spots
-    #     cv2.rectangle(frame, (50, 20), (400, 80), (0, 0, 0), -1)  # Draw a black box for text
-    #     cv2.putText(frame, f"Available spots: {available_spots} / {total_spots}", 
-    #                 (60, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (255, 255, 255), 1)
+
     
     def displayStatusSpot(self, frame, available_spots):
         total_spots = sum(len(spots) for spots in self.spots_coordinates.values())  # Count all parking spots
@@ -137,8 +132,8 @@ class Detector:
                     print(f"Error: Floor {floor} not found in spots_coordinates.")
                     continue
 
-                # Refresh parking spot status every 50 frames to reduce CPU usage
-                if frame_nmr % 50 == 0:
+                # Refresh parking spot status every 20 frames to reduce CPU usage
+                if frame_nmr % 20 == 0:
                     for spot_name, points in detector.spots_coordinates[floor].items():
                         detector.spots_status[floor][spot_name] = detector.empty_or_not()
 
