@@ -47,3 +47,4 @@ smart_parking/parking/logic/cropped_spots/
 smart_parking/cropped_spots/
 smart_parking/parking/static/
 .env
+certs/
