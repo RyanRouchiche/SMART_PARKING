@@ -25,7 +25,9 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('parking/' , include('parking.urls'))
+    path('parking/' , include('parking.urls')),
+    path('api/' , include('users.urls')),
+    path('api/' , include('model.urls')),
 ]
 
 if settings.DEBUG:

@@ -154,7 +154,35 @@ class Detector:
 
   
         cv2.destroyAllWindows()
+    
+    def calculate_width_height(self , rect) : 
+          # Calculate the width (distance between top-left and top-right, or bottom-left and bottom-right)
+        width_top = np.linalg.norm(rect[0] - rect[1])  # Top-left to top-right
+        width_bottom = np.linalg.norm(rect[2] - rect[3])  # Bottom-right to bottom-left
+        width = max(int(width_top), int(width_bottom))
+
+        # Calculate the height (distance between top-left and bottom-left, or top-right and bottom-right)
+        height_left = np.linalg.norm(rect[0] - rect[3])  # Top-left to bottom-left
+        height_right = np.linalg.norm(rect[1] - rect[2])  # Top-right to bottom-right
+        height = max(int(height_left), int(height_right))
+
+        return width, height
+    
+    def sort_parking_spot_points(self, pts):
+        rect = np.zeros((4, 2), dtype="float32")
+        # sum = x + y → top-left will have the smallest, bottom-right the largest
+        s = pts.sum(axis=1)
+        rect[0] = pts[np.argmin(s)]  # top-left
+        rect[2] = pts[np.argmax(s)]  # bottom-right
+        # diff = x - y → top-right will have the smallest, bottom-left the largest
+        diff = np.diff(pts, axis=1)
+        rect[1] = pts[np.argmin(diff)]  # top-right
+        rect[3] = pts[np.argmax(diff)]  # bottom-left
+
+        return rect
         
+
+            
 
         
         

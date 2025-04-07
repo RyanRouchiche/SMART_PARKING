@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 import uuid
 
-User = get_user_model()  # Dynamically get the user model
+User = get_user_model()  
 
 class Payments(models.Model):
     SUBSCRIPTION_CHOICE = (

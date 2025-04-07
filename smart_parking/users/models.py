@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.apps import apps
 import uuid
+from django.utils import timezone
 
 
 class User(AbstractUser):
@@ -64,3 +65,17 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
+    
+class auth(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='auth')
+    token = models.CharField(max_length=255, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    exipred_at = models.DateTimeField()
+    is_revoked = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Auth token for {self.user.username}"
+    
+    def is_valid(self):
+
+        return not self.is_revoked and self.exipred_at > timezone.now()

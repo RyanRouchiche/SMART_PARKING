@@ -38,8 +38,9 @@ ALLOWED_HOSTS = ['127.0.0.1']
 # Application definition
 
 INSTALLED_APPS = [
-    'payments',
+    'model',
     'users',
+    'payments',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -48,6 +49,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'parking',
     'rest_framework',
+    'corsheaders',
+    'rest_framework_simplejwt',
     
 ]
 ASGI_APPLICATION = 'smart_parking.asgi.application'
@@ -104,7 +107,7 @@ DATABASES = {
         'PASSWORD': os.getenv('DB_PASSWORD'),
         'HOST': os.getenv('DB_HOST'),
         'PORT': os.getenv('DB_PORT'),
-        'OPTIION'  : {
+        'OPTIONS'  : {
             'sslmode' : 'require',
             'connect_timeout' : 5,
             'sslrootcert' : os.getenv('DB_SSL_ROOT_CERT'),
@@ -155,6 +158,16 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'parking',  'static'),
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+          'users.authentication.CookieJWTAuthentification',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+}
 
 
 
