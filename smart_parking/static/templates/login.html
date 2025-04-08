@@ -5,18 +5,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-    <script>
-
-    </script>
-    
+    <script src="{% static 'js/usersAPI.js' %}"></script>
 </head>
 <body>
     <h1>Login</h1>
     <form id="loginForm" onsubmit="loginUser(event)">
+        {% csrf_token %}
         <label for="username">Username:</label>
         <input type="text" id="username" name="username" autocomplete="username" required>
         <label for="password">Password:</label>
-        <input type="password" id="password" name="password" autocomplete="current-password" required>        <button type="submit">Login</button>
+        <input type="password" id="password" name="password" autocomplete="current-password" required>
+        <button type="submit">Login</button>
     </form>
-    <script src="{% static 'users/api.js' %}"></script></body>
+</body>
 </html>

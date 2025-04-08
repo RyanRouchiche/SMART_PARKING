@@ -10,12 +10,13 @@ async function loginUser(event) {
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({ username, password }),
+            body: JSON.stringify({ 'username' : username,'password' :  password }),
         });
 
         const data = await response.json();
         if (response.ok) {
             alert("Login successful!");
+            console.log('user : ' , data.user);
             window.location.href = "/dashboard/"; 
         } else {
             alert(`Error: ${data.error}`);

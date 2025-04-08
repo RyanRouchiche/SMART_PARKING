@@ -68,9 +68,9 @@ class User(AbstractUser):
     
 class auth(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='auth')
-    token = models.CharField(max_length=255, unique=True)
+    refresh_token = models.TextField(unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    exipred_at = models.DateTimeField()
+    expires_at = models.DateTimeField()
     is_revoked = models.BooleanField(default=False)
 
     def __str__(self):
@@ -78,4 +78,4 @@ class auth(models.Model):
     
     def is_valid(self):
 
-        return not self.is_revoked and self.exipred_at > timezone.now()
+        return not self.is_revoked and self.expires_at > timezone.now()

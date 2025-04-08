@@ -41,3 +41,18 @@ class GuestSerializer(serializers.ModelSerializer):
         return user
     
     
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+
+        # On ajoute les infos utilisateur dans le payload
+        data['user'] = {
+            'username': self.user.username,
+            'email': self.user.email,
+            'role': self.user.user_type,
+            'id': str(self.user.id)
+        }
+
+        return data
