@@ -38,6 +38,7 @@ ALLOWED_HOSTS = ['127.0.0.1']
 # Application definition
 
 INSTALLED_APPS = [
+    'dashboard',
     'model',
     'users',
     'payments',
@@ -51,9 +52,16 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
   
     
 ]
+
+SIMPLE_JWT = {
+    'BLACKLIST_AFTER_ROTATION': True,
+    'ROTATE_REFRESH_TOKENS': True,
+
+}
 ASGI_APPLICATION = 'smart_parking.asgi.application'
 
 CHANNEL_LAYERS = {

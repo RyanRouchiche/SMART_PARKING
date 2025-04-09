@@ -5,19 +5,21 @@ async function loginUser(event) {
     const password = document.getElementById("password").value;
 
     try {
-        const response = await fetch("/login/", {
-            method: "POST",
+        // Ensure it's a POST request
+        const response = await fetch("/api/login/", {
+            method: "POST", 
             headers: {
                 "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken"), 
             },
-            body: JSON.stringify({ 'username' : username,'password' :  password }),
+            body: JSON.stringify({ 'username': username, 'password': password }), 
         });
 
         const data = await response.json();
         if (response.ok) {
             alert("Login successful!");
-            console.log('user : ' , data.user);
-            window.location.href = "/dashboard/"; 
+            console.log('User: ', data.user);
+             window.location.href = "/dashboard/"; 
         } else {
             alert(`Error: ${data.error}`);
         }
@@ -26,6 +28,10 @@ async function loginUser(event) {
         alert("An error occurred. Please try again.");
     }
 }
+
+document.addEventListener("DOMContentLoaded", function () {
+    document.getElementById("loginForm").addEventListener("submit", loginUser);
+});
 
 
 

@@ -28,6 +28,7 @@ urlpatterns = [
     path('parking/' , include('parking.urls')),
     path('api/' , include('users.urls')),
     path('api/' , include('model.urls')),
+    path('dashboard/' , include('dashboard.urls')),
 ]
 
 if settings.DEBUG:
