@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // Send a POST request to fetch user data automatically when the page loads
     fetch("/dashboard/", {
         method: "POST",
         headers: {
@@ -26,28 +25,36 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // Logout functionality
-    document.getElementById("logout-btn").addEventListener("click", function () {
-        fetch("/api/logout/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": getCookie("csrftoken"),
-            },
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert(data.message); 
-                window.location.href = "/login/"; 
-            } else {
-                alert("Logout failed: " + data.error); 
-            }
-        })
-        .catch(error => {
-            console.error("Error logging out:", error);
-            alert("An error occurred while logging out. Please try again.");
-        });
-    });
+    const logoutbutton = document.getElementById("logout-btn") ; 
+    if (logoutbutton){
+        console.log('Logout button found!');
+        logoutbutton.addEventListener("click", function () {
+         
+                fetch("/api/logout/", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": getCookie("csrftoken"),
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message); 
+                        window.location.href = "/api/login/"; 
+                    } else {
+                        alert("Logout failed: " + data.error); 
+                    }
+                })
+                .catch(error => {
+                    console.error("Error logging out:", error);
+                    alert("An error occurred while logging out. Please try again.");
+                });
+            });
+    }
+    else {
+        console.error("Logout button not found!");
+    }
 
     // Function to get the CSRF token from cookies
     function getCookie(name) {
@@ -64,4 +71,93 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         return cookieValue;
     }
+
+    const userlistbutton = document.getElementById("user-list-button") ; 
+    if (userlistbutton) {
+        console.log('User list button found!');
+        userlistbutton.addEventListener("click", function () {
+            window.location.href = "/dashboard/users/users-list/";
+        });
+    }else {
+        console.error("User list button not found!");
+    }
+    if (window.location.pathname === "/dashboard/users/users-list/") {
+            fetchUsers(); 
+    }
+    
+    function populateUserTable(users) {
+        const tableBody = document.getElementById('user-table-body');
+        if (!tableBody) {
+            console.error('Table body element not found!');
+            return;
+        }
+    
+        tableBody.innerHTML = ''; 
+        users.forEach(user => {
+            const row = document.createElement('tr');
+    
+            row.innerHTML = `
+                <td>${user.id}</td>
+                <td>${user.username}</td>
+                <td>${user.email}</td>
+                <td>${user.first_name}</td>
+                <td>${user.last_name}</td>
+                <td>${user.status}</td>
+                <td>
+                    <button onclick="deleteUser(${user.id})">Delete</button>
+                </td>
+            `;
+    
+            tableBody.appendChild(row);
+        });
+    }
+
+    async function fetchUsers() {
+        console.log("fetchUsers called");
+        try {
+            const response = await fetch('/dashboard/users/users-list/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                populateUserTable(data.users); 
+            } else {
+                console.error('Failed to fetch users:', await response.json());
+                alert('Failed to fetch users. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error fetching users:', error);
+            alert('An error occurred while fetching users.');
+        }
+    }
+
+
+    async function deleteUser(userId) {
+        if (confirm('Are you sure you want to delete this user?')) {
+            try {
+                const response = await fetch(`/dashboard/users/${userId}/delete/`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                    },
+                });
+
+                if (response.ok) {
+                    alert('User deleted successfully.');
+                    fetchUsers(); // Refresh the user list
+                } else {
+                    const data = await response.json();
+                    alert(`Error: ${data.error}`);
+                }
+            } catch (error) {
+                console.error('Error deleting user:', error);
+                alert('An error occurred. Please try again.');
+            }
+        }
+    }
+
 });

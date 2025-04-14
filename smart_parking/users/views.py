@@ -1,10 +1,9 @@
 from django.shortcuts import render
 from rest_framework.response import Response
+from rest_framework import status
 from rest_framework.views import APIView
-from rest_framework.decorators import api_view
-from users.serializers import AdminSerializer, GuestSerializer
+from users.serializers import  GuestSerializer , AdminSerializer , ListUserSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.decorators import permission_classes
 from datetime import datetime, timedelta
 from django.contrib.auth import authenticate , login , logout
 import pytz
@@ -12,6 +11,14 @@ from .models import auth
 from django.utils.timezone import now
 import logging
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.utils.encoding import force_str
+from django.contrib.sites.shortcuts import get_current_site
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.encoding import force_bytes
+from django.core.mail import EmailMessage
+
+from .models import User
 
 
 logger = logging.getLogger(__name__)
@@ -32,6 +39,39 @@ def SETupCOOKIE(response, key, value, max_age):
         max_age=max_age,
         expires=expires_utc.strftime("%a, %d-%b-%Y %H:%M:%S GMT")  
     )
+    
+    
+def send_verif_email(request , user) : 
+            current_site = get_current_site(request)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+            activation_link = f"http://{current_site.domain}/api/activate/{uid}/{token}/"
+
+      
+            subject = 'Activate Your Account'
+            email_body = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Verify Your Email</title>
+            </head>
+            <body>
+                <p>Hi {user.first_name},</p>
+                <p>Thank you for registering with Smart Parking. Please click the link below to verify your email address:</p>
+                <p>
+                    <a href="{activation_link}">Verify Email</a>
+                </p>
+                <p>If you did not register for this account, please ignore this email.</p>
+                <p>Thank you,<br>Smart Parking Team</p>
+            </body>
+            </html>
+            """
+
+            # Send email
+            email = EmailMessage(subject, email_body, to=[user.email])
+            email.content_subtype = 'html' 
+            email.send()
+            return Response({'message': 'User registered successfully. Please check your email to verify your account.' , 'value' : 1}, status=status.HTTP_201_CREATED)
 
 
 
@@ -52,7 +92,9 @@ class CustomTokenObtainPairView(APIView):
             user = authenticate(username=username, password=password)
             if not user:
                 return Response({'success': False, 'error': 'Invalid credentials'}, status=401)
-            
+            if not user.is_active  : 
+                 return Response({'success': False, 'error': 'your accound is invalid , check your email for validation'}, status=401)
+             
             login(request, user)  
             request.session['id'] = str(user.id)
             request.session['username'] = user.username
@@ -71,14 +113,21 @@ class CustomTokenObtainPairView(APIView):
             expires_at = now() + timedelta(seconds=30 * 60)  # 30 minutes for refresh token
             access_token_expiry = now() + timedelta(minutes=5)  # 5 minutes for access token
 
-            # Check if the user already has a record in the 'auth' table, and update if exists
-            token_entry, created = auth.objects.get_or_create(user=user)
             
-            if not created:  # If the record exists, update it
+            token_entry, created = auth.objects.get_or_create(user=user, defaults={
+                'refresh_token': refresh_token,
+                'expires_at': expires_at,
+                'is_revoked': False,
+                'created_at': now()
+            })
+
+            if not created:
                 token_entry.refresh_token = refresh_token
                 token_entry.expires_at = expires_at
-                token_entry.is_revoked = False  # Make sure the token is not revoked
-                token_entry.save()  # Save the updated record
+                token_entry.is_revoked = False
+                token_entry.created_at = now()
+                token_entry.save()
+
             else:  # If the record doesn't exist, create it
                 auth.objects.create(user=user, refresh_token=refresh_token, expires_at=expires_at)
 
@@ -187,79 +236,62 @@ class LogoutView(APIView):
             logger.error(f"Error in logout: {str(e)}", exc_info=True)
             return Response({'success': False, 'error': 'An unexpected error occurred. Please try again later.'}, status=500)
 
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def register(request):
-    if request.method == 'POST':
-        try:
-            serializer = AdminSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response({'success': True, 'message': 'User registered successfully'}, status=201)
-            else:
-                return Response({'success': False, 'error': serializer.errors}, status=400)
-        except Exception as e:
-            logger.error(f"Error in register: {str(e)}")
-            return Response({'success': False, 'error': str(e)}, status=400)
-
-
-
-class loginviewAPI(APIView):
+class ActivateUserAPIView(APIView):
     permission_classes = [AllowAny]
-    def get(self, request, *args, **kwargs):
-        return render(request, 'login.html')
-    
-    def post(self, request, *args, **kwargs):
+    def get(self, request, uidb64, token):
         try:
-            response = CustomTokenObtainPairView.as_view()(request._request)
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
 
-            # Check if the response contains the required data
-            if response.status_code == 200:
-                tokens = response.data
-                access_token = tokens.get('access')
-                refresh_token = tokens.get('refresh')
-
-                if access_token and refresh_token:
-                 
-                    user_info = tokens.get('user', {})
-                    user_data = {
-                        'username': user_info.get('username'),
-                        'email': user_info.get('email'),
-                        'user_type': user_info.get('role'),
-                        'id': user_info.get('id'),
-                    }
-
-                    # Prepare the response
-                    res = Response({
-                        'success': True,
-                        'message': 'Login successful',
-                        'user': user_data,
-                        'value' : 1
-                        
-                    })
-
-                    # Set cookies
-                    SETupCOOKIE(res, 'access_token', access_token, max_age=10 * 60)
-                    SETupCOOKIE(res, 'refresh_token', refresh_token, max_age=30 * 60)
-
-                    return res
-                else:
-                    return Response({'success': False, 'error': 'Token generation failed.'}, status=400)
-            else:
-                return response  # Return the raw response (may contain a JSON error)
-        except Exception as e:
-            logger.error(f"Error in loginviewAPI: {str(e)}", exc_info=True)
-            return Response({'success': False, 'error': 'An unexpected error occurred. Please try again later.'}, status=500)
-
-
-   
-
-
-
-
+        if user is not None and default_token_generator.check_token(user, token):
+            user.is_active = True
+            user.save()
+            return Response({'message': 'Account activated successfully!'}, status=status.HTTP_200_OK)
+        return Response({'error': 'Invalid activation link.'}, status=status.HTTP_400_BAD_REQUEST)
+    
+class RegisterAPIView(APIView):
+    permission_classes = [AllowAny]
+    def get(self, request):
+        return render(request, 'register.html')
+    def post(self, request):
+        serializer = AdminSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            send_verif_email(request , user)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
+class GuestViewAPI(APIView) : 
+    permission_classes  = [IsAuthenticated]
+    def get(self, request) : 
+        return render(request, 'guest.html')
+    def post(self, request) :
+        try : 
+            serializer = GuestSerializer(data=request.data ,  context={'request': request})
+            if serializer.is_valid() : 
+                user = serializer.save()
+                send_verif_email(request , user)
+                
+                return Response({'message': 'Guest   successfully.' , 'value' : 1}, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e : 
+            logger.error(f"Error in GuestViewAPI: {str(e)}", exc_info=True)
+            return Response({'success': False, 'error': 'An unexpected error occurred'}, status=500)
 
+class ListUserViewAPI(APIView):
+    permission_classes = [IsAuthenticated]
 
-        
+    def get(self, request , *args, **kwargs)  :
+        return render(request, 'liste-user.html')
+    def post(self, request , *args, **kwargs)  :
+        try:
+            users = User.objects.filter(user_type='guest')
+            serializer = ListUserSerializer(users, many=True)
+            return Response({'success': True, 'users': serializer.data,'value' : 1}, status=200)
+           
+        except Exception as e:
+            logger.error(f"Error in ListUserViewAPI: {str(e)}", exc_info=True)
+            return Response({'success': False, 'error': 'An unexpected error occurred','value' : 0}, status=500)
 

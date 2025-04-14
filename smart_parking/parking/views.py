@@ -24,38 +24,13 @@ from rest_framework.permissions import AllowAny
 
 camera_paths = {
     1: r'C:\Users\redah\OneDrive\Desktop\smart_parking_project\smart_parking\parking\logic\Data\vid1.mp4',
+    2: r'C:\Users\redah\OneDrive\Desktop\smart_parking_project\smart_parking\parking\logic\Data\vid1.mp4',
 }
 
 
 cameras = {floor: Camera(path, floor=floor) for floor, path in camera_paths.items()}
 detector = Detector(camera_paths)
 
-
-
-# @api_view(['GET'])
-# @permission_classes([AllowAny])
-# def pick_up_spot_api(request):
-#     images = {}
-#     static_dir = settings.STATICFILES_DIRS[0]
-
-#     if not os.path.exists(static_dir):
-#         os.makedirs(static_dir)
-
-#     for floor, camera in cameras.items():
-#         frame = camera.getFrame()
-#         if frame is None:
-#             print(f"Unable to capture a frame for floor {floor}")
-#             continue
-
-#         img_path = os.path.join(static_dir, f'camera_snapshot_floor_{floor}.jpg')
-#         cv2.imwrite(img_path, frame)
-
-#         # Reset the camera to the beginning of the video
-#         camera.reset()
-
-#         images[floor] = f'/static/camera_snapshot_floor_{floor}.jpg'
-
-#     return render(request, 'pick_up_spot.html', {"images": images})
 
 
 @api_view(['GET'])

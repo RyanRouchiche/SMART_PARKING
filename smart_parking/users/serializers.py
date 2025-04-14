@@ -1,7 +1,9 @@
 
 from rest_framework import serializers
 
-from users.models import User
+from users.models import User , auth
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
 
 class AdminSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -20,6 +22,7 @@ class AdminSerializer(serializers.ModelSerializer):
             is_staff=True,
         )
         user.set_password(validated_data['password'])
+        user.is_active =  False
         user.save()
         return user
     
@@ -32,22 +35,22 @@ class GuestSerializer(serializers.ModelSerializer):
         
     def create(self, validated_data):
         user =User.objects.create_user(**validated_data)
-        admin_uuid = self.context['request'].user.uuid  
-        user.created_by = User.objects.get(uuid=admin_uuid)
-        user.is_staff = True,
+        admin_uuid = self.context['request'].session.get('id')
+        user.created_by = User.objects.get(id=admin_uuid)
+        user.is_staff = True
         user.is_superuser = False
         user.user_type = 'guest'
+        user.is_active =  False
         user.save()
         return user
     
     
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
 
-        # On ajoute les infos utilisateur dans le payload
+        
         data['user'] = {
             'username': self.user.username,
             'email': self.user.email,
@@ -56,3 +59,22 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         }
 
         return data
+    
+class ListUserSerializer(serializers.ModelSerializer):
+    status = serializers.SerializerMethodField()
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'user_type', 'first_name', 'last_name' , 'status']
+        
+    def get_status(self, user):
+            try : 
+                token = auth.objects.filter(user_id=user , is_revoked=False).first()
+                if token:
+                    return 'Online'
+                else:
+                    return 'Offline'
+            except auth.DoesNotExist:
+                return 'Offline'
+                
+
+

@@ -5,7 +5,7 @@ async function loginUser(event) {
     const password = document.getElementById("password").value;
 
     try {
-        // Ensure it's a POST request
+        
         const response = await fetch("/api/login/", {
             method: "POST", 
             headers: {
@@ -29,9 +29,7 @@ async function loginUser(event) {
     }
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-    document.getElementById("loginForm").addEventListener("submit", loginUser);
-});
+
 
 
 
@@ -39,6 +37,8 @@ function getCookie(name) {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
     if (parts.length === 2) return parts.pop().split(";").shift();
+    console.error(`CSRF token "${name}" not found!`);
+    return null;
 }
 
 function setCookie(name, value, maxAge) {
@@ -88,10 +88,85 @@ async function fetchData(endpoint) {
         }
 
         const data = await response.json();
+        console.log("Data fetched successfully:", data); 
         return data;
-        console.log("Data fetched successfully:", data);
     } catch (error) {
         console.error("Error fetching data:", error);
         throw error;
+    }
+}
+
+async function registerUser(event) {
+    event.preventDefault(); 
+
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+    const email = document.getElementById("email").value;
+    const firstname = document.getElementById("first-name").value;
+    const lastname = document.getElementById("last-name").value;
+
+    try {
+        const response = await fetch("/api/register/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken"),
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password,
+                email: email,
+                first_name: firstname,
+                last_name: lastname,
+            }),
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+            alert(data.message); // Show success message
+        } else {
+            alert(`Error: ${JSON.stringify(data)}`);
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        alert("An error occurred. Please try again.");
+    }
+}
+
+
+async function registerGuest(event) {
+    event.preventDefault(); 
+
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+    const email = document.getElementById("email").value;
+    const firstname = document.getElementById("first-name").value;
+    const lastname = document.getElementById("last-name").value;
+
+    try {
+        const response = await fetch("/dashboard/create-guest/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken"),
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password,
+                email: email,
+                first_name: firstname,
+                last_name: lastname,
+            }),
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+            alert(data.message); 
+        } else {
+            alert(`Error: ${JSON.stringify(data)}`);
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        alert("An error occurred. Please try again.");
     }
 }

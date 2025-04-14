@@ -4,11 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register</title>
+    <title>Register Guest</title>
 </head>
 <body>
-    <h1>Register</h1>
-    <form id="registerForm" onsubmit="registerUser(event)">
+    <h1>Register Guest</h1>
+    <form id="GuestRegisterForm" onsubmit="registerGuest(event)">
         {% csrf_token %}
         <label for="username">Username:</label>
         <input type="text" id="username" name="username" required>

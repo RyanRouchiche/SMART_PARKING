@@ -7,5 +7,7 @@ urlpatterns = [
     path('login/', views.CustomTokenObtainPairView.as_view(), name='login'),
     path('token/refresh/', views.CustomTokenRefreshView.as_view(), name='token_refresh'),
     path('logout/', views.LogoutView.as_view(), name='logout'),
-    path('register/', views.register, name='register'),
+    path('register/', views.RegisterAPIView.as_view(), name='register'),
+    path('activate/<uidb64>/<token>/', views.ActivateUserAPIView.as_view(), name='activate'),
+
 ]
