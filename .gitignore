@@ -46,7 +46,9 @@ smart_parking/parking/logic/Data/
 smart_parking/parking/logic/cropped_spots/
 smart_parking/cropped_spots/
 smart_parking/parking/static/
-/smart_parking/model/model_images/
+smart_parking/model/model_images/
 smart_parking/model/model_images.rar
+smart_parking/model/model_images_small/
+smart_parking/model/Weights/
 .env
 certs/
