@@ -97,7 +97,7 @@ async function fetchData(endpoint) {
 }
 
 async function registerUser(event) {
-    event.preventDefault(); 
+    event.preventDefault(); // Prevent form submission
 
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
@@ -132,6 +132,7 @@ async function registerUser(event) {
         alert("An error occurred. Please try again.");
     }
 }
+
 
 
 async function registerGuest(event) {

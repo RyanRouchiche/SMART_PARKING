@@ -51,10 +51,42 @@ document.addEventListener("DOMContentLoaded", function () {
                     alert("An error occurred while logging out. Please try again.");
                 });
             });
+
     }
     else {
         console.error("Logout button not found!");
     }
+
+    const userStatusSocket = new WebSocket(
+        `ws://${window.location.host}/ws/user-status/` 
+    );
+
+    console.log("WebSocket URL:", userStatusSocket.url);
+
+
+
+    userStatusSocket.onopen = function () {
+        console.log("WebSocket connection established.");
+    };
+
+    userStatusSocket.onmessage = function (event) {
+        const data = JSON.parse(event.data);
+        console.log("WebSocket message received:", data);
+
+        const statusElement = document.getElementById(`status-${data.user_id}`);
+        if (statusElement) {
+            console.log('status')
+            statusElement.innerText = data.status; 
+        }
+    };
+
+    // userStatusSocket.onclose = function () {
+    //     console.log("WebSocket connection closed.");
+    // };
+
+    userStatusSocket.onerror = function (error) {
+        console.error("WebSocket error:", error);
+    };
 
     // Function to get the CSRF token from cookies
     function getCookie(name) {
@@ -102,12 +134,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 <td>${user.email}</td>
                 <td>${user.first_name}</td>
                 <td>${user.last_name}</td>
-                <td>${user.status}</td>
+                <td id="status-${user.id}">${user.status}</td>
                 <td>
                     <button onclick="deleteUser(${user.id})">Delete</button>
                 </td>
             `;
-    
             tableBody.appendChild(row);
         });
     }
@@ -159,5 +190,4 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
     }
-
 });

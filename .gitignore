@@ -1,5 +1,6 @@
 # virual environnement
 parking_env/
+parking_conda_env/
 
 #  python dependencies
 *.pyc

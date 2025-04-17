@@ -1,4 +1,4 @@
-{% load static %}
+<!-- {% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,11 +22,41 @@
             </tr>
         </thead>
         <tbody id="user-table-body">
-            <!-- User rows will be dynamically populated by JavaScript -->
+        
         </tbody>
     </table>
     <button id="logout-btn">Logout</button>
     
 
+</body>
+</html> -->
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User List</title>
+    <script src="{% static 'js/utils.js' %}" defer></script>
+    <script src="{% static 'js/websocket.js' %}" defer></script>
+</head>
+<body>
+    <h1>User List</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="user-table-body">
+            <!-- User rows will be dynamically populated -->
+        </tbody>
+    </table>
 </body>
 </html>

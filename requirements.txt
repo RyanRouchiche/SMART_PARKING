@@ -74,7 +74,7 @@ pyparsing==3.2.1
 python-dateutil==2.9.0.post0
 python-dotenv==1.1.0
 pytz==2025.1
-pywin32==310
+# pywin32==310
 PyYAML==6.0.2
 pyzmq==26.3.0
 redis==5.2.1

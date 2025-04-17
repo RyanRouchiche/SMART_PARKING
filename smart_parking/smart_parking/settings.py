@@ -44,6 +44,7 @@ ALLOWED_HOSTS = ['127.0.0.1']
 # Application definition
 
 INSTALLED_APPS = [
+    'channels',
     'dashboard',
     'model',
     'users',
@@ -59,22 +60,22 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
-  
-    
 ]
+ASGI_APPLICATION = 'smart_parking.asgi.application'
+
 
 SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': True,
     'ROTATE_REFRESH_TOKENS': True,
 
 }
-ASGI_APPLICATION = 'smart_parking.asgi.application'
+
 
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("127.0.0.1", 6379)],  
+            "hosts": [("172.27.72.167", 6379)],  
         },
     },
 }
@@ -94,7 +95,7 @@ ROOT_URLCONF = 'smart_parking.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'static/templates'],
+        'DIRS': [BASE_DIR / 'staticfiles/templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -175,6 +176,7 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
   
 ]
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 
 REST_FRAMEWORK = {
