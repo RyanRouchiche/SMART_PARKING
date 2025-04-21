@@ -1,6 +1,7 @@
 import { getCookie, postJSON } from "./utils.js";
 
 export async function fetchDashboardData() {
+    console.log('fetchDashboardData called')
     const response = await fetch("/dashboard/", {
         method: "POST",
         headers: {
@@ -11,6 +12,7 @@ export async function fetchDashboardData() {
 
     const data = await response.json();
     if (data.success) {
+        console.log('success')
         document.getElementById("username").innerText = data.user.username;
         document.getElementById("email").innerText = data.user.email;
         document.getElementById("role").innerText = data.user.role;
@@ -102,4 +104,25 @@ export function logoutUser() {
     .catch(error => {
         console.error('Erreur lors de la déconnexion :', error);
     });
+}
+
+
+export function showDVA () {
+    const videoFeedBtn = document.getElementById("video_feed");
+    if (videoFeedBtn) {
+        videoFeedBtn.addEventListener("click", () => {
+            window.location.href = "/parking/api/video_feed/";
+        });
+    }
+}
+
+export function showSPOT () {
+    
+        const markSpotBtn = document.getElementById("markSpot");
+        if (markSpotBtn) {
+            markSpotBtn.addEventListener("click", () => {
+                window.location.href = "/parking/api/pickupSPOT/";
+            });
+        }
+
 }

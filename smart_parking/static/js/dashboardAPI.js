@@ -1,4 +1,26 @@
 document.addEventListener("DOMContentLoaded", function () {
+    const userStatusSocket = new WebSocket(
+        `ws://${window.location.host}/ws/user-status/` 
+    );
+
+    console.log("WebSocket URL:", userStatusSocket.url);
+
+
+
+    userStatusSocket.onopen = function () {
+        console.log("WebSocket connection established.");
+    };
+
+    userStatusSocket.onmessage = function (event) {
+        const data = JSON.parse(event.data);
+        console.log("WebSocket message received:", data);
+
+        const statusElement = document.getElementById(`status-${data.user_id}`);
+        if (statusElement) {
+            console.log('status')
+            statusElement.innerText = data.status; 
+        }
+    };
     fetch("/dashboard/", {
         method: "POST",
         headers: {
@@ -16,7 +38,7 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById("user-id").innerText = data.user.id;
         } else {
             alert("You are not authenticated. Please log in.");
-            window.location.href = "/login/";
+            window.location.href = "/api/login/";
         }
     })
     .catch(error => {
@@ -57,28 +79,7 @@ document.addEventListener("DOMContentLoaded", function () {
         console.error("Logout button not found!");
     }
 
-    const userStatusSocket = new WebSocket(
-        `ws://${window.location.host}/ws/user-status/` 
-    );
 
-    console.log("WebSocket URL:", userStatusSocket.url);
-
-
-
-    userStatusSocket.onopen = function () {
-        console.log("WebSocket connection established.");
-    };
-
-    userStatusSocket.onmessage = function (event) {
-        const data = JSON.parse(event.data);
-        console.log("WebSocket message received:", data);
-
-        const statusElement = document.getElementById(`status-${data.user_id}`);
-        if (statusElement) {
-            console.log('status')
-            statusElement.innerText = data.status; 
-        }
-    };
 
     // userStatusSocket.onclose = function () {
     //     console.log("WebSocket connection closed.");
@@ -116,6 +117,22 @@ document.addEventListener("DOMContentLoaded", function () {
     if (window.location.pathname === "/dashboard/users/users-list/") {
             fetchUsers(); 
     }
+
+    // const DVAbutton = document.getElementById("video_feed") ;
+    // if (DVAbutton) {
+    //     console.log('DVA button found!');
+    //     DVAbutton.addEventListener("click", function () {
+    //         window.location.href = "/parking/api/video/";
+    //     });
+    // }
+
+    // const spotbutton = document.getyElementById("markSpot") ;
+    // if (spotbutton) {
+    //     console.log('Spot button found!');
+    //     spotbutton.addEventListener("click", function () {
+    //         window.location.href = "/parking/api/pickupSpot/";
+    //     });
+    // }
     
     function populateUserTable(users) {
         const tableBody = document.getElementById('user-table-body');

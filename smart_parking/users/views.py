@@ -74,91 +74,6 @@ def send_verif_email(request , user) :
             return Response({'message': 'User registered successfully. Please check your email to verify your account.' , 'value' : 1}, status=status.HTTP_201_CREATED)
 
 
-
-# class CustomTokenObtainPairView(APIView):
-#     permission_classes = [AllowAny]
-
-#     def get(self, request, *args, **kwargs):
-#         return render(request, 'login.html')
-
-#     def post(self, request, *args, **kwargs):
-#         try:
-#             username = request.data.get('username')
-#             password = request.data.get('password')
-
-#             if not username or not password:
-#                 return Response({'success': False, 'error': 'Username and password are required'}, status=400)
-
-#             user = authenticate(username=username, password=password)
-#             if not user:
-#                 return Response({'success': False, 'error': 'Invalid credentials'}, status=401)
-#             if not user.is_active  : 
-#                  return Response({'success': False, 'error': 'your accound is invalid , check your email for validation'}, status=401)
-             
-#             login(request, user)  
-#             request.session['id'] = str(user.id)
-#             request.session['username'] = user.username
-#             request.session['email'] = user.email
-#             request.session['user_type'] = user.user_type
-
-#             # Revoke previous refresh tokens (this will mark old refresh tokens as revoked)
-#             auth.objects.filter(user=user, is_revoked=False).update(is_revoked=True)
-
-#             # Create new tokens
-#             refresh = RefreshToken.for_user(user)
-#             access_token = str(refresh.access_token)
-#             refresh_token = str(refresh)
-
-#             # Set expiry times
-#             expires_at = now() + timedelta(seconds=30 * 60)  # 30 minutes for refresh token
-#             access_token_expiry = now() + timedelta(minutes=5)  # 5 minutes for access token
-
-            
-#             token_entry, created = auth.objects.get_or_create(user=user, defaults={
-#                 'refresh_token': refresh_token,
-#                 'expires_at': expires_at,
-#                 'is_revoked': False,
-#                 'created_at': now()
-#             })
-
-#             if not created:
-#                 token_entry.refresh_token = refresh_token
-#                 token_entry.expires_at = expires_at
-#                 token_entry.is_revoked = False
-#                 token_entry.created_at = now()
-#                 token_entry.save()
-
-#             else:  # If the record doesn't exist, create it
-#                 auth.objects.create(user=user, refresh_token=refresh_token, expires_at=expires_at)
-
-#             # Prepare user data to return
-#             user_data = {
-#                 'username': user.username,
-#                 'email': user.email,
-#                 'role': user.user_type,
-#                 'id': str(user.id)
-#             }
-
-#             # Prepare the success response
-#             res = Response({
-#                 'success': True,
-#                 'message': 'Login successful',
-#                 'user': user_data,
-#                 'status': 200
-#             })
-
-#             # Set cookies with the access token and refresh token
-#             res.set_cookie('access_token', access_token, max_age=5*60, httponly=True, secure=False, samesite='Lax')  # 5 minutes
-#             res.set_cookie('refresh_token', refresh_token, max_age=30*60, httponly=True, secure=False, samesite='Lax')  # 30 minutes
-            
-            
-
-#             return res
-
-#         except Exception as e:
-#             logger.error(f"Error in CustomTokenObtainPairView: {str(e)}", exc_info=True)
-#             return Response({'success': False, 'error': 'An unexpected error occurred'}, status=500)
-
 class CustomTokenObtainPairView(APIView):
     permission_classes = [AllowAny]
 
@@ -273,80 +188,36 @@ class CustomTokenRefreshView(APIView):
             return Response({'success': False, 'error': 'An unexpected error occurred. Please try again later.'}, status=500)
 
 
-# class LogoutView(APIView):
-#     permission_classes = [IsAuthenticated]
-    
-#     def post(self, request, *args, **kwargs):
-#         try:
-#             # Retrieve refresh token from cookies
-#             refresh_token = request.COOKIES.get('refresh_token')
-
-#             if not refresh_token:
-#                 return Response({'success': False, 'error': 'Refresh token not found in cookies'}, status=401)
-
-#             try:
-#                 # Find the token entry in the database
-#                 token_entry = auth.objects.get(refresh_token=refresh_token, user=request.user)
-
-#                 # If token is already revoked, return an error
-#                 if token_entry.is_revoked:
-#                     return Response({'success': False, 'error': 'Token is already revoked'}, status=400)
-
-#                 # Mark the token as revoked
-#                 token_entry.is_revoked = True
-#                 token_entry.save()
-
-#             except auth.DoesNotExist:
-#                 return Response({'success': False, 'error': 'Refresh token not found in database'}, status=404)
-
-#             # Prepare the response and delete cookies
-#             response = Response({'success': True, 'message': 'Logout successful'})
-
-#             # Delete cookies by setting their expiration date in the past
-#             response.delete_cookie('access_token')
-#             response.delete_cookie('refresh_token')
-
-#             response.set_cookie('access_token', '', expires='Thu, 01 Jan 1970 00:00:00 GMT', httponly=True, secure=True, samesite='Lax')
-#             response.set_cookie('refresh_token', '', expires='Thu, 01 Jan 1970 00:00:00 GMT', httponly=True, secure=True, samesite='Lax')
-
-#             return response
-#         except Exception as e:
-#             logger.error(f"Error in logout: {str(e)}", exc_info=True)
-#             return Response({'success': False, 'error': 'An unexpected error occurred. Please try again later.'}, status=500)
 class LogoutView(APIView):
-    permission_classes = [AllowAny]  # Pas besoin d'access token pour logout
+    permission_classes = [AllowAny] 
 
     def post(self, request, *args, **kwargs):
         try:
-            # Récupérer le refresh token depuis les cookies sécurisés
+           
             refresh_token = request.COOKIES.get('refresh_token')
 
             if not refresh_token:
                 return Response({'success': False, 'error': 'Refresh token introuvable dans les cookies'}, status=401)
 
             try:
-                # Vérifier si le refresh token existe dans la base
+                
                 token_entry = auth.objects.get(refresh_token=refresh_token)
 
-                # Vérifier si déjà révoqué
+               
                 if token_entry.is_revoked:
                     return Response({'success': False, 'error': 'Token déjà révoqué'}, status=400)
 
-                # Vérifier s’il est expiré (optionnel mais recommandé)
                 if not token_entry.is_valid():
                     return Response({'success': False, 'error': 'Token expiré ou invalide'}, status=401)
 
-                # Révoquer le token
                 token_entry.is_revoked = True
                 token_entry.save()
 
             except auth.DoesNotExist:
                 return Response({'success': False, 'error': 'Refresh token non trouvé en base'}, status=404)
 
-            # Préparer la réponse de succès
             response = Response({'success': True, 'message': 'Déconnexion réussie'})
 
-            # Supprimer les cookies de manière sécurisée
             response.delete_cookie('access_token')
             response.delete_cookie('refresh_token')
             response.set_cookie('access_token', '', expires='Thu, 01 Jan 1970 00:00:00 GMT', httponly=True, secure=True, samesite='Lax')

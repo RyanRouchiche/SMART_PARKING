@@ -1,4 +1,3 @@
-// utils.js
 
 export function getCookie(name) {
     let cookieValue = null;

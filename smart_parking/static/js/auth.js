@@ -1,5 +1,6 @@
 import { getCookie } from "./utils.js";
 
+
 export async function loginUser(event) {
     event.preventDefault(); // Prevent the default form submission behavior
 
@@ -32,6 +33,7 @@ export async function loginUser(event) {
 
 // Attach the function to the global window object
 window.loginUser = loginUser;
+
 export async function registerUser(event) {
     event.preventDefault();
     const data = {
