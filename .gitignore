@@ -33,9 +33,9 @@ config.json
 secrets.json
 
 # static media files
-static/
+smart_parking/static/cropped_spots/
 media/
-smart_parking/static/
+
 
 # files created by test tools
 .coverage
@@ -47,10 +47,11 @@ tests.xml
 smart_parking/parking/Data/
 smart_parking/parking/cropped_spots/
 smart_parking/cropped_spots/
-smart_parking/parking/static/
-smart_parking/parking/model/
-smart_parking/model/
-smart_parking/parking/Spots/
+
+smart_parking/parking/model/clean_car_classifier.keras
+
+
+
 
 .env
 # virual environnement
@@ -87,7 +88,7 @@ config.json
 secrets.json
 
 # static media files
-staticfiles/
+
 media/
 
 # files created by test tools
@@ -97,14 +98,6 @@ nosetests.xml
 tests.xml
 
 
-smart_parking/parking/Data/
-smart_parking/parking/cropped_spots/
-smart_parking/cropped_spots/
-smart_parking/parking/static/
-smart_parking/model/model_images/
-smart_parking/model/model_images.rar
-smart_parking/model/model_images_small/
-smart_parking/model/Weights/
-.env
-certs/
+
+
 
