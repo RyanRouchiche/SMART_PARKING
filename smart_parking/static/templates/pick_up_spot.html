@@ -1,0 +1,44 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sélection des Places de Parking</title>
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <style>
+        .floor-container {
+            margin-bottom: 20px;
+        }
+        .image-container {
+            position: relative;
+            display: inline-block;
+        }
+        .selected-point {
+            width: 10px;
+            height: 10px;
+            background-color: red;
+            position: absolute;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+    </style>
+</head>
+<body>
+    <h1>Sélectionnez les places de parking</h1>
+    
+    {% for floor, image_url in images.items %}
+    <div class="floor-container">
+        <h2>Étage {{ floor }}</h2>
+        <div class="image-container" id="container-{{ floor }}">
+            <img src="{{ image_url }}" alt="Caméra étage {{ floor }}" onclick="selectPoint(event, '{{ floor }}')">
+        </div>
+    </div>
+    {% endfor %}
+
+    <button onclick="sendCoordinates()">Enregistrer</button>
+
+    <!-- Lien vers le fichier JS externe -->
+    <script src="{% static 'js/parkingSelector.js' %}"></script>
+</body>
+</html>

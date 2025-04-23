@@ -25,8 +25,13 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('parking/' , include('parking.urls'))
+    path('parking/' , include('parking.urls')),
+    path('api/' , include('users.urls')),
+    path('dashboard/' , include('dashboard.urls')),
 ]
 
+# if settings.DEBUG:
+#     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])
+
 if settings.DEBUG:
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

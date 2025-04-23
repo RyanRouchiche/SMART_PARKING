@@ -1,26 +1,23 @@
-from venv import logger
-import cv2
-import json
-import numpy as np
 from django.shortcuts import render
-from django.http import StreamingHttpResponse
-from rest_framework.decorators import api_view
+from django.http import JsonResponse
 from rest_framework.response import Response
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework import status
-from .logic.serializers import SpotSerializer
-from .logic.Detector import Detector
-from .logic.Camera import Camera
-from .logic.Draw import Draw
-from django.conf import settings
 import os
-from .logic.serializers import FloorSerializer
-from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
+import cv2
+import numpy as np
+from django.conf import settings
+from .Camera import Camera
+from .Detector import Detector
+from .serializers import FloorSerializer
+import json
+from django.http import JsonResponse
 
 
 
 camera_paths = {
-    1: r'C:\Users\redah\OneDrive\Desktop\smart_parking_project\smart_parking\parking\logic\Data\parking_crop_loop.mp4',
+    1: os.path.join(settings.BASE_DIR, 'parking', 'Data', 'parking_crop_loop.mp4'),
 }
 
 
@@ -30,9 +27,11 @@ detector = Detector(camera_paths)
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def pick_up_spot_api(request):
     images = {}
-    static_dir = settings.STATICFILES_DIRS[0]
+    static_dir = os.path.join(settings.BASE_DIR, 'static')  
+    
 
     if not os.path.exists(static_dir):
         os.makedirs(static_dir)
@@ -44,150 +43,108 @@ def pick_up_spot_api(request):
             continue
 
         img_path = os.path.join(static_dir, f'camera_snapshot_floor_{floor}.jpg')
+        print(f"Saving image to: {img_path}")
         cv2.imwrite(img_path, frame)
 
-        # Reset the camera to the beginning of the video
-        camera.reset()
-
-        images[floor] = f'/static/camera_snapshot_floor_{floor}.jpg'
+        images[floor] = f'{settings.STATIC_URL}camera_snapshot_floor_{floor}.jpg'
+        
+        print(f"Image URL: {settings.STATIC_URL}camera_snapshot_floor_{floor}.jpg")
 
     return render(request, 'pick_up_spot.html', {"images": images})
 
 
+def convert_ndarray_to_list(data):
+    if isinstance(data, dict):
+        return {k: convert_ndarray_to_list(v) for k, v in data.items()}
+    elif isinstance(data, list):
+        return [convert_ndarray_to_list(i) for i in data]
+    elif isinstance(data, np.ndarray):
+        return data.tolist()
+    return data
+
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def save_spot_coordinates_api(request):
-    print("ncoming data:", request.data)  
+    print("Incoming data:", request.data)
     serializer = FloorSerializer(data=request.data, many=True)
+    
     if serializer.is_valid():
         validated_data = serializer.validated_data
-        print("Validated data:", validated_data)  
 
-        #  the path to the JSON file inside the logic/Spots folder of the parking app
-        json_file_path = os.path.join(
-            settings.BASE_DIR, "parking/logic/Spots/coordinates.json"
-        )
+        for floor_data in validated_data:
+            for spot, points in floor_data['coordinates'].items():
+                sorted_pts = detector.sort_parking_spot_points(np.array(points, dtype="float32"))
+                floor_data['coordinates'][spot] = sorted_pts
 
-        #  directory exists
-        directory = os.path.dirname(json_file_path)
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-
-        #  existing data from the JSON file
+        json_file_path = os.path.join(settings.BASE_DIR, "parking", "Spots", "coordinates.json")
+        
+        # Supprimer l'ancien fichier
         if os.path.exists(json_file_path):
-            with open(json_file_path, "r", encoding="utf-8") as file:
+            try:
+                os.remove(json_file_path)
+            except Exception as e:
+                return Response({"error": f"Erreur suppression fichier JSON : {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        try:
+            # Convertir les données avant JSON
+            serializable_data = convert_ndarray_to_list(validated_data)
+            with open(json_file_path, "w", encoding="utf-8") as file:
+                json.dump(serializable_data, file, indent=4, ensure_ascii=False)
+        except Exception as e:
+            return Response({"error": f"Erreur lors de l'écriture JSON : {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        # Sauvegarde des images croppées
+        static_dir = os.path.join(settings.BASE_DIR, 'static')
+        for floor_data in validated_data:
+            floor = floor_data["floor"]
+            coordinates = floor_data["coordinates"]
+
+            camera = cameras.get(int(floor))
+            if camera is None:
+                print(f"[Avertissement] Aucune caméra trouvée pour l'étage {floor}")
+                continue
+
+            frame = camera.getFrame()
+            if frame is None:
+                print(f"[Erreur] Impossible de capturer une image pour l'étage {floor}")
+                continue
+
+            for spot_name, sorted_pts in coordinates.items():
                 try:
-                    data = json.load(file)
-                except json.JSONDecodeError:
-                    data = []
-        else:
-            data = []
+                    rect = np.array(sorted_pts, dtype="float32")
+                    w, h = detector.calculate_width_height(rect)
+                    dest_pts = np.float32([[0, 0], [w, 0], [w, h], [0, h]])
+                    matrix = cv2.getPerspectiveTransform(rect, dest_pts)
+                    cropped = cv2.warpPerspective(frame, matrix, (w, h))
 
-        #  new data to the existing data
-        data.extend(validated_data)
+                    output_dir = os.path.join(static_dir, 'cropped_spots', f'floor_{floor}')
+                    os.makedirs(output_dir, exist_ok=True)
+                    out_path = os.path.join(output_dir, f'{spot_name}.jpg')
+                    cv2.imwrite(out_path, cropped)
+                except Exception as e:
+                    print(f"[Erreur] Cropping spot {spot_name} sur étage {floor} : {str(e)}")
 
-        #  updated data back to the JSON file
-        with open(json_file_path, "w", encoding="utf-8") as file:
-            json.dump(data, file, indent=4, ensure_ascii=False)
+            camera.reset()
 
-        return Response({"message": "Spots saved successfully"}, status=status.HTTP_201_CREATED)
+        return Response({"message": "Coordonnées triées, JSON sauvegardé, images croppées générées."}, status=status.HTTP_201_CREATED)
 
-    print("Errors:", serializer.errors)  
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 
-
-
-
-@api_view(['GET'])
-def Video_Feed_api(request):
-    # Check if the 'floor' parameter is provided
-    floor = request.GET.get('floor')
-
-    if not floor:
-        # If no floor is specified, render the stream_feed.html template
-        return render(request, 'stream_feed.html')
-
+@permission_classes([AllowAny])
+def get_available_floors(request):
     try:
-        # Convert the floor parameter to an integer
-        floor = int(floor)
+        coordinates_file = os.path.join(settings.BASE_DIR, "parking/Spots/coordinates.json")
+        with open(coordinates_file, 'r', encoding='utf-8') as file:
+            data = json.load(file)
 
-        # Validate the floor parameter
-        if floor not in detector.camera_objects:
-            return Response({'error': 'Invalid floor parameter'}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Function to generate video frames for the specified floor
-        def generate_frames():
-            frame_nmr = 0  # Frame counter
-            cam = detector.camera_objects[floor]  # Get the camera for the floor
-
-            while True:
-                frame = cam.getFrame()  # Capture a frame from the camera
-                if frame is None:
-                    print(f"Error: Unable to capture a frame for floor {floor}")
-                    continue
-
-                available_spots = 0  # Counter for available spots
-                floor_str = str(floor)
-
-                if floor_str not in detector.spots_coordinates:
-                    print(f"Error: Floor {floor_str} not found in spots_coordinates.")
-                    continue
-
-                # Update parking spot statuses every 20 frames
-                if frame_nmr % 20 == 0:
-                    for spot_name, points in detector.spots_coordinates[floor_str].items():
-                        detector.spots_status[floor_str][spot_name] = detector.empty_or_not()
-
-                # Mark parking spots and count available spots
-                available_spots = detector.markSpot(frame, floor_str, available_spots)
-
-                # Display parking spot information on the frame
-                detector.displayStatusSpot(frame, available_spots)
-
-                # Encode the frame as JPEG
-                _, buffer = cv2.imencode('.jpg', frame)
-                frame = buffer.tobytes()
-
-                # Yield the frame as part of the video stream
-                yield (b'--frame\r\n'
-                       b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-
-                frame_nmr += 1
-
-        # Return the video stream as a response
-        return StreamingHttpResponse(
-            generate_frames(),
-            content_type='multipart/x-mixed-replace; boundary=frame'
-        )
-
-    except ValueError:
-        # Handle invalid floor parameter (e.g., non-integer values)
-        return Response({'error': 'Invalid floor parameter'}, status=status.HTTP_400_BAD_REQUEST)
-
-
-
-
-
+        floors = [int(floor_entry["floor"]) for floor_entry in data if "floor" in floor_entry]
+        return JsonResponse(sorted(floors), safe=False)
     
-@api_view(['GET'])
-def get_parking_data_api(request):
-    available_floors = list(detector.camera_objects.keys())  
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        return JsonResponse({'error': f'Failed to load coordinates file: {e}'}, status=500)
 
-    available_spots_data = {
-        floor: sum(1 for spot_status in detector.spots_status.get(str(floor), {}).values() if spot_status)
-        for floor in available_floors
-    }
-
-    return Response({
-        'floors': available_floors,
-        'available_spots_data': available_spots_data
-    }, status=status.HTTP_200_OK)
-    
-    
-
-
-
-
-
-
+@permission_classes([AllowAny])
+def stream_page(request):
+    return render(request, 'video_feed.html')

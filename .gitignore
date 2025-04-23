@@ -1,4 +1,62 @@
 # virual environnement
+smart_parking_env/
+parking_conda_env/
+
+#certifications folder
+certs/
+
+#  python dependencies
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+
+# logs and temp files
+*.log
+*.out
+*.pid
+*.swp
+*.swo
+*.sqlite3
+db.sqlite3
+*.bak
+
+# IDE files
+.vscode/
+.idea/
+*.iml
+
+# migrations django files
+migrations/
+!migrations/__init__.py
+
+# config files
+.env
+config.json
+secrets.json
+
+# static media files
+smart_parking/static/cropped_spots/
+media/
+
+
+# files created by test tools
+.coverage
+*.cover
+nosetests.xml
+tests.xml
+
+
+smart_parking/parking/Data/
+smart_parking/parking/cropped_spots/
+smart_parking/cropped_spots/
+
+smart_parking/parking/model/clean_car_classifier.keras
+
+
+
+.env
+# virual environnement
 parking_env/
 
 #  python dependencies
@@ -32,7 +90,7 @@ config.json
 secrets.json
 
 # static media files
-staticfiles/
+
 media/
 
 # files created by test tools
@@ -42,7 +100,6 @@ nosetests.xml
 tests.xml
 
 
-smart_parking/parking/logic/Data/
-smart_parking/parking/logic/cropped_spots/
-smart_parking/cropped_spots/
-smart_parking/parking/static/
+
+
+
