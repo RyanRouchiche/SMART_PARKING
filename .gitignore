@@ -2,6 +2,9 @@
 smart_parking_env/
 parking_conda_env/
 
+#certifications folder
+certs/
+
 #  python dependencies
 *.pyc
 *.pyo
@@ -49,7 +52,6 @@ smart_parking/parking/cropped_spots/
 smart_parking/cropped_spots/
 
 smart_parking/parking/model/clean_car_classifier.keras
-
 
 
 
