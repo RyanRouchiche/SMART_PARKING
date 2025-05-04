@@ -1,0 +1,51 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Ajouter des Caméras</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      .camera-form {
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+      }
+      .camera-form input {
+        display: block;
+        margin: 5px 0;
+        width: 100%;
+        padding: 6px;
+      }
+      button {
+        margin: 10px 5px;
+        padding: 8px 16px;
+      }
+    </style>
+   <script type="module" src="{% static 'js/camera.js' %}"></script>
+  </head>
+  <body>
+    <h2>Ajouter des cams</h2>
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
+    <div id="formContainer">
+      <div class="camera-form">
+        <label>Zone (area):</label>
+        <input type="text" name="area" placeholder="Ex: Zone A" />
+        <label>Référence (ref):</label>
+        <input type="text" name="ref" placeholder="Ex: CAM01" />
+        <label>Chemin RTSP/HTTP (path):</label>
+        <input type="text" name="path" placeholder="Ex: rtsp://..." />
+      </div>
+    </div>
+
+    <button id="addcam" >Ajouter une camera</button>
+    <button id="validatecam">Valider et Envoyer</button>
+
+    
+  </body>
+</html>
