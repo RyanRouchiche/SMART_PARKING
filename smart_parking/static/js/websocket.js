@@ -22,10 +22,7 @@ function openWebSocket() {
         console.error("WebSocket error:", error);
     };
 
-    // userStatusSocket.onclose = function () {
-    //     console.log("WebSocket connection closed.");
-    //     userStatusSocket = null;
-    // };
+
 }
 
 document.addEventListener("DOMContentLoaded", function () {

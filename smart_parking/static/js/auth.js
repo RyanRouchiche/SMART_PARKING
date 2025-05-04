@@ -1,99 +1,91 @@
-import { getCookie } from "./utils.js";
+import { scheduleStaticTokenRefresh ,   postrequest  } from "./utils.js";
 
 
-export async function loginUser(event) {
-    event.preventDefault(); // Prevent the default form submission behavior
 
-    const username = document.getElementById("username").value;
-    const password = document.getElementById("password").value;
 
-    try {
-        const response = await fetch("/api/login/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": getCookie("csrftoken"), // Include CSRF token if required
-            },
-            body: JSON.stringify({ username, password }),
-        });
+document.addEventListener('DOMContentLoaded' , function() {
+    scheduleStaticTokenRefresh();
 
-        const data = await response.json();
+    //part handles login form submission
 
-        if (response.ok) {
-            alert("Login successful!");
-            window.location.href = "/dashboard/"; // Redirect to the dashboard
-        } else {
-            alert(`Error: ${data.error}`);
+    if (window.location.pathname === "/auth/login/") {
+        const loginform = document.getElementById("login-form");
+        if (loginform) {
+            console.log("Login form found");
+            loginform.addEventListener("submit", async function (event) {
+                event.preventDefault();
+                const data = {
+                    username: document.getElementById("username").value,
+                    password: document.getElementById("password").value,
+                };
+                const res = await postrequest("/auth/token/" , "POST" , data);
+                if (res.status === 200 || res.status === 201) {
+                    console.log("Login successful");
+                    alert('Login successful');
+                    window.location.href = "/dashboard/";
+                } else {
+                    alert('Login failed');
+                    console.log("Login failed");
+                }
+            });
         }
-    } catch (error) {
-        console.error("Login error:", error);
-        alert("An error occurred during login.");
     }
-}
 
-// Attach the function to the global window object
-window.loginUser = loginUser;
+    //part handles registration form submission
 
-export async function registerUser(event) {
-    event.preventDefault();
-    const data = {
-        username: document.getElementById("username").value,
-        password: document.getElementById("password").value,
-        email: document.getElementById("email").value,
-        first_name: document.getElementById("first-name").value,
-        last_name: document.getElementById("last-name").value,
-    };
-
-    try {
-        const response = await fetch("/api/register/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": getCookie("csrftoken"),
-            },
-            body: JSON.stringify(data),
-        });
-
-        const res = await response.json();
-        if (response.ok) {
-            alert(res.message);
-        } else {
-            alert(`Error: ${JSON.stringify(res)}`);
+    if (window.location.pathname ==="/auth/register/") {
+        const registerform = document.getElementById("register-form");
+        if (registerform) {
+            console.log("Register form found");
+            registerform.addEventListener("submit", async function (event) {
+                event.preventDefault();
+                const data = {
+                    username: document.getElementById("username").value,
+                    password: document.getElementById("password").value,
+                    email: document.getElementById("email").value,
+                    first_name: document.getElementById("first-name").value,
+                    last_name: document.getElementById("last-name").value
+                };
+                const res = await postrequest("/auth/register/" , "POST" , data);
+                if (res.status === 200 || res.status === 201) {
+                    console.log("Registration successful");
+                    alert('Registration successful');
+                    window.location.href = "/auth/login/";
+                } else {
+                    alert('Registration failed');
+                    console.log("Registration failed");
+                }
+            });
         }
-    } catch (error) {
-        console.error("Register error:", error);
-        alert("An error occurred.");
     }
-}
 
-export async function registerGuest(event) {
-    event.preventDefault();
-    const data = {
-        username: document.getElementById("username").value,
-        password: document.getElementById("password").value,
-        email: document.getElementById("email").value,
-        first_name: document.getElementById("first-name").value,
-        last_name: document.getElementById("last-name").value,
-    };
+    //part handles guest registration form submission
 
-    try {
-        const response = await fetch("/dashboard/create-guest/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": getCookie("csrftoken"),
-            },
-            body: JSON.stringify(data),
-        });
-
-        const res = await response.json();
-        if (response.ok) {
-            alert(res.message);
-        } else {
-            alert(`Error: ${JSON.stringify(res)}`);
+    if (window.location.pathname === "/dashboard/create-guest/") {
+        const form = document.getElementById("guest-form");
+        if (form) {
+            console.log("Guest form found");
+            form.addEventListener("submit", async function (event) {
+                event.preventDefault();
+                const data = {
+                    username: document.getElementById("username").value,
+                    password: document.getElementById("password").value,
+                    email: document.getElementById("email").value,
+                    first_name: document.getElementById("first-name").value,
+                    last_name: document.getElementById("last-name").value
+                };
+                 const res = await postrequest("/dashboard/create-guest/" , "POST" , data);
+                 if (res.status === 201 || res.status === 200) {
+                    console.log("Guest registration successful");
+                    alert('Guest registration successful');
+                    window.location.href = "/dashboard/";
+                }
+                else {
+                    alert('Guest registration fail');
+                    console.log("Guest registration failed");
+                }
+            });
         }
-    } catch (error) {
-        console.error("Register guest error:", error);
-        alert("An error occurred.");
     }
-}
+
+})

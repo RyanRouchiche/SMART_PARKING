@@ -75,6 +75,7 @@ class ListUserSerializer(serializers.ModelSerializer):
                     return 'Offline'
             except auth.DoesNotExist:
                 return 'Offline'
-                
+            
+            
 
 

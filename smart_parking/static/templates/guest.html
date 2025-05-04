@@ -5,18 +5,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Guest Management</title>
-    <script type="module" src="{% static 'js/utils.js' %}" defer></script>
-    <script type="module" src="{% static 'js/auth.js' %}" defer></script>
+    <script type="module" src="{% static 'js/auth.js' %}"></script>
+    <script type="module" src="{% static 'js/dashboardAPI.js' %}"></script>
 </head>
 <body>
     <h1>Guest Management</h1>
     <form id="guest-form">
+        {% csrf_token %}
+        <h2>Register Guest</h2>
         <input type="text" id="username" placeholder="Username" required>
         <input type="password" id="password" placeholder="Password" required>
         <input type="email" id="email" placeholder="Email" required>
         <input type="text" id="first-name" placeholder="First Name" required>
         <input type="text" id="last-name" placeholder="Last Name" required>
-        <button type="submit" onclick="registerGuest(event)">Register Guest</button>
+        <button type="submit">Register Guest</button>
     </form>
 </body>
 </html>

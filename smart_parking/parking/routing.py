@@ -5,7 +5,7 @@ from . import consumers
 websocket_urlpatterns = [
     # re_path(r'ws/video_feed/$', consumers.VideoFeedConsumer.as_asgi())  # No floor parameter
 
-    re_path(r'ws/video/(?P<floor>\d+)/$', consumers.VideoFeedConsumer.as_asgi()),
+    re_path(r'ws/video/(?P<area>\d+)/$', consumers.VideoFeedConsumer.as_asgi()),
 
 
 ]

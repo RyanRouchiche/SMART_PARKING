@@ -38,6 +38,7 @@ secrets.json
 # static media files
 smart_parking/static/cropped_spots/
 media/
+staticfiles/
 
 
 # files created by test tools

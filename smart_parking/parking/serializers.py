@@ -1,8 +1,8 @@
 from rest_framework import serializers
 
 class SpotSerializer(serializers.Serializer):
-    # Define the structure of the JSON data
-    floor = serializers.CharField()  # Floor number as a string
+   
+    area = serializers.CharField() 
     coordinates = serializers.DictField(
         child=serializers.ListField(
             child=serializers.ListField(
@@ -25,7 +25,7 @@ class SpotSerializer(serializers.Serializer):
         return value
 
 
-class FloorSerializer(serializers.Serializer):
+class AreaSerializer(serializers.Serializer):
     # Serializer for the entire JSON structure
-    floor = serializers.CharField()  # Floor number as a string
-    coordinates = SpotSerializer().fields['coordinates']  # Reuse the coordinates validation
+    area = serializers.CharField()  
+    coordinates = SpotSerializer().fields['coordinates'] 

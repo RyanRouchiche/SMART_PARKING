@@ -26,8 +26,10 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('parking/' , include('parking.urls')),
-    path('api/' , include('users.urls')),
+    path('auth/' , include('users.urls')),
     path('dashboard/' , include('dashboard.urls')),
+    path('camera/' , include('camera.urls')),
+    
 ]
 
 # if settings.DEBUG:
