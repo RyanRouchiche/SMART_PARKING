@@ -54,6 +54,12 @@ smart_parking/cropped_spots/
 
 smart_parking/parking/model/clean_car_classifier.keras
 smart_parking/parking/model/car_classifier_2.keras
+smart_parking/model/fromover/
+smart_parking/model/model_scripts/
+smart_parking/model/model_scripts/Weights/
+smart_parking/model/model_scripts/image_path.txt
+smart_parking/model/model_scripts/points.json
+weights/
 
 
 
