@@ -53,6 +53,7 @@ smart_parking/parking/cropped_spots/
 smart_parking/cropped_spots/
 
 smart_parking/parking/model/clean_car_classifier.keras
+smart_parking/parking/model/car_classifier_2.keras
 
 
 
