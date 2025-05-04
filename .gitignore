@@ -61,6 +61,7 @@ smart_parking/model/model_scripts/image_path.txt
 smart_parking/model/model_scripts/points.json
 weights/
 
+smart_parking/parking/model/car_classifier_2.keras
 
 
 .env
