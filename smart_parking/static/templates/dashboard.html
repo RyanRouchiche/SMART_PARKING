@@ -1,0 +1,32 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+   
+    <script type="module" src="{% static 'js/dashboardAPI.js' %}"></script>
+
+</head>
+<body>
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+ 
+        <p><strong>Username:</strong> <span id="username"></span></p>
+        <p><strong>Email:</strong> <span id="email"></span></p>
+        <p><strong>Role:</strong> <span id="role"></span></p>
+        <p><strong>ID:</strong> <span id="user-id"></span></p>
+
+        <button id="logout-btn">Logout</button>
+        <button id="user-list-button">list users</button>
+        <button id="video_feed">DVA</button>
+        <button id="markSpot">mark spot</button>
+        <button id="guest">create guest</button>
+        <button id="cameraconfig">config camera</button>
+        <button id="cameralist">list camera</button>
+
+
+
+
+</body>
+</html>
