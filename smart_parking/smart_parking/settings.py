@@ -39,11 +39,12 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost' , '172.27.72.167']
 
-
+APPEND_SLASH = True
 
 # Application definition
 
 INSTALLED_APPS = [
+    'camera',
     'channels',
     'dashboard',
     'users',
@@ -58,6 +59,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
+
 ]
 ASGI_APPLICATION = 'smart_parking.asgi.application'
 
@@ -65,6 +67,11 @@ ASGI_APPLICATION = 'smart_parking.asgi.application'
 SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': True,
     'ROTATE_REFRESH_TOKENS': True,
+    'AUTH_COOKIE': 'access_token',
+    'AUTH_COOKIE_SECURE': False,
+    'AUTH_COOKIE_HTTP_ONLY': True,
+    'AUTH_COOKIE_PATH': '/',
+    'AUTH_COOKIE_SAMESITE': 'Strict',
 
 }
 
@@ -78,7 +85,10 @@ CHANNEL_LAYERS = {
     },
 }
 
+CORS_ALLOW_CREDENTIALS = True
+
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -89,6 +99,9 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'smart_parking.urls'
+
+
+
 
 TEMPLATES = [
     {
@@ -173,12 +186,12 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
    
 ]
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-          'users.authentication.CookieJWTAuthentification',
+          'users.authentification.CookieJWTAuthentification',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
@@ -196,3 +209,16 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG',
+    },
+}

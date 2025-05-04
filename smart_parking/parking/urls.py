@@ -3,15 +3,15 @@ from . import views
 import os
 from django.conf import settings
 from django.conf.urls.static import static
-
-
+from django.urls import include
 
 
 urlpatterns = [
-    path('api/pickupSpot/', views.pick_up_spot_api, name='PickUpSpot'),
-    path('api/saveSpotCoordinates/', views.save_spot_coordinates_api, name='SaveSpotCoordinates'),
-    path('api/video/', views.stream_page, name='video-stream'),
-    path('api/floors/', views.get_available_floors, name='get_available_floors'),
+    path('pickupSpot/', views.pick_up_spot_api, name='PickUpSpot'),
+    path('saveSpotCoordinates/', views.save_spot_coordinates_api, name='SaveSpotCoordinates'),
+    path('video/', views.stream_page, name='video-stream'),
+    path('areas/', views.get_available_areas, name='get_available_areas'),
+    path('camera/' , include('camera.urls')),
 ]
 
 if settings.DEBUG:

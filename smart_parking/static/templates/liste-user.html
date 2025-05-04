@@ -6,9 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User List</title>
    
-    <script  src="{% static 'js/dashboardAPI.js' %}" ></script>
+    <script type="module"  src="{% static 'js/dashboardAPI.js' %}" ></script>
 </head>
 <body>
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
     <h1>User List</h1>
     <table border="1">
         <thead>

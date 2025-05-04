@@ -2,49 +2,82 @@
 
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smart Parking - Multi-étages</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 20px;
-      background-color: #f0f0f0;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Parking - Multi-étages</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f0f0f0;
+      }
 
-    .floor-section {
-      border: 1px solid #ccc;
-      margin-bottom: 20px;
-      padding: 20px;
-      background-color: #fff;
-    }
+      .area-section {
+        border: 1px solid #ccc;
+        margin-bottom: 20px;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 12px;
+      }
 
-    .floor-title {
-      font-size: 24px;
-      font-weight: bold;
-    }
+      .area-title {
+        font-size: 24px;
+        font-weight: bold;
+      }
 
-    .floor-video {
-      width: 100%;
-      max-width: 600px;
-      display: block;
-      margin-top: 10px;
-    }
+      .area-video {
+        width: 100%;
+        max-width: 600px;
+        display: block;
+        margin-top: 10px;
+        margin-bottom: 15px;
+        border-radius: 8px;
+        object-fit: cover;
+      }
 
-    .spot-info {
-      margin-top: 10px;
-      color: green;
-      font-size: 16px;
-    }
-  </style>
-  <script type="module" src="{% static 'js/videoStream.js' %}" defer></script>
-</head>
-<body>
+      .spot-info {
+        margin-top: 10px;
+        color: green;
+        font-size: 16px;
+      }
 
-  <h1>Smart Parking - Surveillance Multi-étages</h1>
-  <div id="floors-container"></div>
+      .spots-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 15px;
+      }
 
-</body>
+      .spot {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: bold;
+        border-radius: 8px;
+        color: white;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      }
+
+      .spot-empty {
+        background-color: green;
+      }
+
+      .spot-occupied {
+        background-color: red;
+      }
+    </style>
+
+    <script type="module"  src="{% static 'js/videoStream.js' %}" ></script>
+  </head>
+
+  <body>
+    <h1>Smart Parking - Surveillance</h1>
+
+    <div id="areas-container"></div>
+  </body>
 </html>

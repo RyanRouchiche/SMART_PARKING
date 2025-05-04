@@ -38,6 +38,7 @@ secrets.json
 # static media files
 smart_parking/static/cropped_spots/
 media/
+staticfiles/
 
 
 # files created by test tools
@@ -51,10 +52,16 @@ smart_parking/parking/Data/
 smart_parking/parking/cropped_spots/
 smart_parking/cropped_spots/
 
-smart_parking/parking/model/clean_car_classifier.keras
+smart_parking/model/fromover/
+smart_parking/model/model_scripts/
+smart_parking/model/model_scripts/Weights/
+smart_parking/model/model_scripts/image_path.txt
+smart_parking/model/model_scripts/points.json
+weights/
 
+smart_parking/parking/model/car_classifier_2.keras
 
-
+*.keras
 .env
 # virual environnement
 parking_env/
