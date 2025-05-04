@@ -63,7 +63,7 @@ weights/
 
 smart_parking/parking/model/car_classifier_2.keras
 
-
+*.keras
 .env
 # virual environnement
 parking_env/
