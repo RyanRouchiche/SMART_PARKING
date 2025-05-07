@@ -12,6 +12,8 @@ urlpatterns = [
     path('video/', views.stream_page, name='video-stream'),
     path('areas/', views.get_available_areas, name='get_available_areas'),
     path('camera/' , include('camera.urls')),
+
+      
 ]
 
 if settings.DEBUG:

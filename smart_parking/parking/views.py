@@ -134,3 +134,4 @@ def get_available_areas(request):
 @permission_classes([IsAuthenticated])
 def stream_page(request):
     return render(request, 'video_feed.html')
+

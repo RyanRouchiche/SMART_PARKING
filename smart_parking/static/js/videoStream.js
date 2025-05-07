@@ -1,57 +1,83 @@
-import { scheduleStaticTokenRefresh } from "./utils.js";
+let swiper;
+import {scheduleStaticTokenRefresh} from './utils.js';
 
+document.addEventListener("DOMContentLoaded", async () => {
+  scheduleStaticTokenRefresh();
+  const res = await fetch("/parking/areas/");
+  const areas = await res.json();
 
-async  function fetchAreas() {
-    const res = await fetch('/parking/areas/');
-    const areas = await res.json(); 
+  const areaList = document.getElementById("area-list");
+  const swiperWrapper = document.getElementById("swiper-wrapper");
 
-    const container = document.getElementById('areas-container');
-    container.innerHTML = "";  
+  areas.forEach((areaId, index) => {
+    const li = document.createElement("li");
+    li.textContent = `Area ${areaId}`;
+    li.dataset.index = index;
+    if (index === 0) li.classList.add("active");
 
-    areas.forEach(area => {
-     
-        const areaDiv = document.createElement('div');
-        areaDiv.classList.add('area-section');
-        areaDiv.innerHTML = `
-            <h3>Étage ${area} - Places Disponibles: <span id="count-${area}">0</span></h3>
-            <img id="video-${area}" class="area-video" src="" />
-            <div id="spot-info-${area}" class="spot-info">Chargement des places...</div>
-        `;
-        container.appendChild(areaDiv);
-
-
-        const wschema = window.location.protocol === "https:" ? "wss" : "ws";
-
-        
-        const socket = new WebSocket(`${wschema}://${window.location.host}/ws/video/${area}/`);
-
-        socket.onmessage = function (event) {
-            const data = JSON.parse(event.data);
-            if (data.video_frame) {
-                document.getElementById(`video-${area}`).src = "data:image/jpeg;base64," + data.video_frame;
-            }
-            if (data.available_spots !== undefined) {
-                document.getElementById(`count-${area}`).innerText = data.available_spots;
-            }
-            if (data.spot_details) {
-                let spotInfo = "Détails des places :<br>";
-                data.spot_details.forEach((spot, index) => {
-                    spotInfo += `Place ${spot.spot}: ${spot.status} <br>`;
-                    console.log(`Place ${spot.spot}: ${spot.status}`); // Log the spot status
-                });
-                document.getElementById(`spot-info-${area}`).innerHTML = spotInfo;
-            }
-        };
-
-        socket.onopen = () => console.log(`Connected to area ${area}`);
-        socket.onclose = () => console.log(`Disconnected from area ${area}`);
+    li.addEventListener("click", () => {
+      swiper.slideTo(index);
     });
-}
 
+    areaList.appendChild(li);
 
-document.addEventListener("DOMContentLoaded", async  () => {
-    scheduleStaticTokenRefresh(); 
-    await fetchAreas();
-    
+    const slide = document.createElement("div");
+    slide.classList.add("swiper-slide");
+    slide.id = `slide-${areaId}`;
+
+    const title = document.createElement("div");
+    title.classList.add("area-title");
+    title.textContent = `Area ${areaId}`;
+    slide.appendChild(title);
+
+    const spotLabel = document.createElement("div");
+    spotLabel.classList.add("available-spots");
+    spotLabel.id = `available-${areaId}`;
+    spotLabel.textContent = "Spots disponibles: ?";
+    slide.appendChild(spotLabel);
+
+    const grid = document.createElement("div");
+    grid.classList.add("slot-grid");
+    grid.id = `slot-grid-${areaId}`;
+    slide.appendChild(grid);
+
+    swiperWrapper.appendChild(slide);
+
+    const wschema = window.location.protocol === "https:" ? "wss" : "ws";
+    const socket = new WebSocket(`${wschema}://${window.location.host}/ws/video/${areaId}/`);
+
+    socket.onmessage = function (event) {
+      const data = JSON.parse(event.data);
+
+      const availableLabel = document.getElementById(`available-${data.area}`);
+      if (availableLabel) {
+        availableLabel.textContent = `Spots disponibles: ${data.available_spots}`;
+      }
+
+      const slotGrid = document.getElementById(`slot-grid-${data.area}`);
+      slotGrid.innerHTML = "";
+      data.spot_details.forEach((spot) => {
+        const slotDiv = document.createElement("div");
+        slotDiv.classList.add("slot");
+        slotDiv.textContent = spot.spot;
+        if (spot.status === "occupied") {
+          slotDiv.classList.add("red");
+        }
+        slotGrid.appendChild(slotDiv);
+      });
+    };
+  });
+
+  swiper = new Swiper(".swiper", {
+    direction: "horizontal",
+    loop: false,
+    on: {
+      slideChange: () => {
+        const items = document.querySelectorAll("#area-list li");
+        items.forEach((el) => el.classList.remove("active"));
+        const active = items[swiper.activeIndex];
+        if (active) active.classList.add("active");
+      }
+    }
+  });
 });
-
