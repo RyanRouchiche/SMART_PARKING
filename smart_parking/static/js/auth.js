@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded' , function() {
 
     //part handles login form submission
 
-    if (window.location.pathname === "/auth/login/") {
+  
         const loginform = document.getElementById("login-form");
         if (loginform) {
             console.log("Login form found");
@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded' , function() {
                 }
             });
         }
-    }
+    
 
     //part handles registration form submission
 
