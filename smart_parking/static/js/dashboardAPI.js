@@ -107,6 +107,15 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
 
+    const dvabtn = document.getElementById("DVAbtn");
+    if (dvabtn) {
+      console.log("DVA button found");
+      dvabtn.addEventListener("click", function () {
+        window.location.href = "/parking/video/";
+      });
+    }
+
+
     //redirect the admin to conigure parking spot
 
     const markupspotButton = document.getElementById("markSpot");
