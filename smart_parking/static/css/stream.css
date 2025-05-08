@@ -1,3 +1,4 @@
+/* swiper-css */
 body,
 html {
   width: 100%;
@@ -18,23 +19,79 @@ html {
   height: 100vh;
   width: 100vw;
 }
-
+#open span::before {
+  content: "\003E";
+}
 .sidebar {
-  width: 200px;
-  background-color: #1f1f1f;
+  position: sticky;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 15vw;
+  background: #121212;
   color: white;
   padding: 20px;
   overflow-y: auto;
+  transition: all ease 0.5s;
+}
+/* Only style the #open button inside .sidebar */
+.sidebar #open {
+  position: absolute;
+  top: 45%;
+  right: 10px;
+  transform: translateY(-50%) rotate(180deg);
+  height: 25px;
+  width: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  font-size: 22px;
+  background: white;
+  color: black; /* fallback if text-fill doesn't work */
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  outline: none;
+  border: none; /* Ensure no border */
+  cursor: pointer;
+  z-index: 10;
+  transition: transform 0.7s ease-in-out;
+}
+
+/* Make sure Logout button remains unaffected */
+.navbar__btn .button {
+  background: #f77062;
+  color: #fff;
+  border-radius: 4px;
+}
+
+.sidebar.close {
+  width: 7px;
+}
+.sidebar.close h2 {
+  opacity: 0;
+}
+.sidebar.close ul {
+  opacity: 0;
+}
+.sidebar.close li {
+  opacity: 0;
+}
+.sidebar.close #open {
+  transform: translateY(-50%) rotate(360deg);
 }
 
 .sidebar h2 {
   font-size: 18px;
   margin-bottom: 10px;
+  white-space: nowrap;
+  transition: all ease 0.4zs;
 }
 
 .sidebar ul {
   list-style: none;
   padding: 0;
+  transition: all ease 0.3s;
 }
 
 .sidebar li {
@@ -44,6 +101,8 @@ html {
   cursor: pointer;
   border-radius: 5px;
   text-align: center;
+  white-space: nowrap;
+  transition: all ease 0.3s;
 }
 
 .sidebar li.active {
@@ -52,14 +111,8 @@ html {
 
 .swiper {
   flex: 1;
-  background: #121212;
+  background: #131313;
   color: white;
-}
-
-.swiper-slide {
-  display: flex;
-  flex-direction: column;
-  padding: 40px;
 }
 
 .area-title {
@@ -92,7 +145,7 @@ html {
 
 .swiper {
   flex: 1;
-  background: #121212;
+  background: #131313;
   color: white;
   height: 100%;
 }
@@ -109,6 +162,7 @@ html {
   box-sizing: border-box;
 }
 
+/* parking-slots css */
 .parking-container {
   width: 100%;
   height: 100%;
@@ -133,17 +187,204 @@ html {
   height: 20%;
   border-right: 2px solid rgb(24, 20, 20);
   border-left: 2px solid rgb(24, 20, 20);
-  background: rgb(0, 0, 120);
+  background: rgb(27, 118, 19);
   display: flex;
   justify-content: center;
   align-items: center;
   font-size: 14px;
   color: rgb(240, 240, 236);
 }
+
+/* car-img-css */
 .new-car-origin {
   position: absolute;
   z-index: 10;
   bottom: 0;
   left: 70%;
   transform: translateX(-50%) rotate(0deg);
+}
+
+/* navbar-section */
+.navbar {
+  background: #131313;
+  height: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.2rem;
+  position: sticky;
+  top: 0;
+  z-index: 999;
+}
+
+.navbar__container {
+  display: flex;
+  justify-content: space-between;
+  height: 80px;
+  z-index: 1;
+  width: 100%;
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 0 50px;
+}
+
+#navbar__logo {
+  background-image: linear-gradient(to top, #ff0844 0%, #ffb199 100%);
+  background-size: 100%;
+  -webkit-background-clip: text;
+  -moz-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  -moz-text-fill-color: transparent;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 2rem;
+}
+
+.navbar__menu {
+  display: flex;
+  align-items: center;
+  list-style: none;
+  text-align: center;
+}
+
+.navbar__links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  padding: 0 1rem;
+  cursor: pointer;
+  white-space: nowrap;
+  color: #fff;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  font-size: 1.2rem;
+}
+
+.navbar__btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 1rem;
+  width: 100%;
+}
+
+.button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-decoration: none;
+  padding: 10px 20px;
+  height: 100%;
+  width: 100%;
+  border: none;
+  outline: none;
+  border-radius: 4px;
+  background: #f77062;
+  color: #fff;
+}
+
+.button:hover {
+  background: #4837ff;
+  transition: all 0.3s ease;
+}
+
+.navbar__links:hover {
+  color: #f77602;
+  transition: all 0.3s ease;
+}
+
+@media screen and (max-width: 960px) {
+  .navbar__container {
+    display: flex;
+    justify-content: space-between;
+    height: 80px;
+    z-index: 1;
+    width: 100%;
+    max-width: 1300px;
+    padding: 0;
+  }
+
+  .navbar__menu {
+    display: grid;
+    grid-template-columns: auto;
+    margin: 0;
+    width: 100%;
+    position: absolute;
+    top: -1000px;
+    opacity: 0;
+    transition: all 0.5s ease;
+    height: 50vh;
+    z-index: -1;
+    background: #131313;
+  }
+
+  .navbar__menu.active {
+    background: #131313;
+    top: 100%;
+    opacity: 1;
+    transition: all 0.5s ease;
+    z-index: 99;
+    height: 50vh;
+    font-size: 1.6rem;
+  }
+
+  #navbar__logo {
+    padding-left: 25px;
+  }
+
+  .navbar__toggle .bar {
+    display: block;
+    cursor: pointer;
+    width: 25px;
+    height: 3px;
+    margin: 5px auto;
+    transition: all 0.3s ease-in-out;
+    background: #fff;
+  }
+
+  .navbar__item {
+    width: 100%;
+  }
+
+  .navbar__links {
+    text-align: center;
+    padding: 2rem;
+    width: 100%;
+    display: table;
+  }
+
+  #mobile-menu {
+    position: absolute;
+    top: 20%;
+    right: 5%;
+    transform: translate(5%, 20%);
+  }
+
+  .navbar__btn {
+    padding-bottom: 2rem;
+  }
+
+  .button {
+    display: flex;
+    justify-content: center;
+    align-self: center;
+    width: 80%;
+    height: 80px;
+    margin: 0;
+  }
+
+  #mobile-menu.is-active .bar:nth-child(2) {
+    opacity: 0;
+  }
+
+  #mobile-menu.is-active .bar:nth-child(1) {
+    transform: translateY(8px) rotate(45deg);
+  }
+  #mobile-menu.is-active .bar:nth-child(3) {
+    transform: translateY(-8px) rotate(-45deg);
+  }
 }

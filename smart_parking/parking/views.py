@@ -13,6 +13,7 @@ from .serializers import AreaSerializer
 import json
 from django.http import JsonResponse
 from users.permission import IsAdmin
+from rest_framework.views import APIView
 
 
 @api_view(['GET'])
@@ -131,7 +132,9 @@ def get_available_areas(request):
         return JsonResponse({'error': f'Failed to load coordinates file: {e}'}, status=500)
 
 
-@permission_classes([IsAuthenticated])
-def stream_page(request):
-    return render(request, 'video_feed.html')
+class stream_page(APIView) : 
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs) : 
+        return render(request, 'video_feed.html')
 
