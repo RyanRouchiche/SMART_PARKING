@@ -1,104 +1,149 @@
-body, html {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    overflow: hidden;
-    font-family: Arial, sans-serif;
-  }
-  
-  .layout {
-    display: flex;
-    height: 100vh;
-    width: 100vw;
-  }
-  
-  .sidebar {
-    width: 200px;
-    background-color: #1f1f1f;
-    color: white;
-    padding: 20px;
-    overflow-y: auto;
-  }
-  
-  .sidebar h2 {
-    font-size: 18px;
-    margin-bottom: 10px;
-  }
-  
-  .sidebar ul {
-    list-style: none;
-    padding: 0;
-  }
-  
-  .sidebar li {
-    padding: 10px;
-    margin: 5px 0;
-    background-color: #333;
-    cursor: pointer;
-    border-radius: 5px;
-    text-align: center;
-  }
-  
-  .sidebar li.active {
-    background-color: #4caf50;
-  }
-  
-  .swiper {
-    flex: 1;
-    background: #121212;
-    color: white;
-  }
-  
-  .swiper-slide {
-    display: flex;
-    flex-direction: column;
-    padding: 40px;
-  }
-  
-  .area-title {
-    font-size: 24px;
-    margin-bottom: 10px;
-  }
-  
-  .available-spots {
-    margin-bottom: 20px;
-    font-weight: bold;
-  }
-  
-  .slot-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-    gap: 10px;
-  }
-  
-  .slot {
-    padding: 10px;
-    background-color: green;
-    text-align: center;
-    color: white;
-    border-radius: 5px;
-  }
-  
-  .slot.red {
-    background-color: red;
-  }
-  
-  .swiper {
-    flex: 1;
-    background: #121212;
-    color: white;
-    height: 100%;
-  }
-  
-  .swiper-wrapper {
-    display: flex;
-  }
-  
-  .swiper-slide {
-    display: flex;
-    flex-direction: column;
-    padding: 40px;
-    width: 100%;
-    box-sizing: border-box;
-  }
-  
+body,
+html {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  background: rgb(24, 20, 20);
+  background-size: cover;
+  background-repeat: no-repeat;
+  overflow: hidden;
+  font-family: "Roboto";
+}
+
+.layout {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+}
+
+.sidebar {
+  width: 200px;
+  background-color: #1f1f1f;
+  color: white;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.sidebar h2 {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar li {
+  padding: 10px;
+  margin: 5px 0;
+  background-color: #333;
+  cursor: pointer;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.sidebar li.active {
+  background-color: #4caf50;
+}
+
+.swiper {
+  flex: 1;
+  background: #121212;
+  color: white;
+}
+
+.swiper-slide {
+  display: flex;
+  flex-direction: column;
+  padding: 40px;
+}
+
+.area-title {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.available-spots {
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+
+.slot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 10px;
+}
+
+.slot {
+  padding: 10px;
+  background-color: green;
+  text-align: center;
+  color: white;
+  border-radius: 5px;
+}
+
+.slot.red {
+  background-color: red;
+}
+
+.swiper {
+  flex: 1;
+  background: #121212;
+  color: white;
+  height: 100%;
+}
+
+.swiper-wrapper {
+  display: flex;
+}
+
+.swiper-slide {
+  display: flex;
+  flex-direction: column;
+  padding: 40px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.parking-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  position: relative;
+  margin-left: 0px;
+  padding-top: 50px;
+}
+
+.parking-slots-holder {
+  width: 20%;
+  height: 80%;
+  display: flex;
+  flex-direction: column;
+}
+
+.parking-slot {
+  width: 100%;
+  height: 20%;
+  border-right: 2px solid rgb(24, 20, 20);
+  border-left: 2px solid rgb(24, 20, 20);
+  background: rgb(0, 0, 120);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
+  color: rgb(240, 240, 236);
+}
+.new-car-origin {
+  position: absolute;
+  z-index: 10;
+  bottom: 0;
+  left: 70%;
+  transform: translateX(-50%) rotate(0deg);
+}

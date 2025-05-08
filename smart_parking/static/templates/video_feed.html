@@ -1,27 +1,32 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Parking</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <head>
+    <meta charset="UTF-8" />
+    <title>Parking</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <link rel="stylesheet" href="{% static 'css/stream.css' %}" />
-  <link rel="stylesheet" href="{% static 'css/swiper/swiper-bundle.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/stream.css' %}" />
+    <link
+      rel="stylesheet"
+      href="{% static 'css/swiper/swiper-bundle.min.css' %}"
+    />
 
-  <script defer src="{% static 'css/swiper/swiper-bundle.min.js' %}"></script>
-</head>
-<body>
-  <div class="layout">
-    <div class="sidebar">
-      <h2>Areas</h2>
-      <ul id="area-list"></ul>
+    <script defer src="{% static 'css/swiper/swiper-bundle.min.js' %}"></script>
+  </head>
+  <body>
+    <div class="layout">
+      <div class="sidebar">
+        <h2>Areas</h2>
+        <ul id="area-list"></ul>
+      </div>
+      <div class="swiper">
+        <div class="swiper-wrapper" id="swiper-wrapper"></div>
+      </div>
     </div>
-    <div class="swiper">
-      <div class="swiper-wrapper" id="swiper-wrapper"></div>
-    </div>
-  </div>
-
-  <script type="module" src="{% static 'js/videoStream.js' %}"></script>
-</body>
+    <script>
+      window.CAR_IMAGE_URL = "{% static 'images/car.png' %}";
+    </script>
+    <script type="module" src="{% static 'js/videoStream.js' %}"></script>
+  </body>
 </html>

@@ -1,9 +1,15 @@
 let websocket;
-import { scheduleStaticTokenRefresh , sendrequest  , initwebsocketconn  } from "./utils.js";
+import {
+  scheduleStaticTokenRefresh,
+  sendrequest,
+  initwebsocketconn,
+} from "./utils.js";
 
 async function deleteUser(userId) {
   if (confirm("Are you sure you want to delete this user?")) {
-    const csrftoken = document.querySelector('input[name="csrfmiddlewaretoken"]').value
+    const csrftoken = document.querySelector(
+      'input[name="csrfmiddlewaretoken"]'
+    ).value;
 
     try {
       const response = await fetch(`/dashboard/users/${userId}/delete/`, {
@@ -11,7 +17,6 @@ async function deleteUser(userId) {
         credentials: "include",
 
         headers: {
- 
           "X-CSRFToken": csrftoken,
           "Content-Type": "application/json",
         },
@@ -48,7 +53,6 @@ async function loaddashboard() {
   document.getElementById("email").innerText = data.user.email;
   document.getElementById("role").innerText = data.user.role;
   document.getElementById("user-id").innerText = data.user.id;
-
 }
 
 function populateUserTable(users) {
@@ -77,12 +81,29 @@ function populateUserTable(users) {
 }
 
 document.addEventListener("DOMContentLoaded", async function () {
+  const menu = document.querySelector("#mobile-menu");
+  const menuLinks = document.querySelector(".navbar__menu");
+
+  menu.addEventListener("click", function () {
+    menu.classList.toggle("is-active");
+    menuLinks.classList.toggle("active");
+  });
+
+  // loading images to services
+  document.querySelectorAll(".services__card").forEach((card) => {
+    const imageUrl = card.getAttribute("data-bg");
+    card.style.backgroundImage = `linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0) 0%,
+        rgba(17, 17, 17, 0.6) 100%
+      ), url('${imageUrl}')`;
+  });
   scheduleStaticTokenRefresh();
 
   //init websocket  connection
   //which protocole using
   const wsschema = window.location.protocol === "https:" ? "wss" : "ws";
-   websocket = initwebsocketconn(wsschema);
+  websocket = initwebsocketconn(wsschema);
   console.log("WebSocket URL:", websocket.url);
 
   websocket.onopen = function () {
@@ -96,7 +117,6 @@ document.addEventListener("DOMContentLoaded", async function () {
   loaddashboard();
 
   if (window.location.pathname === "/dashboard/") {
-
     //redirect the admin to create guest account
     const guestcreateButton = document.getElementById("guest");
     if (guestcreateButton) {
@@ -105,7 +125,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         window.location.href = "/dashboard/create-guest/";
       });
     }
-
 
     const dvabtn = document.getElementById("DVA");
     if (dvabtn) {
@@ -116,7 +135,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     } else {
       console.error("DVA button not found!");
     }
-
 
     //redirect the admin to conigure parking spot
 
@@ -130,9 +148,9 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     //logout button
     const logoutbutton = document.getElementById("logout-btn");
-    if(logoutbutton) {
+    if (logoutbutton) {
       console.log("Logout button found!");
-      logoutbutton.addEventListener('click' , async ()=> {
+      logoutbutton.addEventListener("click", async () => {
         const data = await sendrequest("/auth/logout/", "POST");
         if (data.success) {
           alert(data.message);
@@ -140,7 +158,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         } else {
           alert("Logout failed: " + data.error);
         }
-      })
+      });
     }
 
     //user list button
@@ -175,24 +193,21 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
   }
 
-
   if (window.location.pathname === "/dashboard/users/users-list/") {
-    const data= await sendrequest("/dashboard/users/users-list/", "POST")
+    const data = await sendrequest("/dashboard/users/users-list/", "POST");
     populateUserTable(data.users);
     document.querySelectorAll(".delete-user-btn").forEach((button) => {
-      button.addEventListener("click", async  (e) =>{
+      button.addEventListener("click", async (e) => {
         const userId = e.target.getAttribute("data-user-id");
         deleteUser(userId);
       });
     });
   }
-
 });
 
 window.addEventListener("beforeunload", async () => {
   if (websocket && websocket.readyState === WebSocket.OPEN) {
     websocket.close();
     // await sendrequest("/auth/logout/", "POST");
-
   }
 });

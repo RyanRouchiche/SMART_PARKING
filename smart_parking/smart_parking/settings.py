@@ -37,7 +37,7 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost' , '172.27.72.167']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost' , '172.25.90.121']
 
 APPEND_SLASH = True
 
@@ -80,7 +80,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("172.27.72.167", 6379)],  
+            "hosts": [("172.25.90.121", 6379)],  
         },
     },
 }
