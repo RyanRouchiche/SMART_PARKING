@@ -189,7 +189,7 @@ function carexit(areaId, slot, areaLength) {
   document.getElementById(
     `slot-${areaId}-` + slot.toString()
   ).style.background = "rgb(27,118,19)";
-  if (slot < areaLength / 2) {
+  if (slot < areaLength / 2 || areaLength < 6) {
     document.getElementById(
       `car-${areaId}-${slot}`
     ).style.animation = `car-exit-top-${areaId}-${slot} 2s both`;
@@ -219,10 +219,13 @@ function generatenewcar(areaId, slot, areaLength) {
   img.style.width = ((w * 0.14) / window.innerWidth) * 100 + "vw";
   const anim = document.createElement("style");
   img.style.right = "0%";
-  const baseFactor = 730;
-  const decrement = 170;
+  let baseFactor = 777;
+  let decrement = 91;
+
+  // decrement += Math.ceil(areaLength / 2) * 5;
   if (slot < areaLength / 2 || areaLength < 6) {
     // Top-side slots
+
     const adjustedFactor = baseFactor - slot * decrement;
 
     const rule = document.createTextNode(
@@ -238,7 +241,7 @@ function generatenewcar(areaId, slot, areaLength) {
         }
         to {
  transform: rotate(270deg) translate(0px,-${adjustedFactor}%) rotate(90deg) translate(0px,-${
-        h * 0.28
+        h * 0.3
       }px);
         } 
       }`
@@ -281,6 +284,7 @@ function generatenewcar(areaId, slot, areaLength) {
       img.style.position = "relative";
       img.style.transform = `rotate(0deg)`;
       img.style.animation = "";
+      img.style.transform = "translateY(-10%)";
 
       window.addEventListener("resize", () => {
         img.style.width = ((w * 0.15) / window.innerWidth) * 100 + "vw";
@@ -288,7 +292,8 @@ function generatenewcar(areaId, slot, areaLength) {
     });
   } else {
     // Bottom-side slots
-    const adjustedFactor = baseFactor - (slot - areaLength / 2) * decrement;
+    const adjustedFactor =
+      baseFactor - (slot - Math.ceil(areaLength / 2)) * decrement;
     const rule = document.createTextNode(
       `@-webkit-keyframes car-park-${areaId}-${slot} {
         from { 
@@ -342,12 +347,11 @@ function generatenewcar(areaId, slot, areaLength) {
       }
 
       img.style.position = "relative";
-      img.style.transform = "rotate(180deg)";
+      img.style.transform = "rotate(180deg) translateY(15%)";
       img.style.animation = "";
-
       // Only adjust the width on resize, not position
       window.addEventListener("resize", () => {
-        img.style.width = ((w * 0.2) / window.innerWidth) * 100 + "vw";
+        img.style.width = ((w * 0.15) / window.innerWidth) * 100 + "vw";
       });
     });
 
