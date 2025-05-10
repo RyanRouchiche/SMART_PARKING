@@ -1,30 +1,12 @@
 console.log("JS chargé");
-import { scheduleStaticTokenRefresh , sendrequest  , postrequest  } from "./utils.js";
-
-
-
-function addCameraForm() {
-  const formContainer = document.getElementById("formContainer");
-
-  const formDiv = document.createElement("div");
-  formDiv.className = "camera-form";
-
-  formDiv.innerHTML = `
-      <label>Zone (area):</label>
-      <input type="text" name="area" placeholder="Ex: Zone B">
-      <label>Référence (ref):</label>
-      <input type="text" name="ref" placeholder="Ex: CAM02">
-      <label>Chemin RTSP/HTTP (path):</label>
-      <input type="text" name="path" placeholder="Ex: rtsp://...">
-    `;
-
-  formContainer.appendChild(formDiv);
-}
+import {
+  scheduleStaticTokenRefresh,
+  sendrequest,
+  postrequest,
+} from "./utils.js";
 
 function sendCamData() {
-  const formContainer = document.getElementById("formContainer");
-  const forms = formContainer.getElementsByClassName("camera-form");
-
+  const forms = document.getElementsByClassName("camera-form");
   const data = [];
 
   for (let form of forms) {
@@ -39,9 +21,9 @@ function sendCamData() {
 
     data.push({ area, ref, path });
   }
+
   return data;
 }
-
 
 function loadcameras(cameras) {
   const tbody = document.querySelector("#cameraTable tbody");
@@ -71,25 +53,12 @@ function loadcameras(cameras) {
   });
 }
 
-
-
-
-
 document.addEventListener("DOMContentLoaded", async function (e) {
   scheduleStaticTokenRefresh();
   e.preventDefault();
   console.log("Document loaded. Setting up event listeners.");
-  
 
   if (window.location.pathname === "/camera/config/") {
-    const addCameraButton = document.getElementById("addcam");
-    if (addCameraButton) {
-      console.log("Add camera button found.");
-      addCameraButton.addEventListener("click", function () {
-        addCameraForm();
-      });
-    }
-
     const validateButton = document.getElementById("validatecam");
     if (validateButton) {
       console.log("Validate button found.");
@@ -110,9 +79,9 @@ document.addEventListener("DOMContentLoaded", async function (e) {
   if (window.location.pathname === "/camera/list-cameras/") {
     console.log("calling the fetch request...");
     const res = await sendrequest("/camera/list-cameras/", "POST");
-    if (res && res.cameras) {
+    if (res?.data?.success && Array.isArray(res.data.cameras)) {
       console.log("Cameras loaded successfully.");
-      const cams = res.cameras;
+      const cams = res.data.cameras;
       console.log(cams);
       loadcameras(cams);
     } else {
@@ -126,10 +95,9 @@ async function deleteCamera(cameraId) {
     return;
   }
   const response = await sendrequest(`/camera/delete/${cameraId}/`, "DELETE");
-  if (response && response.ok) {
+  if (response.data) {
     alert("Camera deleted successfully!");
     window.location.href = "/dashboard/";
-   
   } else {
     alert("Error deleting camera.");
   }

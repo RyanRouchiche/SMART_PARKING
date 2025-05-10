@@ -41,7 +41,8 @@ class ConfigViewAPI(APIView):
             return Response({
                 "success": True,
                 "message": "Cameras saved successfully",
-                "data": serialized_data
+                "data": serialized_data , 
+                "status" : 200
             }, status=201)
         else:
             return Response({
@@ -60,16 +61,21 @@ class CameraListAPI(APIView):
         cameras = Camera.objects.all()
         serializer = CameraSerializer(cameras , many=True)
         
-        return Response({"success" : True,"message" : "cam list", "cameras" : serializer.data}, status=200)
+        return Response({"success" : True,"message" : "cam list", "cameras" : serializer.data  , 'status' : 200}, status=200)
 
 
     
 class CameraDeleteViewAPI(APIView):
     permission_classes = [IsAuthenticated , IsAdmin]
-    def delete(self, request , *args, **kwargs):
-        camera = Camera.objects.get(id=UUID(uuid))
+    def delete(self, request , uuid  , *args, **kwargs):
+        logger.info("user :  %s " , request.user)
+    
+        if request.user.user_type != 'admin':
+            return Response({'success': False, 'error': 'You do not have permission to delete users'}, status=403)
+        
+        camera = Camera.objects.get(id=uuid)
         
         if camera is None:
             return Response({"success" : False,"message" : "cam not found"}, status=404)
         camera.delete()
-        return Response({"success" : True,"message" : "cam deleted"}, status=200)
+        return Response({"success" : True,"message" : "cam deleted" , "status" : 200}, status=200)

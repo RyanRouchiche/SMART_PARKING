@@ -1,51 +1,113 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Ajouter des Caméras</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        padding: 20px;
-      }
-      .camera-form {
-        border: 1px solid #ccc;
-        padding: 10px;
-        margin-bottom: 10px;
-        border-radius: 8px;
-      }
-      .camera-form input {
-        display: block;
-        margin: 5px 0;
-        width: 100%;
-        padding: 6px;
-      }
-      button {
-        margin: 10px 5px;
-        padding: 8px 16px;
-      }
-    </style>
-   <script type="module" src="{% static 'js/camera.js' %}"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Canera</title>
+    <link rel="stylesheet" href="{% static 'css/camera.css' %}" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Kumbh+Sans:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="{% static 'css/swiper/swiper-bundle.min.css' %}"
+    />
+
+    <script defer src="{% static 'css/swiper/swiper-bundle.min.js' %}"></script>
+    <script type="module" src="{% static 'js/camera.js' %}"></script>
+    <script src="{% static 'js/cameraconfig.js' %}"></script>
   </head>
   <body>
-    <h2>Ajouter des cams</h2>
-    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-
-    <div id="formContainer">
-      <div class="camera-form">
-        <label>Zone (area):</label>
-        <input type="text" name="area" placeholder="Ex: Zone A" />
-        <label>Référence (ref):</label>
-        <input type="text" name="ref" placeholder="Ex: CAM01" />
-        <label>Chemin RTSP/HTTP (path):</label>
-        <input type="text" name="path" placeholder="Ex: rtsp://..." />
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
+    <!-- navbar section -->
+    <nav class="navbar">
+      <div class="navbar__container">
+        <a href="/" id="navbar__logo">PARKING</a>
+        <div class="navbar__toggle" id="mobile-menu">
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+        </div>
+        <ul class="navbar__menu">
+          <li class="navbar__item">
+            <button class="navbar__links" id="user-list-button">
+              list users
+            </button>
+          </li>
+          <li class="navbar__item">
+            <button class="navbar__links" id="DVA">DVA</button>
+          </li>
+          <li class="navbar__item">
+            <button class="navbar__links" id="markSpot">mark spot</button>
+          </li>
+          <li class="navbar__item">
+            <button class="navbar__links" id="cameraconfig">
+              camera configuration
+            </button>
+          </li>
+          <li class="navbar__item">
+            <button class="navbar__links" id="cameralist">camera list</button>
+          </li>
+          <li class="navbar__btn">
+            <button class="button" id="logout-btn">Logout</button>
+          </li>
+        </ul>
       </div>
+    </nav>
+
+    <div class="swiper">
+      <div class="swiper-wrapper" id="swiper-wrapper">
+        <div class="swiper-slide">
+          <div class="main__content" id="slide-0">
+            <div class="formContainer" id="formContainer">
+              <div class="camera-form">
+                <h1>Camera Adding page</h1>
+                <label>Zone (area):</label>
+                <input type="text" name="area" placeholder="Ex: Zone A" />
+                <label>Référence (ref):</label>
+                <input type="text" name="ref" placeholder="Ex: CAM01" />
+                <label>Chemin RTSP/HTTP (path):</label>
+                <input type="text" name="path" placeholder="Ex: rtsp://..." />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Swiper Navigation Buttons -->
+      <div class="swiper-button-next"></div>
+      <div class="swiper-button-prev"></div>
+      <div class="swiper-pagination"></div>
     </div>
 
-    <button id="addcam" >Ajouter une camera</button>
-    <button id="validatecam">Valider et Envoyer</button>
+    <!-- Button container -->
+    <div class="right-section" id="top_section">
+      <button class="main__btn" id="add-slide-btn">Add</button>
+      <button class="main__btn" id="validatecam">Validate and send</button>
+    </div>
+    <div class="right-section" id="bottom_section">
+      <!-- Dynamic buttons will be added here -->
+    </div>
 
-    
+    <div id="confirmModal" class="modal-overlay">
+      <div class="modal-content">
+        <p>Are you sure you want to delete this slide?</p>
+        <div class="modal-actions">
+          <button
+            id="cancelDeleteBtn"
+            class="main__btn"
+            style="background: gray"
+          >
+            Undo
+          </button>
+          <button id="confirmDeleteBtn" class="main__btn">Yes, Confirm</button>
+        </div>
+      </div>
+    </div>
+    <script>
+      window.CAM_IMAGE_URL = "{% static 'images/cam.png' %}";
+    </script>
   </body>
 </html>

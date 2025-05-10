@@ -172,6 +172,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         items.forEach((el) => el.classList.remove("active"));
         const active = items[swiper.activeIndex];
         if (active) active.classList.add("active");
+        const listItems = document.querySelectorAll("ul li");
+
+        listItems.forEach((li) => {
+          li.classList.remove("active");
+        });
+        listItems.forEach((li) => {
+          if (parseInt(li.dataset.index) === swiper.activeIndex) {
+            li.classList.add("active");
+          }
+        });
       },
     },
   });
