@@ -3,6 +3,7 @@ let swiper, w, h;
 let areaLength;
 const indexToAreaIdMap = {};
 let MaxareaTop = 0;
+const spotNameToIndexMap = {}; // Stores mapping per areaId
 
 //calls
 const areaList = document.getElementById("area-list");
@@ -107,7 +108,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       const slotGrid = document.getElementById(`slot-grid-${data.area}`);
       slotGrid.innerHTML = "";
-      data.spot_details.forEach((spot) => {
+      spotNameToIndexMap[areaId] = {};
+      data.spot_details.forEach((spot, index) => {
+        spotNameToIndexMap[areaId][spot.spot] = index;
+        if (!spotNameToIndexMap[areaId].reverseMap) {
+          spotNameToIndexMap[areaId].reverseMap = {};
+        }
+        spotNameToIndexMap[areaId].reverseMap[index] = spot.spot;
         const slotDiv = document.createElement("div");
         slotDiv.classList.add("slot");
         slotDiv.textContent = spot.spot;
@@ -131,7 +138,8 @@ document.addEventListener("DOMContentLoaded", async () => {
           parking_slots.classList.add("parking-slot");
           parking_slots.id = `slot-${areaId}-${i}`;
           const p = document.createElement("p");
-          p.textContent = `${i + 1}`;
+          const actualSpot = spotNameToIndexMap[areaId].reverseMap[i];
+          p.textContent = actualSpot?.match(/\d+/)?.[0] || `?`;
           parking_slots.appendChild(p);
           // parking_slots.textContent = `${i + 1}`;
           if (i < areaLength / 2 || areaLength < 6) {
@@ -145,8 +153,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       if (data.spot_details) {
         data.spot_details.forEach((spot) => {
-          let number = spot.spot.match(/\d+/)[0] - 1;
-          const slot = parseInt(number);
+          const slot = spotNameToIndexMap[areaId][spot.spot];
+
           const isOccupied = spot.status === "occupied";
           w = document.getElementById(`parkingspace-${areaId}`).offsetWidth;
           h = document.getElementById(`parkingspace-${areaId}`).offsetHeight;
@@ -214,7 +222,8 @@ function carexit(areaId, slot, areaLength) {
     const slott = document.getElementById(`slot-${areaId}-${slot}`);
     const pElement = slott.querySelector("p");
     if (pElement) {
-      pElement.textContent = "" + (slot + 1); // Set the text content of the <p> element to nothing
+      const actualSpot = spotNameToIndexMap[areaId]?.reverseMap?.[slot];
+      p.textContent = actualSpot?.match(/\d+/)?.[0] || `?`;
     }
   });
 }
