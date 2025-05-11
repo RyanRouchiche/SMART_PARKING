@@ -150,21 +150,23 @@ document.addEventListener("DOMContentLoaded", async () => {
           }
         }
       }
-
+      let i = 0;
       if (data.spot_details) {
         data.spot_details.forEach((spot) => {
+          let actualSpot = spotNameToIndexMap[areaId].reverseMap[i];
+          let number = actualSpot?.match(/\d+/)?.[0];
           const slot = spotNameToIndexMap[areaId][spot.spot];
-
+          i++;
           const isOccupied = spot.status === "occupied";
           w = document.getElementById(`parkingspace-${areaId}`).offsetWidth;
           h = document.getElementById(`parkingspace-${areaId}`).offsetHeight;
           if (isOccupied && !document.getElementById(`car-${areaId}-` + slot)) {
-            carenter(areaId, slot, areaLength);
+            carenter(areaId, slot, areaLength, number);
           } else if (
             !isOccupied &&
             document.getElementById(`car-${areaId}-` + slot)
           ) {
-            carexit(areaId, slot, areaLength);
+            carexit(areaId, slot, areaLength, number);
           }
         });
       }
@@ -196,11 +198,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 // Function to handle car exit animation and removal
-function carexit(areaId, slot, areaLength) {
+function carexit(areaId, slot, areaLength, actualSpot) {
   const slott = document.getElementById(`slot-${areaId}-${slot}`);
   const pElement = slott.querySelector("p");
   if (pElement) {
-    pElement.textContent = "" + (slot + 1); // Set the text content of the <p> element to nothing
+    pElement.textContent = actualSpot || `?`;
   }
   document.getElementById(`car-${areaId}-` + slot.toString()).style.position =
     "absolute";
@@ -222,8 +224,7 @@ function carexit(areaId, slot, areaLength) {
     const slott = document.getElementById(`slot-${areaId}-${slot}`);
     const pElement = slott.querySelector("p");
     if (pElement) {
-      const actualSpot = spotNameToIndexMap[areaId]?.reverseMap?.[slot];
-      p.textContent = actualSpot?.match(/\d+/)?.[0] || `?`;
+      pElement.textContent = actualSpot || `?`;
     }
   });
 }
@@ -382,7 +383,7 @@ function generatenewcar(areaId, slot, areaLength) {
 }
 
 // Function to handle car entry animation and creation
-function carenter(areaId, slot, areaLength) {
+function carenter(areaId, slot, areaLength, actualSpot) {
   const carId = `car-${areaId}-${slot}`;
   if (!document.getElementById(carId)) {
     generatenewcar(areaId, slot, areaLength);
@@ -397,6 +398,6 @@ function carenter(areaId, slot, areaLength) {
 
     carElement.style.animation = `car-park-${areaId}-${slot} 2s both`;
   } else {
-    carexit(areaId, slot, areaLength);
+    carexit(areaId, slot, areaLength, actualSpot);
   }
 }
