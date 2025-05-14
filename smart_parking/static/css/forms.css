@@ -117,6 +117,10 @@ body::-webkit-scrollbar-thumb {
   transition: all 0.3s ease;
 }
 
+.navbar__item > button.active {
+  color: #f77602 !important;
+}
+
 .navbar__links:hover {
   color: #f77602;
   transition: all 0.3s ease;
@@ -306,7 +310,7 @@ body::-webkit-scrollbar-thumb {
 }
 
 #guest {
-  margin-bottom: 60px; /* adds space between form and pagination */
+  margin-bottom: 60px;
 }
 
 @media screen and (max-width: 768px) {

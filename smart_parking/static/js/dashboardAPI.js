@@ -66,7 +66,6 @@ function populateUserTable(users) {
   users.forEach((user) => {
     const row = document.createElement("tr");
     row.innerHTML = `
-                <td>${user.id}</td>
                 <td>${user.username}</td>
                 <td>${user.email}</td>
                 <td>${user.first_name}</td>
@@ -90,14 +89,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   });
 
   // loading images to services
-  document.querySelectorAll(".services__card").forEach((card) => {
-    const imageUrl = card.getAttribute("data-bg");
-    card.style.backgroundImage = `linear-gradient(
-        to bottom,
-        rgba(0, 0, 0, 0) 0%,
-        rgba(17, 17, 17, 0.6) 100%
-      ), url('${imageUrl}')`;
-  });
+
   scheduleStaticTokenRefresh();
 
   //init websocket  connection
@@ -116,80 +108,79 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   if (window.location.pathname === "/dashboard/") {
     loaddashboard();
-    //redirect the admin to create guest account
-    // const guestcreateButton = document.getElementById("guest");
-    // if (guestcreateButton) {
-    //   console.log("guest botton found");
-    //   guestcreateButton.addEventListener("click", function () {
-    //     window.location.href = "/dashboard/create-guest/";
-    //   });
-    // }
+    document.querySelectorAll(".services__card").forEach((card) => {
+      const imageUrl = card.getAttribute("data-bg");
+      card.style.backgroundImage = `linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0) 0%,
+        rgba(17, 17, 17, 0.6) 100%
+      ), url('${imageUrl}')`;
+    });
+  }
+  const dvabtn = document.getElementById("DVA");
+  if (dvabtn) {
+    console.log("DVA button found");
+    dvabtn.addEventListener("click", function () {
+      window.location.href = "/parking/video/";
+    });
+  } else {
+    console.error("DVA button not found!");
+  }
 
-    const dvabtn = document.getElementById("DVA");
-    if (dvabtn) {
-      console.log("DVA button found");
-      dvabtn.addEventListener("click", function () {
-        window.location.href = "/parking/video/";
-      });
-    } else {
-      console.error("DVA button not found!");
-    }
+  //redirect the admin to conigure parking spot
 
-    //redirect the admin to conigure parking spot
+  const markupspotButton = document.getElementById("markSpot");
+  if (markupspotButton) {
+    console.log("button markup spot found");
+    markupspotButton.addEventListener("click", function () {
+      window.location.href = "/parking/pickupSpot/";
+    });
+  }
 
-    const markupspotButton = document.getElementById("markSpot");
-    if (markupspotButton) {
-      console.log("button markup spot found");
-      markupspotButton.addEventListener("click", function () {
-        window.location.href = "/parking/pickupSpot/";
-      });
-    }
+  //logout button
+  const logoutbutton = document.getElementById("logout-btn");
+  if (logoutbutton) {
+    console.log("Logout button found!");
+    logoutbutton.addEventListener("click", async () => {
+      const data = await sendrequest("/auth/logout/", "POST");
+      if (data.data.success) {
+        alert(data.data.message);
+        window.location.href = "/auth/login/";
+      } else {
+        alert("Logout failed: " + data.data.error);
+      }
+    });
+  }
 
-    //logout button
-    const logoutbutton = document.getElementById("logout-btn");
-    if (logoutbutton) {
-      console.log("Logout button found!");
-      logoutbutton.addEventListener("click", async () => {
-        const data = await sendrequest("/auth/logout/", "POST");
-        if (data.data.success) {
-          alert(data.data.message);
-          window.location.href = "/auth/login/";
-        } else {
-          alert("Logout failed: " + data.data.error);
-        }
-      });
-    }
+  //user list button
+  // const userlistbutton = document.getElementById("user-list-button");
+  // if (userlistbutton) {
+  //   console.log("User list button found!");
+  //   userlistbutton.addEventListener("click", function () {
+  //     window.location.href = "/dashboard/users/users-list/";
+  //   });
+  // } else {
+  //   console.error("User list button not found!");
+  // }
 
-    //user list button
-    // const userlistbutton = document.getElementById("user-list-button");
-    // if (userlistbutton) {
-    //   console.log("User list button found!");
-    //   userlistbutton.addEventListener("click", function () {
-    //     window.location.href = "/dashboard/users/users-list/";
-    //   });
-    // } else {
-    //   console.error("User list button not found!");
-    // }
+  const cameraButton = document.getElementById("cameraconfig");
+  if (cameraButton) {
+    console.log("Camera button found!");
+    cameraButton.addEventListener("click", function () {
+      window.location.href = "/camera/config/";
+    });
+  } else {
+    console.error("Camera button not found!");
+  }
 
-    const cameraButton = document.getElementById("cameraconfig");
-    if (cameraButton) {
-      console.log("Camera button found!");
-      cameraButton.addEventListener("click", function () {
-        window.location.href = "/camera/config/";
-      });
-    } else {
-      console.error("Camera button not found!");
-    }
-
-    const cameraListButton = document.getElementById("Forms");
-    if (cameraListButton) {
-      console.log("Camera list button found!");
-      cameraListButton.addEventListener("click", function () {
-        window.location.href = "/dashboard/Forms/";
-      });
-    } else {
-      console.error("Camera list button not found!");
-    }
+  const cameraListButton = document.getElementById("Forms");
+  if (cameraListButton) {
+    console.log("Camera list button found!");
+    cameraListButton.addEventListener("click", function () {
+      window.location.href = "/dashboard/Forms/";
+    });
+  } else {
+    console.error("Camera list button not found!");
   }
 
   if (window.location.pathname === "/dashboard/Forms/") {

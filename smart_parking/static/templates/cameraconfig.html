@@ -18,13 +18,14 @@
     <script defer src="{% static 'css/swiper/swiper-bundle.min.js' %}"></script>
     <script type="module" src="{% static 'js/camera.js' %}"></script>
     <script src="{% static 'js/cameraconfig.js' %}"></script>
+    <script type="module" src="{% static 'js/dashboardAPI.js' %}"></script>
   </head>
   <body>
     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
     <!-- navbar section -->
     <nav class="navbar">
       <div class="navbar__container">
-        <a href="/" id="navbar__logo">PARKING</a>
+        <a href="/dashboard/" id="navbar__logo">PARKING</a>
         <div class="navbar__toggle" id="mobile-menu">
           <span class="bar"></span>
           <span class="bar"></span>
@@ -38,7 +39,7 @@
             <button class="navbar__links" id="markSpot">mark spot</button>
           </li>
           <li class="navbar__item">
-            <button class="navbar__links" id="cameraconfig">
+            <button class="navbar__links active" id="cameraconfig">
               camera configuration
             </button>
           </li>

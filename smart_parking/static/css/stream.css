@@ -301,6 +301,10 @@ html {
   transition: all 0.3s ease;
 }
 
+.navbar__item > button.active {
+  color: #f77602 !important;
+}
+
 @media screen and (max-width: 960px) {
   .navbar__container {
     display: flex;
