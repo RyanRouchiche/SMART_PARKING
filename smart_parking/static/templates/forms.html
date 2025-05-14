@@ -1,0 +1,131 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Canera</title>
+    <link rel="stylesheet" href="{% static 'css/forms.css' %}" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Kumbh+Sans:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
+     <link
+      rel="stylesheet"
+      href="{% static 'css/swiper/swiper-bundle.min.css' %}"
+    />
+
+    <script defer src="{% static 'css/swiper/swiper-bundle.min.js' %}"></script>
+    <script type="module" src="{% static 'js/swiper.js' %}"></script>
+    <script type="module" src="{% static 'js/camera.js' %}"></script>
+    <script type="module" src="{% static 'js/auth.js' %}"></script>
+    <script type="module" src="{% static 'js/dashboardAPI.js' %}"></script>
+  <body>
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
+    <!-- navbar section -->
+    <nav class="navbar">
+      <div class="navbar__container">
+        <a href="/" id="navbar__logo">PARKING</a>
+        <div class="navbar__toggle" id="mobile-menu">
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+        </div>
+        <ul class="navbar__menu">
+          <li class="navbar__item">
+            <button  class="navbar__links" id="DVA">DVA</button>
+          </li>
+          <li class="navbar__item">
+            <button  class="navbar__links" id="markSpot">mark spot</button>
+          </li>
+          <li class="navbar__item">
+           <button  class="navbar__links" id="cameraconfig">camera configuration</button>
+          </li>
+          <li class="navbar__item">
+            <button  class="navbar__links" id="Forms">Forms</button>
+          </li>
+          <li class="navbar__btn">
+            <button  class="button" id="logout-btn">Logout</button>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    <div class="swiper">
+      <div class="swiper-wrapper" id="swiper-wrapper">
+        <div class="swiper-slide">
+          <div class="main__content" id="slide-0">
+            <div class="formContainer" id="formContainer-1">
+               <div class="camera-form" id="guest">
+                <h1>Guest Management</h1>
+                  <form id="guest-form">
+                    <label>Username:</label>
+                    <input type="text" id="username" required>
+                    <label>Password:</label>
+                    <input type="password" id="password" required>
+                    <label>Email :</label>
+                    <input type="email" id="email" required>
+                    <label>First Name :</label>
+                    <input type="text" id="first-name" required>
+                    <label>Last Name :</label>
+                    <input type="text" id="last-name" required>
+                    <button type="submit">Register Guest</button>
+                  </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="swiper-slide">
+          <div class="main__content" id="slide-1">
+            <div class="formContainer" id="formContainer-2">
+              <div class="list-form" id="cams">
+                <h2>cams List</h2>
+               <button class="recharge-btn">recharge cams</button>
+                 <table id="cameraTable">
+                   <thead>
+                     <tr>
+                     <td class="hidden-id">${camera.id}</td>
+                     <th>reference</th>
+                     <th>Area RTSP</th>
+                     <th>lien</th>
+                     <th>status</th>
+                     <th>action</th>
+                     </tr>
+                   </thead>
+                   <tbody>
+                   </tbody>
+                  </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="swiper-slide">
+          <div class="main__content" id="slide-02">
+            <div class="formContainer" id="formContainer-3">
+              <div class="list-form" id="users">
+                <h2>Users List</h2>
+                <table id="userTable">
+                  <thead>
+                    <tr>
+                      <th>Username</th>
+                      <th>Email</th>
+                      <th>First Name</th>
+                      <th>Last Name</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="user-table-body">
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Swiper Navigation Buttons -->
+      <div class="swiper-button-next"></div>
+      <div class="swiper-button-prev"></div>
+      <div class="swiper-pagination"></div>
+  </body>
+</html>

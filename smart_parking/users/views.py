@@ -205,6 +205,7 @@ class ActivateUserAPIView(APIView):
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))
             user = User.objects.get(pk=uid)
+            logger.info("user",user) 
         except (TypeError, ValueError, OverflowError, User.DoesNotExist):
             user = None
 
@@ -230,8 +231,6 @@ class RegisterAPIView(APIView):
 
 class GuestViewAPI(APIView) : 
     permission_classes  = [IsAuthenticated , IsAdmin]
-    def get(self, request) : 
-        return render(request, 'guest.html')
     def post(self, request) :
         try : 
             serializer = GuestSerializer(data=request.data ,  context={'request': request})

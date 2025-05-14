@@ -34,7 +34,7 @@ function loadcameras(cameras) {
     cameraRow.className = "camera-item";
 
     cameraRow.innerHTML = `
-              <td>${camera.id}</td>
+              <td style="display: none;">${camera.id}</td>
               <td>${camera.ref}</td>
               <td>${camera.area}</td>
               <td>${camera.path}</td>
@@ -76,7 +76,7 @@ document.addEventListener("DOMContentLoaded", async function (e) {
     }
   }
 
-  if (window.location.pathname === "/camera/list-cameras/") {
+  if (window.location.pathname === "/dashboard/Forms/") {
     console.log("calling the fetch request...");
     const res = await sendrequest("/camera/list-cameras/", "POST");
     if (res?.data?.success && Array.isArray(res.data.cameras)) {

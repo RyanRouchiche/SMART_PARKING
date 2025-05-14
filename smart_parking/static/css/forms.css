@@ -3,27 +3,27 @@ html {
   width: 100%;
   height: 100%;
   margin: 0;
-  overflow-x: hidden; /* Hide horizontal overflow */
-  overflow-y: auto; /* Keep vertical scrolling */
+  overflow-x: hidden;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  position: relative; /* Changed from absolute */
-  background: rgb(24, 20, 20);
+  position: relative;
+  background: #131313;
   font-family: "Roboto";
 }
-/* Scrollbar for WebKit browsers (Chrome, Safari, Edge) */
+
 body::-webkit-scrollbar {
   width: 8px;
 }
 
 body::-webkit-scrollbar-track {
-  background: #1a1a1a; /* Darker track to match theme */
+  background: #1a1a1a;
 }
 
 body::-webkit-scrollbar-thumb {
-  background-color: #f77062; /* Accent color */
+  background-color: #f77062;
   border-radius: 10px;
-  border: 2px solid #1a1a1a; /* Creates a gap effect around thumb */
+  border: 2px solid #1a1a1a;
 }
 .navbar__btn .button {
   background: #f77062;
@@ -237,12 +237,12 @@ body::-webkit-scrollbar-thumb {
 .main__content {
   width: 100%;
   padding: 0 50px;
-  height: 100%; /* Ensure it fills the slide vertically */
+  height: 100%;
 
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center; /* Center horizontally */
+  align-items: center;
   text-align: center;
 }
 
@@ -286,51 +286,29 @@ body::-webkit-scrollbar-thumb {
   outline: none;
 }
 
-.main__btn {
-  font-size: 1rem;
-  background-image: linear-gradient(to right, #f77062 0%, #fe5196 100%);
-  padding: 14px 32px;
+.camera-form button[type="submit"] {
+  display: block;
+  width: 109%;
+  padding: 12px 16px;
+  background: linear-gradient(to right, #ff0844, #f77062);
   border: none;
+  color: white;
+  font-size: 1rem;
+  font-weight: bold;
   border-radius: 4px;
-  color: #fff;
-  margin-top: 1rem;
   cursor: pointer;
-  position: relative;
-  transition: all 0.3s;
-  outline: none;
+  margin-top: 10px;
+  transition: background 0.3s ease;
 }
 
-.main__btn a {
-  position: relative;
-  z-index: 2;
-  color: #fff;
-  text-decoration: none;
-}
-
-.main__btn::after {
-  position: absolute;
-  content: "";
-  top: 0;
-  left: 0;
-  width: 0;
-  height: 100%;
+.camera-form button[type="submit"]:hover {
   background: #4837ff;
-  transition: all 0.3s;
-  border-radius: 4px;
 }
 
-.main__btn:hover {
-  color: #fff;
+#guest {
+  margin-bottom: 60px; /* adds space between form and pagination */
 }
 
-.main__btn:hover::after {
-  width: 100%;
-}
-
-.main__img--container {
-  text-align: center;
-  height: 50vh;
-}
 @media screen and (max-width: 768px) {
   .main__container {
     display: grid;
@@ -351,9 +329,6 @@ body::-webkit-scrollbar-thumb {
     font-size: 2.5rem;
     margin-top: 2rem;
   }
-  #top_section .main__btn {
-    margin-right: 20%;
-  }
 }
 @media screen and (max-width: 1500px) {
   .main__content h1 {
@@ -362,7 +337,6 @@ body::-webkit-scrollbar-thumb {
   }
 }
 
-/* Swiper core layout adjustments */
 .swiper {
   width: 100%;
   height: 80vh;
@@ -384,23 +358,20 @@ body::-webkit-scrollbar-thumb {
   height: 100%;
 }
 
-/* Navigation buttons style (Swiper default overrides) */
 .swiper-button-next,
 .swiper-button-prev {
   color: #ffffff;
-  transform: translateY(100%);
+  transform: translateY(0%);
 }
-
 .swiper-button-next:hover,
 .swiper-button-prev:hover {
   color: #ffb199;
 }
 
-/* Pagination bullets */
 .swiper-pagination-bullet {
   background: #ffffff;
   opacity: 0.5;
-  transform: translateX(600%);
+  transform: translateX(800%);
 }
 
 .swiper-pagination-bullet-active {
@@ -408,61 +379,13 @@ body::-webkit-scrollbar-thumb {
   opacity: 1;
 }
 
-/* Right section (Add and nav buttons) */
-/* Right section (Add and navigation buttons) */
-.right-section {
-  display: flex;
-  justify-content: center; /* Center horizontally */
-  align-items: center; /* Center vertically */
-  background-color: #141414; /* Match Swiper background */
-}
-
-#bottom_section {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: left;
-  gap: 1rem;
-  padding: 1rem;
-  width: 100%;
-  box-sizing: border-box;
-  background-color: #141414;
-  max-height: 40vh; /* Limit height */
-}
-
-.services__card {
-  flex: 1 1 50px; /* Flex: 1 means grow to fill space, 1 means shrink as needed */
-  max-width: 100px; /* Set a max width to avoid stretching too far */
-  min-width: 1px; /* Set a minimum width to ensure content is not squashed */
-  margin-bottom: 1rem;
-  box-sizing: border-box; /* Prevents extra padding affecting width */
-}
-#bottom_section button {
-  margin-right: 0.5rem;
-}
-
-.right-section .main__btn {
-  font-size: 1rem;
-  background-image: linear-gradient(to right, #f77062 0%, #fe5196 100%);
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  color: #fff;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-#top_section .main__btn {
-  transform: translateX(70%);
-}
-
-/* Make inactive bullets white */
 .swiper-pagination-bullet {
   background: #ffffff !important;
   opacity: 0.4;
 }
 
-/* Optional: Make active bullet bold or colored */
 .swiper-pagination-bullet-active {
-  background: #f77062 !important; /* or use #fff for pure white */
+  background: #f77062 !important;
   opacity: 1;
 }
 
@@ -476,47 +399,224 @@ body::-webkit-scrollbar-thumb {
   .main__content {
     padding: 0 20px;
   }
-  .swiper-button-next,
-  .swiper-button-prev {
-    transform: translateY(300%);
-  }
-}
-.services__card .card-buttons {
-  opacity: 0;
-  transition: opacity 0.3s ease;
 }
 
-.services__card:hover .card-buttons {
-  opacity: 1;
-}
 .bottom-swiper {
   width: 100%;
   height: 50vh;
 }
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.7);
-  display: none; /* Hidden by default */
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
 
-.modal-content {
-  background: #1a1a1a;
+/* user-list-css */
+.list-form {
+  background-color: #121212;
   padding: 2rem;
-  border-radius: 8px;
-  text-align: center;
+  border-radius: 12px;
+  width: 100%;
   color: #fff;
-  width: 300px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: "Kumbh Sans", sans-serif;
+  overflow-y: auto;
+  max-height: 70vh;
 }
 
-.modal-actions {
-  display: flex;
-  justify-content: space-around;
-  margin-top: 1.5rem;
+.list-form table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.list-form::-webkit-scrollbar {
+  width: 8px;
+}
+
+.list-form::-webkit-scrollbar-thumb {
+  background-color: #f77062;
+  border-radius: 10px;
+  border: 2px solid #121212;
+}
+
+.list-form::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+.list-form h2 {
+  font-size: 2.2rem;
+  margin-bottom: 1.2rem;
+  color: #ffb199;
+  text-transform: uppercase;
+}
+
+.list-form button {
+  background: linear-gradient(to right, #ff0844, #f77062);
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+.list-form button:hover {
+  background: #4837ff;
+}
+
+.list-form table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 12px;
+}
+
+.list-form th,
+.list-form td {
+  padding: 14px 16px;
+  text-align: center;
+  font-size: 1rem;
+}
+
+.list-form th {
+  background-color: #2a2a2a;
+  color: #f77062;
+  text-transform: uppercase;
+  font-weight: 600;
+  border-radius: 6px 6px 0 0;
+}
+
+.list-form td {
+  background-color: #141414;
+  border-radius: 6px;
+  color: #e0e0e0;
+  transition: background-color 0.3s ease;
+}
+
+.list-form tr:hover td {
+  background-color: #1e1e1e;
+}
+
+.delete-user-btn {
+  background-color: #ff0844;
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.delete-user-btn:hover {
+  background-color: #4837ff;
+}
+@media screen and (max-width: 1700px) {
+  #cams th:nth-child(4),
+  #cams td:nth-child(4) {
+    display: none;
+  }
+}
+@media screen and (max-width: 1500px) {
+  .list-form {
+    padding: 1rem;
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .list-form table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    overflow-x: auto;
+    display: block;
+  }
+
+  .list-form th,
+  .list-form td {
+    padding: 10px;
+    word-wrap: break-word;
+    font-size: 0.9rem;
+  }
+
+  .list-form th {
+    font-size: 1.2rem;
+  }
+}
+
+@media screen and (max-width: 1000px) {
+  .swiper-pagination-bullet {
+    transform: translateX(400%);
+  }
+  .list-form {
+    padding: 1rem;
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .list-form table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+  }
+
+  .list-form th,
+  .list-form td {
+    padding: 8px;
+    word-wrap: break-word;
+    font-size: 0.85rem;
+  }
+
+  #users th {
+    font-size: 1rem;
+    word-wrap: break-word;
+  }
+
+  #users th:nth-child(2),
+  #users td:nth-child(2) {
+    display: none;
+  }
+  #cams th:nth-child(4),
+  #cams td:nth-child(4) {
+    display: none;
+  }
+}
+@media screen and (max-width: 760px) {
+  .swiper-pagination-bullet {
+    transform: translateX(300%);
+  }
+  #users th:nth-child(1),
+  #users td:nth-child(1) {
+    display: none;
+  }
+}
+@media screen and (max-width: 480px) {
+  #users th:nth-child(5),
+  #users td:nth-child(5) {
+    display: none;
+  }
+}
+.list-form td button.delete-user-btn {
+  display: block;
+  margin: 0 auto;
+}
+.list-form td button.delete-cam-btn {
+  display: block;
+  margin: 0 auto;
+}
+
+.hidden-id {
+  display: none;
+}
+.list-form .recharge-btn {
+  background: #f77062 !important;
+  color: #fff !important;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.list-form .recharge-btn:hover {
+  background: #4837ff !important;
 }

@@ -25,7 +25,7 @@ async function deleteUser(userId) {
 
       if (response.ok) {
         alert("User deleted successfully.");
-        fetchUsers();
+        window.location.href = "/dashboard/";
       } else {
         const data = await response.json();
         alert(`Error: ${data.error}`);
@@ -49,10 +49,10 @@ function updateUserStatus(event) {
 
 async function loaddashboard() {
   const data = await sendrequest("/dashboard/", "POST");
-  document.getElementById("username").innerText = data.user.username;
-  document.getElementById("email").innerText = data.user.email;
-  document.getElementById("role").innerText = data.user.role;
-  document.getElementById("user-id").innerText = data.user.id;
+  document.getElementById("username").innerText = data.data.user.username;
+  document.getElementById("email").innerText = data.data.user.email;
+  document.getElementById("role").innerText = data.data.user.role;
+  document.getElementById("user-id").innerText = data.data.user.id;
 }
 
 function populateUserTable(users) {
@@ -114,17 +114,16 @@ document.addEventListener("DOMContentLoaded", async function () {
     updateUserStatus(event);
   };
 
-  loaddashboard();
-
   if (window.location.pathname === "/dashboard/") {
+    loaddashboard();
     //redirect the admin to create guest account
-    const guestcreateButton = document.getElementById("guest");
-    if (guestcreateButton) {
-      console.log("guest botton found");
-      guestcreateButton.addEventListener("click", function () {
-        window.location.href = "/dashboard/create-guest/";
-      });
-    }
+    // const guestcreateButton = document.getElementById("guest");
+    // if (guestcreateButton) {
+    //   console.log("guest botton found");
+    //   guestcreateButton.addEventListener("click", function () {
+    //     window.location.href = "/dashboard/create-guest/";
+    //   });
+    // }
 
     const dvabtn = document.getElementById("DVA");
     if (dvabtn) {
@@ -152,25 +151,25 @@ document.addEventListener("DOMContentLoaded", async function () {
       console.log("Logout button found!");
       logoutbutton.addEventListener("click", async () => {
         const data = await sendrequest("/auth/logout/", "POST");
-        if (data.success) {
-          alert(data.message);
+        if (data.data.success) {
+          alert(data.data.message);
           window.location.href = "/auth/login/";
         } else {
-          alert("Logout failed: " + data.error);
+          alert("Logout failed: " + data.data.error);
         }
       });
     }
 
     //user list button
-    const userlistbutton = document.getElementById("user-list-button");
-    if (userlistbutton) {
-      console.log("User list button found!");
-      userlistbutton.addEventListener("click", function () {
-        window.location.href = "/dashboard/users/users-list/";
-      });
-    } else {
-      console.error("User list button not found!");
-    }
+    // const userlistbutton = document.getElementById("user-list-button");
+    // if (userlistbutton) {
+    //   console.log("User list button found!");
+    //   userlistbutton.addEventListener("click", function () {
+    //     window.location.href = "/dashboard/users/users-list/";
+    //   });
+    // } else {
+    //   console.error("User list button not found!");
+    // }
 
     const cameraButton = document.getElementById("cameraconfig");
     if (cameraButton) {
@@ -182,20 +181,20 @@ document.addEventListener("DOMContentLoaded", async function () {
       console.error("Camera button not found!");
     }
 
-    const cameraListButton = document.getElementById("cameralist");
+    const cameraListButton = document.getElementById("Forms");
     if (cameraListButton) {
       console.log("Camera list button found!");
       cameraListButton.addEventListener("click", function () {
-        window.location.href = "/camera/list-cameras/";
+        window.location.href = "/dashboard/Forms/";
       });
     } else {
       console.error("Camera list button not found!");
     }
   }
 
-  if (window.location.pathname === "/dashboard/users/users-list/") {
+  if (window.location.pathname === "/dashboard/Forms/") {
     const data = await sendrequest("/dashboard/users/users-list/", "POST");
-    populateUserTable(data.users);
+    populateUserTable(data.data.users);
     document.querySelectorAll(".delete-user-btn").forEach((button) => {
       button.addEventListener("click", async (e) => {
         const userId = e.target.getAttribute("data-user-id");

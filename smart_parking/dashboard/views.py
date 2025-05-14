@@ -39,3 +39,9 @@ class DashbordviewAPI(APIView):
         except Exception as e:
             print(e)
             return Response({'success': False, 'error': 'An error occurred while fetching user data'}, status=500)
+
+class FormsAPI(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request, *args, **kwargs) : 
+        print(f"Authenticated user: {request.user}")
+        return render(request, 'forms.html')
