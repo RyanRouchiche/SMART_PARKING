@@ -1,44 +1,111 @@
-{% load static %}
+<!-- {% load static %}
 <!DOCTYPE html>
 <html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>pick parking spot</title>
-    <meta name="csrf-token" content="{{ csrf_token }}">
+    <meta name="csrf-token" content="{{ csrf_token }}" />
     <style>
-        .floor-container {
-            margin-bottom: 20px;
-        }
-        .image-container {
-            position: relative;
-            display: inline-block;
-        }
-        .selected-point {
-            width: 10px;
-            height: 10px;
-            background-color: red;
-            position: absolute;
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-        }
+      /* Grid layout for the area containers */
+      .area-container {
+        display: grid;
+        grid-template-columns: repeat(
+          auto-fit,
+          minmax(300px, 1fr)
+        ); /* Responsive grid with flexible columns */
+        gap: 20px;
+        margin-bottom: 20px;
+      }
+
+      .image-container {
+        position: relative;
+        display: inline-block;
+      }
+
+      .selected-point {
+        width: 10px;
+        height: 10px;
+        background-color: red;
+        position: absolute;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+      }
     </style>
-</head>
-<body>
-    <h1>pick parking  spot</h1>
-    
-    {% for area, image_url in images.items %}
-    <div class="area-container">
-        <h2>Étage {{ area }}</h2>
-        <div class="image-container" id="container-{{ area }}">
-            <img src="{{ image_url }}" alt="Camera in area {{ area }}" onclick="selectPoint(event, '{{ area }}')">
+  </head>
+  <body>
+
+  </body>
+</html>
+ -->
+
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{%static 'css/pick_up_spot.css' %}" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Kumbh+Sans:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
+     <script type="module"   src="{% static 'js/dashboardAPI.js' %}"></script>
+     <script src="{% static 'js/parkingSelector.js' %}"></script>
+  <body>
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    <!-- navbar section -->
+    <nav class="navbar">
+      <div class="navbar__container">
+        <a href="/dashboard/" id="navbar__logo">PARKING</a>
+        <div class="navbar__toggle" id="mobile-menu">
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
         </div>
+        <ul class="navbar__menu">
+          <li class="navbar__item">
+            <button  class="navbar__links" id="DVA">DVA</button>
+          </li>
+          <li class="navbar__item">
+            <button  class="navbar__links" id="markSpot">mark spot</button>
+          </li>
+          <li class="navbar__item">
+           <button  class="navbar__links" id="cameraconfig">camera configuration</button>
+          </li>
+          <li class="navbar__item">
+            <button  class="navbar__links" id="Forms">Forms</button>
+          </li>
+          <li class="navbar__btn">
+            <button  class="button" id="logout-btn">Logout</button>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- main section -->
+    <div class="main">
+      <div class="main__container">
+        <div class="main__content">
+            <h1>Pick a parking spot</h1>
+            <div class="area-container">
+               {% for area, image_url in images.items %}
+                <div class="image-container" id="container-{{ area }}">
+                  <h2>Étage {{ area }}</h2>
+                  <img
+                  src="{{ image_url }}"
+                  alt="Camera in area {{ area }}"
+                  onclick="selectPoint(event, '{{ area }}')"
+                  />
+                </div>
+                {% endfor %}
+            </div>
+            <button class="save-button" onclick="sendCoordinates()">Enregistrer</button>
+        </div>
+      </div>
     </div>
-    {% endfor %}
 
-    <button onclick="sendCoordinates()">Enregistrer</button>
-
-    
-    <script src="{% static 'js/parkingSelector.js' %}"></script>
-</body>
+  </body>
 </html>

@@ -87,7 +87,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
                 'status': 200
             })
             
-            SETupCOOKIE(res, 'access_token', access_token, 1*60) 
+            SETupCOOKIE(res, 'access_token', access_token, 10*60) 
             SETupCOOKIE(res, 'refresh_token', refresh_token, 30*60)
 
 

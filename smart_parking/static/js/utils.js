@@ -21,7 +21,7 @@ export function scheduleStaticTokenRefresh() {
         console.error("Token refresh error:", error);
         window.location.href = "/auth/login/";
       });
-  }, 58000);
+  }, 540000);
 }
 
 export async function sendrequest(url, method) {
