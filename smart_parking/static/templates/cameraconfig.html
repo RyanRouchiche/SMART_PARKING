@@ -19,6 +19,7 @@
     <script type="module" src="{% static 'js/camera.js' %}"></script>
     <script src="{% static 'js/cameraconfig.js' %}"></script>
     <script type="module" src="{% static 'js/dashboardAPI.js' %}"></script>
+    <script type="module" src="{% static 'js/refresh.js' %}"></script>
   </head>
   <body>
     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
@@ -61,11 +62,26 @@
               <div class="camera-form">
                 <h1>Camera Adding page</h1>
                 <label>Zone (area):</label>
-                <input type="text" name="area" placeholder="Ex: Zone A" />
+                <input
+                  type="text"
+                  name="area"
+                  placeholder="Ex: 1"
+                  autocomplete="off"
+                />
                 <label>Référence (ref):</label>
-                <input type="text" name="ref" placeholder="Ex: CAM01" />
+                <input
+                  type="text"
+                  name="ref"
+                  placeholder="Ex: CAM01"
+                  autocomplete="off"
+                />
                 <label>Chemin RTSP/HTTP (path):</label>
-                <input type="text" name="path" placeholder="Ex: rtsp://..." />
+                <input
+                  type="text"
+                  name="path"
+                  placeholder="Ex: rtsp://..."
+                  autocomplete="off"
+                />
               </div>
             </div>
           </div>
@@ -93,12 +109,12 @@
         <div class="modal-actions">
           <button
             id="cancelDeleteBtn"
-            class="main__btn"
+            class="modal__btn"
             style="background: gray"
           >
             Undo
           </button>
-          <button id="confirmDeleteBtn" class="main__btn">Yes, Confirm</button>
+          <button id="confirmDeleteBtn" class="modal__btn">Yes, Confirm</button>
         </div>
       </div>
     </div>

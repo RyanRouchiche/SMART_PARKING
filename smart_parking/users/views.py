@@ -60,8 +60,8 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             logger.info(f"Generated access token: {access_token}")
             refresh_token = str(refresh)
 
-            expires_at = now() + timedelta(minutes=30)
-            access_token_expiry = now() + timedelta(minutes=5)
+            expires_at = now() + timedelta(hours=1)
+            
 
             auth.objects.update_or_create(
                 user=user,
@@ -85,10 +85,10 @@ class CustomTokenObtainPairView(TokenObtainPairView):
                 'message': 'Login successful',
                 'user': user_data,
                 'status': 200
-            })
+            }, status=status.HTTP_200_OK)
             
-            SETupCOOKIE(res, 'access_token', access_token, 10*60) 
-            SETupCOOKIE(res, 'refresh_token', refresh_token, 30*60)
+            SETupCOOKIE(res, 'access_token', access_token) 
+            SETupCOOKIE(res, 'refresh_token', refresh_token)
 
 
             return res
@@ -138,12 +138,12 @@ class CustomObtainRefreshToken(TokenRefreshView):
                 logger.error("Failed to obtain new access token")
                 return Response({'success': False, 'error': 'Failed to refresh token'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-            res = Response({'refresh': True, 'message': 'Access token refreshed successfully' , 'status' : 200})
-            SETupCOOKIE(res, 'access_token', access_token, 2 * 60)
-            SETupCOOKIE(res, 'refresh_token', new_refresh_token, 30 * 60)
+            res = Response({'refresh': True, 'message': 'Access token refreshed successfully' , 'status' : 200}, status=status.HTTP_200_OK)
+            SETupCOOKIE(res, 'access_token', access_token)
+            SETupCOOKIE(res, 'refresh_token', new_refresh_token)
             try :
                 token_obj.refresh_token = new_refresh_token
-                token_obj.expires_at = now() + timedelta(minutes=30)
+                token_obj.expires_at = now() + timedelta(hours=1)
                 token_obj.save()
             except Exception as e:
                 logger.error(f"Error updating token in DB: {str(e)}", exc_info=True)
@@ -187,8 +187,8 @@ class LogoutView(APIView):
 
             response.delete_cookie('access_token')
             response.delete_cookie('refresh_token')
-            SETupCOOKIE(response, 'access_token', '', 0)
-            SETupCOOKIE(response, 'refresh_token', '', 0)
+            SETupCOOKIE(response, 'access_token','')
+            SETupCOOKIE(response, 'refresh_token','')
             return response
 
         except Exception as e:

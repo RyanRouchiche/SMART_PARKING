@@ -10,10 +10,12 @@
       href="https://fonts.googleapis.com/css2?family=Kumbh+Sans:wght@100..900&display=swap"
       rel="stylesheet"
     />
-     <script type="module"   src="{% static 'js/dashboardAPI.js' %}"></script>
-     <script src="{% static 'js/parkingSelector.js' %}"></script>
+    <script type="module" src="{% static 'js/dashboardAPI.js' %}"></script>
+    <script src="{% static 'js/parkingSelector.js' %}"></script>
+    <script type="module" src="{% static 'js/refresh.js' %}"></script>
+  </head>
   <body>
-    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
     <!-- navbar section -->
     <nav class="navbar">
       <div class="navbar__container">
@@ -25,19 +27,21 @@
         </div>
         <ul class="navbar__menu">
           <li class="navbar__item">
-            <button  class="navbar__links" id="DVA">DVA</button>
+            <button class="navbar__links" id="DVA">DVA</button>
           </li>
           <li class="navbar__item">
-            <button  class="navbar__links" id="markSpot">mark spot</button>
+            <button class="navbar__links" id="markSpot">mark spot</button>
           </li>
           <li class="navbar__item">
-           <button  class="navbar__links" id="cameraconfig">camera configuration</button>
+            <button class="navbar__links" id="cameraconfig">
+              camera configuration
+            </button>
           </li>
           <li class="navbar__item">
-            <button  class="navbar__links" id="Forms">Forms</button>
+            <button class="navbar__links" id="Forms">Forms</button>
           </li>
           <li class="navbar__btn">
-            <button  class="button" id="logout-btn">Logout</button>
+            <button class="button" id="logout-btn">Logout</button>
           </li>
         </ul>
       </div>
@@ -47,23 +51,24 @@
     <div class="main">
       <div class="main__container">
         <div class="main__content">
-            <h1>Pick a parking spot</h1>
-            <div class="area-container">
-               {% for area, image_url in images.items %}
-                <div class="image-container" id="container-{{ area }}">
-                  <h2>Area {{ area }}</h2>
-                  <img
-                  src="{{ image_url }}"
-                  alt="Camera in area {{ area }}"
-                  onclick="selectPoint(event, '{{ area }}')"
-                  />
-                </div>
-                {% endfor %}
+          <h1>Pick a parking spot</h1>
+          <div class="area-container">
+            {% for area, image_url in images.items %}
+            <div class="image-container" id="container-{{ area }}">
+              <h2>Area {{ area }}</h2>
+              <img
+                src="{{ image_url }}"
+                alt="Camera in area {{ area }}"
+                onclick="selectPoint(event, '{{ area }}')"
+              />
             </div>
-            <button class="save-button" onclick="sendCoordinates()">Enregistrer</button>
+            {% endfor %}
+          </div>
+          <button class="save-button" onclick="sendCoordinates()">
+            Enregistrer
+          </button>
         </div>
       </div>
     </div>
-
   </body>
 </html>

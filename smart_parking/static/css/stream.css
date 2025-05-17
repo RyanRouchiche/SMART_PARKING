@@ -34,7 +34,7 @@ html {
   overflow-y: auto;
   transition: all ease 0.5s;
 }
-/* Only style the #open button inside .sidebar */
+
 .sidebar #open {
   position: absolute;
   top: 45%;
@@ -48,17 +48,16 @@ html {
   border-radius: 5px;
   font-size: 22px;
   background: white;
-  color: black; /* fallback if text-fill doesn't work */
+  color: black;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   outline: none;
-  border: none; /* Ensure no border */
+  border: none;
   cursor: pointer;
   z-index: 10;
   transition: transform 0.7s ease-in-out;
 }
 
-/* Make sure Logout button remains unaffected */
 .navbar__btn .button {
   background: #f77062;
   color: #fff;
@@ -266,6 +265,7 @@ html {
   border: none;
   outline: none;
   font-size: 1.2rem;
+  text-transform: capitalize;
 }
 
 .navbar__btn {

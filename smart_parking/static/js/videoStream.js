@@ -1,4 +1,3 @@
-import { scheduleStaticTokenRefresh } from "./utils.js";
 let swiper, w, h;
 let areaLength;
 const indexToAreaIdMap = {};
@@ -26,7 +25,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     menuLinks.classList.toggle("active");
   });
 
-  scheduleStaticTokenRefresh();
   const res = await fetch("/parking/areas/");
   const areas = await res.json();
 

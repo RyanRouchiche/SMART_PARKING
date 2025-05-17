@@ -23,21 +23,13 @@ document.addEventListener("DOMContentLoaded", function () {
   const wrapper = document.getElementById("swiper-wrapper");
   const bottomSection = document.getElementById("bottom_section");
 
-  // Create control panel for initial slide (0)
   createControlPanel(0);
 
-  // ADD BUTTON LOGIC
-  let slideCount = 1; // Number of active slides (max 10)
-  let slideIdCounter = 1; // Always increasing, used for unique IDs
+  let slideCount = 1;
+  let slideIdCounter = 1;
 
   addButton.addEventListener("click", () => {
-    if (slideCount >= 10) {
-      addButton.disabled = true;
-      addButton.textContent = "Max slides reached";
-      return;
-    }
-
-    const currentId = slideIdCounter++; // Use and increment ID
+    const currentId = slideIdCounter++;
 
     const newSlide = document.createElement("div");
     newSlide.classList.add("swiper-slide");
@@ -47,18 +39,14 @@ document.addEventListener("DOMContentLoaded", function () {
     content.classList.add("main__content");
     content.id = `slide-${currentId}`;
 
-    // Clone the form container
     const originalForm = document.getElementById("formContainer");
     const clonedForm = originalForm.cloneNode(true);
 
-    // Update the cloned form's heading
     const h1 = clonedForm.querySelector("h1");
     if (h1) h1.textContent = `Camera ${currentId}`;
 
-    // Use a unique ID for the cloned form container if needed
     clonedForm.id = `formContainer-${currentId}`;
 
-    // Append the cloned form into the content container
     content.appendChild(clonedForm);
 
     newSlide.appendChild(content);
@@ -71,7 +59,6 @@ document.addEventListener("DOMContentLoaded", function () {
     if (slideCount >= 10) {
       addButton.disabled = true;
       addButton.textContent = "Max slides reached";
-      addButton.style.transform = "translateX(25%)";
     }
   });
 
@@ -97,7 +84,6 @@ document.addEventListener("DOMContentLoaded", function () {
     if (slideCount < 10) {
       addButton.disabled = false;
       addButton.textContent = "Add";
-      addButton.style.transform = "translateX(70%)";
     }
   }
 
@@ -118,7 +104,6 @@ document.addEventListener("DOMContentLoaded", function () {
     img.style.width = "80px";
     img.style.cursor = "pointer";
 
-    // 👇 Make cam.png clickable to switch slides
     img.addEventListener("click", () => {
       const allSlides = document.querySelectorAll(".swiper-slide");
       allSlides.forEach((slide, index) => {

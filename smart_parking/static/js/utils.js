@@ -1,27 +1,27 @@
-export function scheduleStaticTokenRefresh() {
-  setInterval(() => {
-    console.log("Proactively refreshing token...");
+export async function scheduleStaticTokenRefresh() {
+  setInterval(async () => {
+    try {
+      console.log("Attempting token refresh...");
 
-    fetch("/auth/token/refresh/", {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => {
-        if (!response.ok) {
-          console.warn("Token refresh failed. Redirecting to login...");
-          window.location.href = "/auth/login/";
-        } else {
-          console.log("Token successfully refreshed.");
-        }
-      })
-      .catch((error) => {
-        console.error("Token refresh error:", error);
-        window.location.href = "/auth/login/";
+      const res = await fetch("/auth/token/refresh/", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
-  }, 540000);
+
+      if (!res.ok) {
+        console.warn("Token refresh failed. Redirecting to login...");
+        window.location.href = "/";
+      } else {
+        console.log("Token successfully refreshed.");
+      }
+    } catch (error) {
+      console.error("Token refresh error:", error);
+      window.location.href = "/";
+    }
+  }, 1680000);
 }
 
 export async function sendrequest(url, method) {

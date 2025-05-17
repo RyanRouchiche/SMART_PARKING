@@ -1,11 +1,10 @@
-import { scheduleStaticTokenRefresh, postrequest } from "./utils.js";
+import { postrequest } from "./utils.js";
 
 document.addEventListener("DOMContentLoaded", function () {
-  scheduleStaticTokenRefresh();
-
   //part handles login form submission
 
   const loginform = document.getElementById("login-form");
+  const errorMessageContainer = document.getElementById("error-message-login");
   if (loginform) {
     console.log("Login form found");
     loginform.addEventListener("submit", async function (event) {
@@ -17,11 +16,11 @@ document.addEventListener("DOMContentLoaded", function () {
       const res = await postrequest("/auth/token/", "POST", data);
       if (res.status === 200 || res.status === 201) {
         console.log("Login successful");
-        alert("Login successful");
         window.location.href = "/dashboard/";
       } else {
-        alert("Login failed");
-        console.log("Login failed");
+        errorMessageContainer.style.display = "block";
+        errorMessageContainer.innerHTML =
+          "Login failed. Please check your credentials and try again.";
       }
     });
   }
@@ -30,6 +29,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if (window.location.pathname === "/auth/register/") {
     const registerform = document.getElementById("register-form");
+    const errorMessageContainer = document.getElementById(
+      "error-message-register"
+    );
     if (registerform) {
       console.log("Register form found");
       registerform.addEventListener("submit", async function (event) {
@@ -47,8 +49,9 @@ document.addEventListener("DOMContentLoaded", function () {
           alert("Registration successful");
           window.location.href = "/auth/login/";
         } else {
-          alert("Registration failed");
-          console.log("Registration failed");
+          errorMessageContainer.style.display = "block"; // Show the error message container
+          errorMessageContainer.innerHTML =
+            "Registration failed. Please check your credentials and try again.";
         }
       });
     }
@@ -58,6 +61,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if (window.location.pathname === "/dashboard/Forms/") {
     const form = document.getElementById("guest-form");
+    const errorMessageContainer = document.getElementById(
+      "error-message-guest"
+    );
     if (form) {
       console.log("Guest form found");
       form.addEventListener("submit", async function (event) {
@@ -75,8 +81,9 @@ document.addEventListener("DOMContentLoaded", function () {
           alert("Guest registration successful . Please confirm your email");
           window.location.href = "/dashboard/";
         } else {
-          alert("Guest registration fail");
-          console.log("Guest registration failed");
+          errorMessageContainer.style.display = "block"; // Show the error message container
+          errorMessageContainer.innerHTML =
+            "Guest registration fail. Please check your credentials and try again.";
         }
       });
     }

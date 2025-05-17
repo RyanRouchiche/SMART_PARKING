@@ -11,11 +11,7 @@ from rest_framework import status
 import logging
 logger = logging.getLogger(__name__)
 
-def SETupCOOKIE(response, key, value, max_age):
-    local_tz = pytz.timezone('Africa/Algiers')  
-    local_time = datetime.now(local_tz)  
-    expires_local = local_time + timedelta(seconds=max_age)
-    expires_utc = expires_local.astimezone(pytz.utc)
+def SETupCOOKIE(response, key, value):
     
     logger.info(f"Setting cookie '{key}' with value '{value}'")
 
@@ -26,8 +22,6 @@ def SETupCOOKIE(response, key, value, max_age):
         secure=False,  
         samesite='Strict',  
         path='/',
-        max_age=max_age,
-        expires=expires_utc.strftime("%a, %d-%b-%Y %H:%M:%S GMT")  
     )
     
 def send_verif_email(request , user) : 

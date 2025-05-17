@@ -5,87 +5,109 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login</title>
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/login.css' %}" />
     <script type="module" src="{% static 'js/auth.js' %}"></script>
+    <script type="module" src="{% static 'js/dashboardAPI.js' %}"></script>
   </head>
   <body>
-    <div class="container">
-      <div class="form-box active" id="login-form-id">
-        <h2>Login</h2>
-        <p class="error-message" id="error-message-login"></p>
-        <form action="" id="login-form">
-          {% csrf_token %}
-          <input
-            type="text"
-            id="username"
-            placeholder="Username"
-            required
-            onclick="hideError()"
-          />
-          <input
-            type="password"
-            id="password"
-            placeholder="Password"
-            required
-            onclick="hideError()"
-          />
-          <button type="submit" onclick="hideError()">Login</button>
-          <p>
-            Don't have an account ?
-            <a href="#" onclick="showForm('register-form-id'),hideError()"
-              >Register</a
-            >
-          </p>
-        </form>
+    <!-- navbar section -->
+    <nav class="navbar">
+      <div class="navbar__container">
+        <a href="" id="navbar__logo">PARKING</a>
       </div>
+    </nav>
 
-      <div class="form-box" id="register-form-id">
-        <h2>Register</h2>
-        <p class="error-message" id="error-message-register"></p>
-        <form action="">
-          <input
-            type="text"
-            id="username-register"
-            placeholder="Username"
-            required
-            onclick="hideError()"
-          />
-          <input
-            type="password"
-            id="password-register"
-            placeholder="Password"
-            required
-            onclick="hideError()"
-          />
-          <input
-            type="email"
-            id="email"
-            placeholder="Email"
-            required
-            onclick="hideError()"
-          />
-          <input
-            type="text"
-            id="first-name"
-            placeholder="First Name"
-            required
-            onclick="hideError()"
-          />
-          <input
-            type="text"
-            id="last-name"
-            placeholder="Last Name"
-            required
-            onclick="hideError()"
-          />
-          <button type="submit" onclick="hideError()">Register</button>
-          <p>
-            Already have an account ?
-            <a href="#" onclick="showForm('login-form-id'),hideError()"
-              >Login</a
-            >
-          </p>
-        </form>
+    <!-- main-container -->
+    <div class="main__container">
+      <div class="container">
+        <div class="form-box active" id="login-form-id">
+          <h2>Login</h2>
+          <p class="error-message" id="error-message-login"></p>
+          <form action="" id="login-form">
+            {% csrf_token %}
+            <input
+              type="text"
+              id="username"
+              placeholder="Username"
+              required
+              onclick="hideError()"
+              autocomplete="off"
+            />
+            <input
+              type="password"
+              id="password"
+              placeholder="Password"
+              required
+              onclick="hideError()"
+              autocomplete="off"
+            />
+            <button type="submit" class="submit" onclick="hideError()">
+              Login
+            </button>
+            <p>
+              Don't have an account ?
+              <a href="#" onclick="showForm('register-form-id'),hideError()"
+                >Register</a
+              >
+            </p>
+          </form>
+        </div>
+
+        <div class="form-box" id="register-form-id">
+          <h2>Register</h2>
+          <p class="error-message" id="error-message-register"></p>
+          <form action="">
+            <input
+              type="text"
+              id="username-register"
+              placeholder="Username"
+              required
+              onclick="hideError()"
+              autocomplete="off"
+            />
+            <input
+              type="password"
+              id="password-register"
+              placeholder="Password"
+              required
+              onclick="hideError()"
+              autocomplete="off"
+            />
+            <input
+              type="email"
+              id="email"
+              placeholder="Email"
+              required
+              onclick="hideError()"
+              autocomplete="off"
+            />
+            <input
+              type="text"
+              id="first-name"
+              placeholder="First Name"
+              required
+              onclick="hideError()"
+              autocomplete="off"
+            />
+            <input
+              type="text"
+              id="last-name"
+              placeholder="Last Name"
+              required
+              onclick="hideError()"
+              autocomplete="off"
+            />
+            <button class="submit" type="submit" onclick="hideError()">
+              Register
+            </button>
+            <p>
+              Already have an account ?
+              <a href="#" onclick="showForm('login-form-id'),hideError()"
+                >Login</a
+              >
+            </p>
+          </form>
+        </div>
       </div>
     </div>
     <script src="{% static 'js/form.js' %}"></script>

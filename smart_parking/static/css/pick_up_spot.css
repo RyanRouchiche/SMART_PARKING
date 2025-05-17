@@ -62,6 +62,7 @@
   border: none;
   outline: none;
   font-size: 1.2rem;
+  text-transform: capitalize;
 }
 
 .navbar__btn {
@@ -210,7 +211,6 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 20px;
 }
 
 .area-container {
@@ -219,16 +219,16 @@ body {
   gap: 20px;
   margin-bottom: 20px;
 
-  max-width: 1200px; /* Limit the total width */
+  max-width: 1200px;
   margin-left: auto;
   margin-right: auto;
-  padding: 0 auto; /* Optional: small padding to avoid flush edges on mobile */
+  padding: 0 auto;
 }
 
 .image-container {
   position: relative;
   display: inline-block;
-  width: fit-content; /* only as wide as the image */
+  width: fit-content;
 }
 
 .image-container img {
@@ -258,6 +258,8 @@ body {
 }
 
 .main__content h1 {
+  display: flex;
+  justify-content: center;
   font-size: 4rem;
   background-image: linear-gradient(to right, #ff0844 0%, #ffb199 100%);
   background-size: 100%;
@@ -265,7 +267,6 @@ body {
   -moz-background-clip: text;
   -webkit-text-fill-color: transparent;
   -moz-text-fill-color: transparent;
-  margin-left: 30%;
   margin-bottom: 20px;
 }
 
@@ -284,7 +285,7 @@ body {
 
 .save-button {
   display: block;
-  margin: 40px auto; /* centers the button horizontally */
+  margin: 40px auto;
   padding: 12px 30px;
   font-size: 1.2rem;
   font-weight: 600;

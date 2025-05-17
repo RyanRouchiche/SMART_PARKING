@@ -1,9 +1,5 @@
 console.log("JS chargé");
-import {
-  scheduleStaticTokenRefresh,
-  sendrequest,
-  postrequest,
-} from "./utils.js";
+import { sendrequest, postrequest } from "./utils.js";
 
 function sendCamData() {
   const forms = document.getElementsByClassName("camera-form");
@@ -54,7 +50,6 @@ function loadcameras(cameras) {
 }
 
 document.addEventListener("DOMContentLoaded", async function (e) {
-  scheduleStaticTokenRefresh();
   e.preventDefault();
   console.log("Document loaded. Setting up event listeners.");
 
@@ -102,3 +97,13 @@ async function deleteCamera(cameraId) {
     alert("Error deleting camera.");
   }
 }
+
+function hideError() {
+  const errorGuest = document.getElementById("error-message-guest");
+  if (errorGuest) {
+    errorGuest.style.display = "none";
+  }
+}
+document.querySelectorAll("#guest-form input").forEach((input) => {
+  input.addEventListener("focus", hideError);
+});

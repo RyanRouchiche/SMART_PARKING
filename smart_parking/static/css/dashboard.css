@@ -62,6 +62,7 @@
   border: none;
   outline: none;
   font-size: 1.2rem;
+  text-transform: capitalize;
 }
 
 .navbar__btn {
@@ -383,31 +384,6 @@
   position: relative;
   color: #fff;
 }
-
-/*.services__card:nth-child(2) {
-  background-image: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 0) 0%,
-      rgba(17, 17, 17, 0.6) 100%
-    ),
-    url("{% static '../images/spots.jpg' %}");
-}
-.services__card:nth-child(3) {
-  background-image: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 0) 0%,
-      rgba(17, 17, 17, 0.6) 100%
-    ),
-    url("{% static '../images/parking.jpeg' %}");
-} 
-.services__card:nth-child(4) {
-  background-image: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 0) 0%,
-      rgba(17, 17, 17, 0.6) 100%
-    ),
-    url("{% static '../images/camera.webp' %}");
-}*/
 
 .services h2 {
   position: absolute;

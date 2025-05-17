@@ -166,33 +166,3 @@ function sendCoordinates() {
     })
     .catch((error) => alert("Erreur : " + error.message));
 }
-
-function scheduleStaticTokenRefresh() {
-  setInterval(() => {
-    console.log("Proactively refreshing token...");
-
-    fetch("/auth/token/refresh/", {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => {
-        if (!response.ok) {
-          console.warn("Token refresh failed. Redirecting to login...");
-          window.location.href = "/auth/login/";
-        } else {
-          console.log("Token successfully refreshed.");
-        }
-      })
-      .catch((error) => {
-        console.error("Token refresh error:", error);
-        window.location.href = "/auth/login/";
-      });
-  }, 58000);
-}
-
-document.addEventListener("DOMContentLoaded", function () {
-  scheduleStaticTokenRefresh();
-});

@@ -1,9 +1,5 @@
 let websocket;
-import {
-  scheduleStaticTokenRefresh,
-  sendrequest,
-  initwebsocketconn,
-} from "./utils.js";
+import { sendrequest, initwebsocketconn } from "./utils.js";
 
 async function deleteUser(userId) {
   if (confirm("Are you sure you want to delete this user?")) {
@@ -88,10 +84,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     menuLinks.classList.toggle("active");
   });
 
-  // loading images to services
-
-  scheduleStaticTokenRefresh();
-
   //init websocket  connection
   //which protocole using
   const wsschema = window.location.protocol === "https:" ? "wss" : "ws";
@@ -152,17 +144,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
   }
 
-  //user list button
-  // const userlistbutton = document.getElementById("user-list-button");
-  // if (userlistbutton) {
-  //   console.log("User list button found!");
-  //   userlistbutton.addEventListener("click", function () {
-  //     window.location.href = "/dashboard/users/users-list/";
-  //   });
-  // } else {
-  //   console.error("User list button not found!");
-  // }
-
   const cameraButton = document.getElementById("cameraconfig");
   if (cameraButton) {
     console.log("Camera button found!");
@@ -198,6 +179,5 @@ document.addEventListener("DOMContentLoaded", async function () {
 window.addEventListener("beforeunload", async () => {
   if (websocket && websocket.readyState === WebSocket.OPEN) {
     websocket.close();
-    // await sendrequest("/auth/logout/", "POST");
   }
 });
