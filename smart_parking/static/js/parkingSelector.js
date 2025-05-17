@@ -7,11 +7,36 @@ function getRectanglePointsFromTwoPoints(p1, p2) {
   const y2 = Math.max(p1[1], p2[1]);
 
   return [
-    [x1, y1], // top-left
-    [x2, y1], // top-right
-    [x2, y2], // bottom-right
-    [x1, y2], // bottom-left
+    [x1, y1],
+    [x2, y1],
+    [x2, y2],
+    [x1, y2],
   ];
+}
+
+// Right-click to delete rectangle
+function handleRightClickOnRectangle(event) {
+  event.preventDefault();
+
+  const rectangle = event.currentTarget;
+  const spotName = rectangle.getAttribute("data-spot-name");
+  const area = rectangle.getAttribute("data-area");
+
+  if (!spotName || !area || !selectedPoints[area]) return;
+
+  selectedPoints[area] = selectedPoints[area].filter(
+    (spot) => !spot.hasOwnProperty(spotName)
+  );
+
+  rectangle.remove();
+
+  const container = document.getElementById(`container-${area}`);
+  const dots = container.querySelectorAll(
+    `.selected-point[data-spot-name="${spotName}"]`
+  );
+  dots.forEach((dot) => dot.remove());
+
+  alert(`Spot "${spotName}" deleted.`);
 }
 
 function selectPoint(event, area) {
@@ -44,13 +69,13 @@ function selectPoint(event, area) {
   dot.classList.add("selected-point");
   dot.style.left = `${x}px`;
   dot.style.top = `${y}px`;
+  dot.setAttribute("data-temp", "true");
   imgContainer.appendChild(dot);
 
   if (Object.values(currentSpot)[0].length === 2) {
     const [p1, p2] = Object.values(currentSpot)[0];
     const fullPoints = getRectanglePointsFromTwoPoints(p1, p2);
 
-    // Replace the 2 points with the 4 full rectangle points
     Object.values(currentSpot)[0].length = 0;
     fullPoints.forEach((pt) => Object.values(currentSpot)[0].push(pt));
 
@@ -63,6 +88,18 @@ function selectPoint(event, area) {
     const points = Object.values(currentSpot)[0];
     delete currentSpot["Unnamed Spot"];
     currentSpot[spotName] = points;
+
+    const tempDots = imgContainer.querySelectorAll('[data-temp="true"]');
+    tempDots.forEach((dot) => dot.remove());
+
+    points.forEach(([dx, dy]) => {
+      let dot = document.createElement("div");
+      dot.classList.add("selected-point");
+      dot.style.left = `${dx}px`;
+      dot.style.top = `${dy}px`;
+      dot.setAttribute("data-spot-name", spotName);
+      imgContainer.appendChild(dot);
+    });
 
     // Draw rectangle
     const xs = points.map((p) => p[0]);
@@ -81,6 +118,9 @@ function selectPoint(event, area) {
     rectangle.style.width = `${width}px`;
     rectangle.style.height = `${height}px`;
     rectangle.innerText = spotName;
+    rectangle.setAttribute("data-spot-name", spotName);
+    rectangle.setAttribute("data-area", area);
+    rectangle.addEventListener("contextmenu", handleRightClickOnRectangle);
     imgContainer.appendChild(rectangle);
 
     alert(`Spot selected: ${spotName} in area ${area}.`);
