@@ -79,10 +79,12 @@ document.addEventListener("DOMContentLoaded", async function () {
   const menu = document.querySelector("#mobile-menu");
   const menuLinks = document.querySelector(".navbar__menu");
 
-  menu.addEventListener("click", function () {
-    menu.classList.toggle("is-active");
-    menuLinks.classList.toggle("active");
-  });
+  if (menu && menuLinks) {
+    menu.addEventListener("click", function () {
+      menu.classList.toggle("is-active");
+      menuLinks.classList.toggle("active");
+    });
+  }
 
   //init websocket  connection
   //which protocole using
@@ -115,8 +117,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     dvabtn.addEventListener("click", function () {
       window.location.href = "/parking/video/";
     });
-  } else {
-    console.error("DVA button not found!");
   }
 
   //redirect the admin to conigure parking spot
@@ -150,18 +150,13 @@ document.addEventListener("DOMContentLoaded", async function () {
     cameraButton.addEventListener("click", function () {
       window.location.href = "/camera/config/";
     });
-  } else {
-    console.error("Camera button not found!");
   }
-
   const cameraListButton = document.getElementById("Forms");
   if (cameraListButton) {
     console.log("Camera list button found!");
     cameraListButton.addEventListener("click", function () {
       window.location.href = "/dashboard/Forms/";
     });
-  } else {
-    console.error("Camera list button not found!");
   }
 
   if (window.location.pathname === "/dashboard/Forms/") {
