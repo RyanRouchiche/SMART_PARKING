@@ -291,7 +291,7 @@ body::-webkit-scrollbar-thumb {
 
 .camera-form button[type="submit"] {
   display: block;
-  width: 109%;
+  width: 100%;
   padding: 12px 16px;
   background: linear-gradient(to right, #ff0844, #f77062);
   border: none;
@@ -361,11 +361,6 @@ body::-webkit-scrollbar-thumb {
   height: 100%;
 }
 
-.swiper-button-next,
-.swiper-button-prev {
-  color: #ffffff;
-  transform: translateY(0%);
-}
 .swiper-button-next:hover,
 .swiper-button-prev:hover {
   color: #ffb199;
@@ -397,10 +392,6 @@ body::-webkit-scrollbar-thumb {
     height: auto;
     padding-bottom: 60px;
   }
-
-  .main__content {
-    padding: 0 20px;
-  }
 }
 
 .bottom-swiper {
@@ -411,7 +402,6 @@ body::-webkit-scrollbar-thumb {
 /* user-list-css */
 .list-form {
   background-color: #121212;
-  padding: 2rem;
   border-radius: 12px;
   width: 100%;
   color: #fff;
@@ -468,7 +458,6 @@ body::-webkit-scrollbar-thumb {
 .list-form table {
   width: 100%;
   border-collapse: separate;
-  border-spacing: 0 12px;
 }
 
 .list-form th,
@@ -545,11 +534,7 @@ body::-webkit-scrollbar-thumb {
 }
 
 @media screen and (max-width: 1000px) {
-  .swiper-pagination-bullet {
-    transform: translateX(400%);
-  }
   .list-form {
-    padding: 1rem;
     width: 100%;
     overflow-x: auto;
   }
@@ -582,9 +567,6 @@ body::-webkit-scrollbar-thumb {
   }
 }
 @media screen and (max-width: 760px) {
-  .swiper-pagination-bullet {
-    transform: translateX(300%);
-  }
   #users th:nth-child(1),
   #users td:nth-child(1) {
     display: none;
@@ -608,6 +590,7 @@ body::-webkit-scrollbar-thumb {
 .hidden-id {
   display: none;
 }
+
 .list-form .recharge-btn {
   background: #f77062 !important;
   color: #fff !important;
