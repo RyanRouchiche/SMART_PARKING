@@ -73,6 +73,10 @@
   width: 100%;
 }
 
+.navbar__item > button.active {
+  color: #f77602 !important;
+}
+
 .button {
   display: flex;
   justify-content: center;
