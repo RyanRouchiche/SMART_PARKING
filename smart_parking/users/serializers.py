@@ -9,7 +9,7 @@ class AdminSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     class Meta:
         model = User
-        fields = [ 'username', 'password','email','user_type', 'first_name', 'last_name']
+        fields = [ 'username', 'password','email', 'first_name', 'last_name']
         
     def create(self, validated_data):
         user = User(
@@ -31,7 +31,7 @@ class GuestSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['username', 'password' , 'email', 'user_type', 'first_name', 'last_name', 'is_staff']
+        fields = ['username', 'password' , 'email',  'first_name', 'last_name']
         
     def create(self, validated_data):
         user =User.objects.create_user(**validated_data)
