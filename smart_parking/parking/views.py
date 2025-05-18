@@ -14,7 +14,8 @@ import json
 from django.http import JsonResponse
 from users.permission import IsAdmin
 from rest_framework.views import APIView
-
+import logging
+logger = logging.getLogger(__name__)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated , IsAdmin  ])
@@ -130,6 +131,29 @@ def get_available_areas(request):
     
     except (FileNotFoundError, json.JSONDecodeError) as e:
         return JsonResponse({'error': f'Failed to load coordinates file: {e}'}, status=500)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def get_jsonFile(request):
+    coordinates_file = os.path.join(settings.BASE_DIR, "parking", "Spots", "coordinates.json")
+
+    if not os.path.exists(coordinates_file):
+        return Response({'error': 'Le fichier coordinates.json est introuvable.'}, status=404)
+
+    try:
+        with open(coordinates_file, 'r', encoding='utf-8') as file:
+            data = json.load(file)
+            logger.info("Contenu du fichier coordinates.json chargé avec succès.")
+            return Response({"data": data}, status=200)
+
+    except json.JSONDecodeError as e:
+        logger.error(f"Erreur de décodage JSON : {e}")
+        return Response({'error': 'Erreur de format JSON dans coordinates.json.'}, status=400)
+
+    except Exception as e:
+        logger.exception("Une erreur inattendue est survenue.")
+        return Response({'error': f'Erreur inattendue : {str(e)}'}, status=500)
 
 
 class stream_page(APIView) : 

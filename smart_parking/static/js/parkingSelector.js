@@ -81,47 +81,23 @@ function selectPoint(event, area) {
 
     let spotName = prompt("Pick a name for the spot (e.g., Spot 1)");
     if (!spotName) {
-      alert("Please provide a name for the parking spot.");
-      spotName = `Spot ${selectedPoints[area].length}`;
+      const existingNames = selectedPoints[area].map(
+        (spot) => Object.keys(spot)[0]
+      );
+      let counter = 1;
+      while (existingNames.includes(`Spot ${counter}`)) {
+        counter++;
+      }
+      spotName = `Spot ${counter}`;
     }
 
     const points = Object.values(currentSpot)[0];
-    delete currentSpot["Unnamed Spot"];
-    currentSpot[spotName] = points;
+    selectedPoints[area].pop();
 
     const tempDots = imgContainer.querySelectorAll('[data-temp="true"]');
     tempDots.forEach((dot) => dot.remove());
 
-    points.forEach(([dx, dy]) => {
-      let dot = document.createElement("div");
-      dot.classList.add("selected-point");
-      dot.style.left = `${dx}px`;
-      dot.style.top = `${dy}px`;
-      dot.setAttribute("data-spot-name", spotName);
-      imgContainer.appendChild(dot);
-    });
-
-    // Draw rectangle
-    const xs = points.map((p) => p[0]);
-    const ys = points.map((p) => p[1]);
-    const minX = Math.min(...xs);
-    const minY = Math.min(...ys);
-    const maxX = Math.max(...xs);
-    const maxY = Math.max(...ys);
-    const width = maxX - minX;
-    const height = maxY - minY;
-
-    let rectangle = document.createElement("div");
-    rectangle.classList.add("spot-rectangle");
-    rectangle.style.left = `${minX}px`;
-    rectangle.style.top = `${minY}px`;
-    rectangle.style.width = `${width}px`;
-    rectangle.style.height = `${height}px`;
-    rectangle.innerText = spotName;
-    rectangle.setAttribute("data-spot-name", spotName);
-    rectangle.setAttribute("data-area", area);
-    rectangle.addEventListener("contextmenu", handleRightClickOnRectangle);
-    imgContainer.appendChild(rectangle);
+    renderSpot(area, spotName, points);
 
     alert(`Spot selected: ${spotName} in area ${area}.`);
   }
@@ -166,3 +142,80 @@ function sendCoordinates() {
     })
     .catch((error) => alert("Erreur : " + error.message));
 }
+
+async function loadCoordinates() {
+  try {
+    const response = await fetch("/parking/coordinates/", {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      console.log("erreur loading json file");
+    }
+
+    const result = await response.json();
+    console.log("Coordinates:", result.data);
+    result.data.forEach((areaObj) => {
+      const area = areaObj.area;
+      const coordinates = areaObj.coordinates;
+
+      Object.entries(coordinates).forEach(([spotName, points]) => {
+        renderSpot(area, spotName, points);
+      });
+    });
+  } catch (error) {
+    console.error("Error loading coordinates:", error);
+  }
+}
+
+function renderSpot(area, spotName, points) {
+  if (!selectedPoints[area]) {
+    selectedPoints[area] = [];
+  }
+
+  // Add spot to selectedPoints
+  selectedPoints[area].push({ [spotName]: points });
+
+  const container = document.getElementById(`container-${area}`);
+  if (!container) return;
+
+  // Draw dots
+  points.forEach(([x, y]) => {
+    const dot = document.createElement("div");
+    dot.classList.add("selected-point");
+    dot.style.left = `${x}px`;
+    dot.style.top = `${y}px`;
+    dot.setAttribute("data-spot-name", spotName);
+    container.appendChild(dot);
+  });
+
+  // Calculate rectangle dimensions
+  const xs = points.map((p) => p[0]);
+  const ys = points.map((p) => p[1]);
+  const minX = Math.min(...xs);
+  const minY = Math.min(...ys);
+  const maxX = Math.max(...xs);
+  const maxY = Math.max(...ys);
+  const width = maxX - minX;
+  const height = maxY - minY;
+
+  // Draw rectangle
+  const rectangle = document.createElement("div");
+  rectangle.classList.add("spot-rectangle");
+  rectangle.style.left = `${minX}px`;
+  rectangle.style.top = `${minY}px`;
+  rectangle.style.width = `${width}px`;
+  rectangle.style.height = `${height}px`;
+  rectangle.innerText = spotName;
+  rectangle.setAttribute("data-spot-name", spotName);
+  rectangle.setAttribute("data-area", area);
+  rectangle.addEventListener("contextmenu", handleRightClickOnRectangle);
+  container.appendChild(rectangle);
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  loadCoordinates();
+});

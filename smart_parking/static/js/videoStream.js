@@ -1,10 +1,10 @@
-import { sendrequest  , initwebsocketconn} from "./utils.js";
+import { sendrequest, initwebsocketconn } from "./utils.js";
 
 let swiper, w, h;
 let areaLength;
 const indexToAreaIdMap = {};
 let MaxareaTop = 0;
-const spotNameToIndexMap = {}; // Stores mapping per areaId
+const spotNameToIndexMap = {};
 let socket = null;
 
 //calls
@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     menuLinks.classList.toggle("active");
   });
 
-  const res = await sendrequest("/parking/areas/" , "GET");
+  const res = await sendrequest("/parking/areas/", "GET");
   const areas = await res.data;
 
   areas.forEach((areaId, index) => {
@@ -92,10 +92,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     const wschema = window.location.protocol === "https:" ? "wss" : "ws";
-     socket = initwebsocketconn(
-      wschema,
-      `ws/video/${areaId}/`
-     );
+    socket = initwebsocketconn(wschema, `ws/video/${areaId}/`);
 
     socket.onmessage = function (event) {
       const data = JSON.parse(event.data);
@@ -244,7 +241,6 @@ function generatenewcar(areaId, slot, areaLength) {
   let baseFactor = 777;
   let decrement = 91;
 
-  // decrement += Math.ceil(areaLength / 2) * 5;
   if (slot < areaLength / 2 || areaLength < 6) {
     // Top-side slots
 
@@ -371,7 +367,6 @@ function generatenewcar(areaId, slot, areaLength) {
       img.style.position = "relative";
       img.style.transform = "rotate(180deg) translateY(15%)";
       img.style.animation = "";
-      // Only adjust the width on resize, not position
       window.addEventListener("resize", () => {
         img.style.width = ((w * 0.15) / window.innerWidth) * 100 + "vw";
       });
