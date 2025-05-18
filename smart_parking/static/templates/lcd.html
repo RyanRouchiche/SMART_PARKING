@@ -1,0 +1,25 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Parking</title>
+    <link rel="stylesheet" href="{%static 'css/lcd.css' %}" />
+  </head>
+  <body>
+    <div class="container">
+      <h1 id="title">Zone :</h1>
+
+      <label for="areaSelect">Choisir une zone :</label>
+      <select id="areaSelect"></select>
+
+      <div class="status">
+        <h2>Places disponibles : <span id="count">0</span></h2>
+        <ul id="spots"></ul>
+      </div>
+    </div>
+
+    <script type="module" src="{% static 'js/lcd.js' %}"></script>
+  </body>
+</html>

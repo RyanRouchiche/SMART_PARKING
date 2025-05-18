@@ -54,9 +54,9 @@ export async function sendrequest(url, method) {
   }
 }
 
-export function initwebsocketconn(wsschema) {
+export function initwebsocketconn(wsschema , path) {
   const websocket = new WebSocket(
-    `${wsschema}://${window.location.host}/ws/user-status/`
+    `${wsschema}://${window.location.host}/${path}`
   );
 
   console.log("WebSocket connection established:", websocket);

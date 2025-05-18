@@ -1,8 +1,11 @@
+import { sendrequest  , initwebsocketconn} from "./utils.js";
+
 let swiper, w, h;
 let areaLength;
 const indexToAreaIdMap = {};
 let MaxareaTop = 0;
 const spotNameToIndexMap = {}; // Stores mapping per areaId
+let socket = null;
 
 //calls
 const areaList = document.getElementById("area-list");
@@ -25,8 +28,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     menuLinks.classList.toggle("active");
   });
 
-  const res = await fetch("/parking/areas/");
-  const areas = await res.json();
+  const res = await sendrequest("/parking/areas/" , "GET");
+  const areas = await res.data;
 
   areas.forEach((areaId, index) => {
     indexToAreaIdMap[index] = areaId;
@@ -89,9 +92,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     const wschema = window.location.protocol === "https:" ? "wss" : "ws";
-    const socket = new WebSocket(
-      `${wschema}://${window.location.host}/ws/video/${areaId}/`
-    );
+     socket = initwebsocketconn(
+      wschema,
+      `ws/video/${areaId}/`
+     );
 
     socket.onmessage = function (event) {
       const data = JSON.parse(event.data);

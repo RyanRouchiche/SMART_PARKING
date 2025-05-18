@@ -268,9 +268,9 @@ class DeleteeUserViewAPI(APIView):
     permission_classes = [IsAuthenticated , IsAdmin]
 
 
-    def delete(self, request, *args, **kwargs):
+    def delete(self,  request, user_id ,  *args, **kwargs):
         try:
-            user_id = request.data.get('user_id')
+   
             logger.info(f"User ID to delete: {user_id}")
 
             if not user_id:

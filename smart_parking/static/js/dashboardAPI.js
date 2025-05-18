@@ -1,30 +1,19 @@
 let websocket;
-import { sendrequest, initwebsocketconn } from "./utils.js";
+import { sendrequest, initwebsocketconn} from "./utils.js";
 
 async function deleteUser(userId) {
   if (confirm("Are you sure you want to delete this user?")) {
-    const csrftoken = document.querySelector(
-      'input[name="csrfmiddlewaretoken"]'
-    ).value;
+
 
     try {
-      const response = await fetch(`/dashboard/users/${userId}/delete/`, {
-        method: "DELETE",
-        credentials: "include",
+      const response = await sendrequest(`/dashboard/users/${userId}/delete/`, "DELETE" ); 
 
-        headers: {
-          "X-CSRFToken": csrftoken,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ user_id: userId }),
-      });
-
-      if (response.ok) {
+      if (response.data) {
         alert("User deleted successfully.");
         window.location.href = "/dashboard/";
       } else {
-        const data = await response.json();
-        alert(`Error: ${data.error}`);
+
+        alert(`Error: delete user`);
       }
     } catch (error) {
       console.error("Error deleting user:", error);
@@ -89,7 +78,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   //init websocket  connection
   //which protocole using
   const wsschema = window.location.protocol === "https:" ? "wss" : "ws";
-  websocket = initwebsocketconn(wsschema);
+  websocket = initwebsocketconn(wsschema , "ws/user-status/");
   console.log("WebSocket URL:", websocket.url);
 
   websocket.onopen = function () {
