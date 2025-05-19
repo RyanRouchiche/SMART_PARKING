@@ -78,7 +78,13 @@ html {
   font-size: 18px;
   margin-bottom: 10px;
   white-space: nowrap;
-  transition: all ease 0.4zs;
+  transition: all ease 0.4s;
+}
+
+.sidebar h2,
+.sidebar ul,
+.sidebar li {
+  transition: opacity 0.3s ease;
 }
 
 .sidebar ul {
@@ -100,12 +106,6 @@ html {
 
 .sidebar li.active {
   background-color: #4caf50;
-}
-
-.swiper {
-  flex: 1;
-  background: #131313;
-  color: white;
 }
 
 .area-title {
