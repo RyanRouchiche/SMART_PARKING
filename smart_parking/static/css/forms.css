@@ -1,15 +1,16 @@
-body,
-html {
+html,
+body {
+  min-height: 100%;
   width: 100%;
-  height: 100%;
   margin: 0;
   overflow-x: hidden;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  position: relative;
+  display: block; /* Remove flex if not needed globally */
+}
+
+body {
   background: #131313;
   font-family: "Roboto";
+  overflow-y: auto;
 }
 
 body::-webkit-scrollbar {
@@ -38,7 +39,8 @@ body::-webkit-scrollbar-thumb {
   align-items: center;
   justify-self: center;
   margin: 0 auto;
-  height: 90vh;
+  min-height: 90vh;
+  height: auto;
   background-color: #141414;
   z-index: 1;
   width: 100%;
@@ -68,8 +70,8 @@ body::-webkit-scrollbar-thumb {
 }
 .camera-form {
   width: 100%;
-  max-width: 400px;
-  margin-top: 1rem;
+  min-width: 200px;
+  max-width: 700px;
 }
 
 .camera-form label {
@@ -99,7 +101,7 @@ body::-webkit-scrollbar-thumb {
 .camera-form button[type="submit"] {
   display: block;
   width: 100%;
-  padding: 12px 16px;
+  padding: 12px 0px;
   background: linear-gradient(to right, #ff0844, #f77062);
   border: none;
   color: white;
@@ -108,6 +110,7 @@ body::-webkit-scrollbar-thumb {
   border-radius: 4px;
   cursor: pointer;
   margin-top: 10px;
+  margin-left: 3%;
   transition: background 0.3s ease;
 }
 
@@ -149,10 +152,11 @@ body::-webkit-scrollbar-thumb {
 
 .swiper {
   width: 100%;
-  height: 80vh;
+  min-height: 80vh;
   position: relative;
   z-index: 1;
   background-color: #141414;
+  overflow: hidden;
 }
 
 .swiper-wrapper {
@@ -206,7 +210,6 @@ body::-webkit-scrollbar-thumb {
   height: 50vh;
 }
 
-/* user-list-css */
 .list-form {
   background-color: #121212;
   border-radius: 12px;
@@ -217,8 +220,8 @@ body::-webkit-scrollbar-thumb {
   flex-direction: column;
   align-items: center;
   font-family: "Kumbh Sans", sans-serif;
-  overflow-y: auto;
-  max-height: 70vh;
+  overflow: visible;
+  max-height: none;
 }
 
 .list-form table {
@@ -291,6 +294,12 @@ body::-webkit-scrollbar-thumb {
 
 .list-form tr:hover td {
   background-color: #1e1e1e;
+}
+
+#cameraTable,
+#userTable {
+  width: 100%;
+  overflow-x: auto;
 }
 
 .delete-user-btn {
