@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
       clickable: true,
     },
     loop: false,
+    autoHeight: true,
   });
 
   const addButton = document.getElementById("add-slide-btn");
@@ -18,10 +19,24 @@ document.addEventListener("DOMContentLoaded", function () {
   createControlPanel(0);
 
   let slideCount = 1;
-  let slideIdCounter = 1;
+  let usedIds = new Set([0]);
+  let releasedIds = [];
 
   addButton.addEventListener("click", () => {
-    const currentId = slideIdCounter++;
+    let currentId;
+    if (releasedIds.length > 0) {
+      releasedIds.sort((a, b) => a - b);
+      currentId = releasedIds.shift();
+    } else {
+      for (let i = 0; i < 10; i++) {
+        if (!usedIds.has(i)) {
+          currentId = i;
+          break;
+        }
+      }
+    }
+
+    usedIds.add(currentId);
 
     const newSlide = document.createElement("div");
     newSlide.classList.add("swiper-slide");
@@ -40,7 +55,6 @@ document.addEventListener("DOMContentLoaded", function () {
     clonedForm.id = `formContainer-${currentId}`;
 
     content.appendChild(clonedForm);
-
     newSlide.appendChild(content);
     wrapper.appendChild(newSlide);
 
@@ -69,6 +83,9 @@ document.addEventListener("DOMContentLoaded", function () {
         ctrl.remove();
       }
     });
+
+    releasedIds.push(parseInt(id));
+    usedIds.delete(parseInt(id));
 
     slideCount--;
     swiper.update();

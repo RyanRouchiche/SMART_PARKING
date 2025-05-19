@@ -1,15 +1,13 @@
-body,
-html {
+html,
+body {
+  margin: 0;
+  padding: 0;
   width: 100%;
   height: 100%;
-  margin: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  position: relative;
   background: rgb(24, 20, 20);
-  font-family: "Roboto";
+  font-family: "Roboto", sans-serif;
+  overflow-x: hidden;
+  overflow-y: auto; /* allows scroll if content grows */
 }
 
 body::-webkit-scrollbar {
@@ -32,28 +30,27 @@ body::-webkit-scrollbar-thumb {
 }
 
 .main__container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  align-items: center;
-  justify-self: center;
-  margin: 0 auto;
-  height: 90vh;
-  background-color: #141414;
-  z-index: 1;
-  width: 100%;
-  max-width: 1300px;
-  padding: 0 50px;
-}
-
-.main__content {
-  width: 100%;
-  height: 100%;
-
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  padding: 2rem 1rem;
+  width: 100%;
+  max-width: 1300px;
+  margin: 0 auto;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.main__content {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* center vertically */
+  align-items: center;
   text-align: center;
+  margin: auto; /* fallback centering */
 }
 
 .main__content h1 {
@@ -69,7 +66,7 @@ body::-webkit-scrollbar-thumb {
 .camera-form {
   width: 100%;
   max-width: 500px;
-  margin-top: 1rem;
+  margin-bottom: 4rem;
 }
 
 .camera-form label {
@@ -81,14 +78,16 @@ body::-webkit-scrollbar-thumb {
 
 .camera-form input {
   width: 100%;
-  padding: 12px 12px;
+  max-width: 100%;
+  padding: 12px;
   margin-bottom: 15px;
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 1rem;
   background-color: #1e1e1e;
   color: #fff;
-  transition: border-color 0.3s;
+  transition: border-color 0.3s, font-size 0.3s;
+  box-sizing: border-box;
 }
 
 .camera-form input:focus {
@@ -96,6 +95,19 @@ body::-webkit-scrollbar-thumb {
   color: #fff;
   border-color: #f77062;
   outline: none;
+}
+
+@media screen and (max-width: 600px) {
+  .camera-form input {
+    font-size: 0.9rem;
+  }
+}
+
+@media screen and (max-width: 400px) {
+  .camera-form input {
+    font-size: 0.85rem;
+    padding: 8px;
+  }
 }
 
 .main__btn {
@@ -150,27 +162,19 @@ body::-webkit-scrollbar-thumb {
 
   .main__content {
     text-align: center;
-    margin-bottom: 4rem;
-  }
-
-  .main__content h1 {
-    font-size: 2.5rem;
-  }
-}
-@media screen and (max-width: 1500px) {
-  .main__content h1 {
-    font-size: 2.5rem;
-    margin-top: 2rem;
   }
 }
 
 /* Swiper core layout adjustments */
 .swiper {
   width: 100%;
-  height: 80vh;
-  position: relative;
-  z-index: 1;
+  margin-bottom: 1rem;
+  box-sizing: border-box;
   background-color: #141414;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: auto;
 }
 
 .swiper-wrapper {
@@ -180,10 +184,14 @@ body::-webkit-scrollbar-thumb {
 }
 
 .swiper-slide {
+  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100%;
+  flex-wrap: wrap;
+  padding: 1rem;
+  box-sizing: border-box;
+  height: auto;
 }
 
 /* Navigation buttons style (Swiper default overrides) */
