@@ -538,3 +538,6 @@
     flex-direction: column;
   }
 }
+.navbar__item > button.active {
+  color: #f77602 !important;
+}

@@ -20,14 +20,6 @@ open.addEventListener("click", () => {
 
 // Function to handle token refresh +  dynamic div creation based on websocket data
 document.addEventListener("DOMContentLoaded", async () => {
-  const menu = document.querySelector("#mobile-menu");
-  const menuLinks = document.querySelector(".navbar__menu");
-
-  menu.addEventListener("click", function () {
-    menu.classList.toggle("is-active");
-    menuLinks.classList.toggle("active");
-  });
-
   const res = await sendrequest("/parking/areas/", "GET");
   const areas = await res.data;
 

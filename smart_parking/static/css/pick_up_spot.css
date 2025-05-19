@@ -287,9 +287,16 @@ body {
   pointer-events: none;
 }
 
+.bottom__area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
 .save-button {
   display: block;
-  margin: 40px auto;
+  margin: 40px 0px;
   padding: 12px 30px;
   font-size: 1.2rem;
   font-weight: 600;
@@ -304,4 +311,12 @@ body {
 .save-button:hover {
   background: linear-gradient(to right, #ff5f6d, #ffc371);
   transform: translateY(-2px);
+}
+
+#Undo {
+  display: none;
+}
+
+#Undo.active {
+  display: block;
 }

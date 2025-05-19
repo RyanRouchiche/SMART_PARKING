@@ -35,7 +35,7 @@ function handleRightClickOnRectangle(event) {
     `.selected-point[data-spot-name="${spotName}"]`
   );
   dots.forEach((dot) => dot.remove());
-
+  Undo.style.display = "block";
   alert(`Spot "${spotName}" deleted.`);
 }
 
@@ -98,7 +98,7 @@ function selectPoint(event, area) {
     tempDots.forEach((dot) => dot.remove());
 
     renderSpot(area, spotName, points);
-
+    Undo.style.display = "block";
     alert(`Spot selected: ${spotName} in area ${area}.`);
   }
 }
@@ -216,6 +216,17 @@ function renderSpot(area, spotName, points) {
   container.appendChild(rectangle);
 }
 
+//undo all changes
+function clearAllSpots() {
+  Undo.style.display = "none";
+  document
+    .querySelectorAll(".selected-point, .spot-rectangle")
+    .forEach((el) => el.remove());
+  selectedPoints = {};
+  loadCoordinates();
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
+  const Undo = document.getElementById("Undo");
   loadCoordinates();
 });

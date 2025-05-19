@@ -1,18 +1,18 @@
 let websocket;
-import { sendrequest, initwebsocketconn} from "./utils.js";
+import { sendrequest, initwebsocketconn } from "./utils.js";
 
 async function deleteUser(userId) {
   if (confirm("Are you sure you want to delete this user?")) {
-
-
     try {
-      const response = await sendrequest(`/dashboard/users/${userId}/delete/`, "DELETE" ); 
+      const response = await sendrequest(
+        `/dashboard/users/${userId}/delete/`,
+        "DELETE"
+      );
 
       if (response.data) {
         alert("User deleted successfully.");
         window.location.href = "/dashboard/";
       } else {
-
         alert(`Error: delete user`);
       }
     } catch (error) {
@@ -65,20 +65,10 @@ function populateUserTable(users) {
 }
 
 document.addEventListener("DOMContentLoaded", async function () {
-  const menu = document.querySelector("#mobile-menu");
-  const menuLinks = document.querySelector(".navbar__menu");
-
-  if (menu && menuLinks) {
-    menu.addEventListener("click", function () {
-      menu.classList.toggle("is-active");
-      menuLinks.classList.toggle("active");
-    });
-  }
-
   //init websocket  connection
   //which protocole using
   const wsschema = window.location.protocol === "https:" ? "wss" : "ws";
-  websocket = initwebsocketconn(wsschema , "ws/user-status/");
+  websocket = initwebsocketconn(wsschema, "ws/user-status/");
   console.log("WebSocket URL:", websocket.url);
 
   websocket.onopen = function () {

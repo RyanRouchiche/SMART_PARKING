@@ -15,37 +15,13 @@
     <script defer src="{% static 'css/swiper/swiper-bundle.min.js' %}"></script>
     <script type="module" src="{% static 'js/dashboardAPI.js' %}"></script>
     <script type="module" src="{% static 'js/refresh.js' %}"></script>
+    <script src="{% static 'js/partials/navbar.js' %}"></script>
   </head>
   <body>
-    <nav class="navbar">
-      <div class="navbar__container">
-        <a href="/dashboard/" id="navbar__logo">PARKING</a>
-        <div class="navbar__toggle" id="mobile-menu">
-          <span class="bar"></span>
-          <span class="bar"></span>
-          <span class="bar"></span>
-        </div>
-        <ul class="navbar__menu">
-          <li class="navbar__item">
-            <button class="navbar__links active" id="DVA">DVA</button>
-          </li>
-          <li class="navbar__item">
-            <button class="navbar__links" id="markSpot">mark spot</button>
-          </li>
-          <li class="navbar__item">
-            <button class="navbar__links" id="cameraconfig">
-              camera configuration
-            </button>
-          </li>
-          <li class="navbar__item">
-            <button class="navbar__links" id="Forms">Forms</button>
-          </li>
-          <li class="navbar__btn">
-            <button class="button" id="logout-btn">Logout</button>
-          </li>
-        </ul>
-      </div>
-    </nav>
+    <!-- navbar section -->
+    {% include 'partials/navbar.html' %}
+
+    <!-- main section -->
     <div class="layout">
       <div class="sidebar close" id="sidebar">
         <button id="open"><span id="arrow">&#62;</span></button>
