@@ -7,7 +7,7 @@ body {
   background: rgb(24, 20, 20);
   font-family: "Roboto", sans-serif;
   overflow-x: hidden;
-  overflow-y: auto; /* allows scroll if content grows */
+  overflow-y: auto;
 }
 
 body::-webkit-scrollbar {
