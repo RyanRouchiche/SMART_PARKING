@@ -62,11 +62,25 @@ body::-webkit-scrollbar-thumb {
   -moz-background-clip: text;
   -webkit-text-fill-color: transparent;
   -moz-text-fill-color: transparent;
+  min-height: 170px;
 }
 .camera-form {
   width: 100%;
-  max-width: 500px;
+  max-width: 400px;
+  min-width: 400px;
   margin-bottom: 4rem;
+  box-sizing: border-box;
+}
+
+.services__card h2 {
+  font-size: 1rem;
+  margin-top: 1rem;
+  min-height: 1.5rem;
+  text-align: center;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .camera-form label {
@@ -184,7 +198,6 @@ body::-webkit-scrollbar-thumb {
 }
 
 .swiper-slide {
-  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -231,15 +244,16 @@ body::-webkit-scrollbar-thumb {
 }
 
 #bottom_section {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
-  justify-content: left;
+  justify-content: flex-start;
+  bottom: 0%;
   gap: 1rem;
   padding: 1rem;
   width: 100%;
   box-sizing: border-box;
   background-color: #141414;
-  max-height: 40vh;
 }
 
 .services__card {

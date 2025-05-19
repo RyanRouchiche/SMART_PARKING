@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const clonedForm = originalForm.cloneNode(true);
 
     const h1 = clonedForm.querySelector("h1");
-    if (h1) h1.textContent = `Camera ${currentId}`;
+    if (h1) h1.textContent = `Camera N_${currentId} Adding page`;
 
     clonedForm.id = `formContainer-${currentId}`;
 
@@ -105,8 +105,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const icon = document.createElement("div");
     icon.style.position = "absolute";
     icon.style.top = "50%";
-    icon.style.left = "100%";
-    icon.style.transform = "translate(-50%, -50%)";
+    icon.style.left = "0%";
+    icon.style.transform = "translate(0%, -50%)";
 
     const img = document.createElement("img");
     img.src = window.CAM_IMAGE_URL;
@@ -135,7 +135,7 @@ document.addEventListener("DOMContentLoaded", function () {
     title.style.color = "#fff";
     title.style.position = "absolute";
     title.style.top = "80%";
-    title.style.left = "65%";
+    title.style.left = "20%";
     title.style.whiteSpace = "nowrap";
 
     card.appendChild(title);
@@ -159,7 +159,7 @@ document.addEventListener("DOMContentLoaded", function () {
       deleteBtn.textContent = "✕";
       deleteBtn.style.position = "absolute";
       deleteBtn.style.top = "10%";
-      deleteBtn.style.right = "-35%";
+      deleteBtn.style.right = "10%";
       deleteBtn.style.border = "none";
       deleteBtn.style.background = "rgba(255, 0, 0, 0.7)";
       deleteBtn.style.color = "#fff";
