@@ -98,6 +98,14 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
   }
 
+  const LCdbtn = document.getElementById("LCD");
+  if (LCdbtn) {
+    console.log("LCdbtn button found");
+    LCdbtn.addEventListener("click", function () {
+      window.location.href = "/dashboard/lcd/";
+    });
+  }
+
   //redirect the admin to conigure parking spot
 
   const markupspotButton = document.getElementById("markSpot");

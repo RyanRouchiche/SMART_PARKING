@@ -19,6 +19,7 @@
     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
     <!-- navbar section -->
     {% include 'partials/navbar.html' %}
+
     <!-- main section -->
     <div class="main">
       <div class="main__container">
@@ -29,7 +30,7 @@
           <h2><span id="role" style="display: none;"></h2>
           <h2><span id="user-id" style="display: none;"></h2>
           <p>View your parking simulation.</p>
-          <button class="main__btn"><a href="/">Get Started</a></button>
+          <button class="main__btn"><a href="/parking/video/">View Status</a></button>
         </div>
         <div class="main__img--container">
           <img src="{% static 'images/undraw_pic1.svg' %}" alt="" id="main__img" />
@@ -39,28 +40,38 @@
 
     <!-- services section -->
     <div class="services">
-      <h1>What are we offering ? :</h1>
+      <h1>What are we offering ?</h1>
       <div class="services__container">
+        <a href="/dashboard/Forms/">
         <div class="services__card" data-bg="{% static 'images/database.jpg' %}">
-          <h2>Forms</h2>
-          <p>Manage your users database </p>
+          <h2>Dashboard</h2>
+          <p>Manage your users database </p> 
           <button>Get Started</button>
         </div>
-        <div class="services__card" data-bg="{% static 'images/spots.jpg' %}">
-          <h2>DVA</h2>
-          <p>check parking simulation </p>
-          <button>Get Started</button>
-        </div>
-        <div class="services__card" data-bg="{% static 'images/parking.jpeg' %}">
-          <h2>Mark Spots</h2>
-          <p>you can manually change your parking spots!</p>
-          <button>Get Started</button>
-        </div>
-        <div class="services__card" data-bg="{% static 'images/camera.webp' %}">
-          <h2>Camera management</h2>
+        </a>
+        <a href="/camera/config/">        
+          <div class="services__card" data-bg="{% static 'images/camera.webp' %}">
+          <h2>Setup</h2>
           <p>add/delete cameras from your database</p>
           <button>Get Started</button>
         </div>
+        </a>
+        <a href="/dashboard/lcd/">
+        <div class="services__card" data-bg="{% static 'images/spots.jpg' %}">
+          <h2>LCD</h2>
+          <p>Parking data displayed on LCD</p>
+          <button>Get Started</button>
+        </div>
+        </a>
+        <a href="/parking/pickupSpot/">   
+          <div class="services__card" data-bg="{% static 'images/parking.jpeg' %}">
+          <h2>Initialization</h2>
+          <p>you can manually change your parking spots!</p>
+          <button>Get Started</button>
+        </div>
+        </a>
+
+
       </div>
     </div>
 

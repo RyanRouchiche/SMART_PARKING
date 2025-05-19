@@ -16,6 +16,7 @@ document.addEventListener("DOMContentLoaded", function () {
     "/parking/pickupSpot/": "markSpot",
     "/camera/config/": "cameraconfig",
     "/dashboard/Forms/": "Forms",
+    "/dashboard/lcd/": "LCD",
   };
 
   const activeButtonId = pathToButtonId[path];
