@@ -18,6 +18,7 @@ from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
 from .permission import IsAdmin
 from .models import User
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.tokens import AccessToken
 logger = logging.getLogger(__name__)
 
 from .utils import SETupCOOKIE , send_verif_email
@@ -305,3 +306,26 @@ class LoginView(APIView) :
     permission_classes = [AllowAny]
     def get(self, request , *args, **kwargs) : 
         return render(request, 'login.html')
+    
+class check_auth(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        try:
+            user = request.user
+            logger.info(f"Authenticated user: {user}")
+            access_token = request.COOKIES.get('access_token')
+            logger.info(f"Access token from cookies: {access_token}")
+            if not access_token:
+                return Response({'success': False, 'error': 'No access token found', 'status': 401}, status=401)
+            try:
+                AccessToken(access_token)
+            except TokenError as e:
+                return Response({'success': False, 'error': 'Access token is expired or invalid', 'status': 401}, status=401)
+            if user.is_authenticated:
+                return Response({'success': True, 'message': 'User is authenticated', 'status': 200}, status=200)
+            else:
+                return Response({'success': False, 'error': 'User is not authenticated', 'status': 401}, status=401)
+        except Exception as e:
+            logger.error(f"Error in check_auth: {str(e)}", exc_info=True)
+            return Response({'success': False, 'error': 'An unexpected error occurred'}, status=500)

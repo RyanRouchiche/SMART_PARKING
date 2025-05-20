@@ -1,5 +1,5 @@
 console.log("JS chargé");
-import { sendrequest, postrequest } from "./utils.js";
+import { sendrequest, postrequest, redirect } from "./utils.js";
 
 function sendCamData() {
   const forms = document.getElementsByClassName("camera-form");
@@ -11,7 +11,7 @@ function sendCamData() {
     const path = form.querySelector('input[name="path"]').value.trim();
 
     if (!area || !ref || !path) {
-      alert("Veuillez remplir tous les champs pour chaque caméra.");
+      showConfirmModal("Please fill in all fields for each camera.");
       return;
     }
 
@@ -57,16 +57,9 @@ document.addEventListener("DOMContentLoaded", async function (e) {
     const validateButton = document.getElementById("validatecam");
     if (validateButton) {
       console.log("Validate button found.");
-      validateButton.addEventListener("click", async (e) => {
+      validateButton.addEventListener("click", (e) => {
         e.preventDefault();
-        const data = sendCamData();
-        if (data) {
-          const response = await postrequest("/camera/config/", "POST", data);
-          if (response && response.ok) {
-            alert("Cameras added successfully!");
-            window.location.href = "/dashboard/";
-          }
-        }
+        window.showModal(null, "validate");
       });
     }
   }
@@ -92,7 +85,7 @@ async function deleteCamera(cameraId) {
   const response = await sendrequest(`/camera/delete/${cameraId}/`, "DELETE");
   if (response.data) {
     alert("Camera deleted successfully!");
-    window.location.href = "/dashboard/";
+    await redirect("/dashboard/");
   } else {
     alert("Error deleting camera.");
   }
@@ -107,3 +100,17 @@ function hideError() {
 document.querySelectorAll("#guest-form input").forEach((input) => {
   input.addEventListener("focus", hideError);
 });
+
+async function SendData(data) {
+  if (data) {
+    const response = await postrequest("/camera/config/", "POST", data);
+    if (response && response.ok) {
+      showConfirmModal("Cameras added successfully!");
+    } else {
+      showConfirmModal("Error submitting cameras.");
+    }
+  }
+}
+
+window.sendCamData = sendCamData;
+window.SendData = SendData;

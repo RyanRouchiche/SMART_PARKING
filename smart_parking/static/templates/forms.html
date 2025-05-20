@@ -21,7 +21,6 @@
     <script type="module" src="{% static 'js/camera.js' %}"></script>
     <script type="module" src="{% static 'js/auth.js' %}"></script>
     <script type="module" src="{% static 'js/dashboardAPI.js' %}"></script>
-    <script type="module" src="{% static 'js/refresh.js' %}"></script>
     <script src="{% static 'js/partials/navbar.js' %}"></script>
   <body>
     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
@@ -84,6 +83,7 @@
             <div class="formContainer" id="formContainer-3">
               <div class="list-form" id="users">
                 <h2>Users List</h2>
+                 <p class="error-message" id="error-message-userList"></p>
                 <table id="userTable">
                   <thead>
                     <tr>

@@ -7,6 +7,7 @@
     <title>Camera</title>
     <link rel="stylesheet" href="{% static 'css/camera.css' %}" />
     <link rel="stylesheet" href="{%static 'css/partials/navbar.css' %}" />
+    <link rel="stylesheet" href="{%static 'css/partials/modal.css' %}" />
     <link
       href="https://fonts.googleapis.com/css2?family=Kumbh+Sans:wght@100..900&display=swap"
       rel="stylesheet"
@@ -20,7 +21,6 @@
     <script type="module" src="{% static 'js/camera.js' %}"></script>
     <script src="{% static 'js/cameraconfig.js' %}"></script>
     <script type="module" src="{% static 'js/dashboardAPI.js' %}"></script>
-    <script type="module" src="{% static 'js/refresh.js' %}"></script>
     <script src="{% static 'js/partials/navbar.js' %}"></script>
   </head>
   <body>
@@ -79,21 +79,10 @@
       <!-- Dynamic buttons will be added here -->
     </div>
 
-    <div id="confirmModal" class="modal-overlay">
-      <div class="modal-content">
-        <p>Are you sure you want to delete this slide?</p>
-        <div class="modal-actions">
-          <button
-            id="cancelDeleteBtn"
-            class="modal__btn"
-            style="background: gray"
-          >
-            Undo
-          </button>
-          <button id="confirmDeleteBtn" class="modal__btn">Yes, Confirm</button>
-        </div>
-      </div>
-    </div>
+    <!-- Confirm/Undo Pop up -->
+    {% include 'partials/modal.html' %}
+    <!-- Confirm Pop up -->
+    {% include 'partials/modalConfirm.html'%}
     <script>
       window.CAM_IMAGE_URL = "{% static 'images/cam.png' %}";
     </script>

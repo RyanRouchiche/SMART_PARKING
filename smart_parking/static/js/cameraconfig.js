@@ -1,3 +1,6 @@
+let pendingDeleteId = null;
+let modalMode = null;
+
 document.addEventListener("DOMContentLoaded", function () {
   const swiper = new Swiper(".swiper", {
     navigation: {
@@ -170,7 +173,7 @@ document.addEventListener("DOMContentLoaded", function () {
       deleteBtn.style.pointerEvents = "auto";
 
       deleteBtn.addEventListener("click", () => {
-        showConfirmModal(id);
+        showModal(id);
       });
 
       buttonContainer.appendChild(deleteBtn);
@@ -180,26 +183,53 @@ document.addEventListener("DOMContentLoaded", function () {
     bottomSection.appendChild(card);
   }
 
-  let pendingDeleteId = null;
-
-  function showConfirmModal(id) {
-    pendingDeleteId = id;
-    document.getElementById("confirmModal").style.display = "flex";
-  }
-
-  function hideConfirmModal() {
-    pendingDeleteId = null;
-    document.getElementById("confirmModal").style.display = "none";
-  }
-
-  document.getElementById("confirmDeleteBtn").addEventListener("click", () => {
-    if (pendingDeleteId !== null) {
+  document.getElementById("confirmBtn").addEventListener("click", async () => {
+    if (modalMode === "delete" && pendingDeleteId !== null) {
       deleteSlide(pendingDeleteId);
-      hideConfirmModal();
     }
+
+    if (modalMode === "validate") {
+      const data = sendCamData();
+      SendData(data);
+    }
+    hideModal();
   });
 
+  document.getElementById("cancelBtn").addEventListener("click", hideModal);
   document
-    .getElementById("cancelDeleteBtn")
+    .getElementById("Confirm-Btn")
     .addEventListener("click", hideConfirmModal);
 });
+
+function showModal(id = null, mode = "delete") {
+  pendingDeleteId = id;
+  modalMode = mode;
+  document.getElementById("Modal").style.display = "flex";
+  const message = document.getElementById("modalMessage");
+  if (message) {
+    message.textContent =
+      mode === "delete"
+        ? "Are you sure you want to delete this slide?"
+        : "Do you want to validate and submit all cameras?";
+  }
+}
+
+function showConfirmModal(text) {
+  document.getElementById("confirmModal").style.display = "flex";
+  const message = document.getElementById("ConfirmText");
+  if (message) {
+    message.textContent = text;
+  }
+}
+
+function hideModal() {
+  pendingDeleteId = null;
+  document.getElementById("Modal").style.display = "none";
+}
+function hideConfirmModal() {
+  document.getElementById("confirmModal").style.display = "none";
+}
+
+window.showModal = showModal;
+window.hideConfirmModal = hideConfirmModal;
+window.showConfirmModal = showConfirmModal;

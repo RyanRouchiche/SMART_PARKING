@@ -1,8 +1,7 @@
-import { postrequest } from "./utils.js";
+import { postrequest , redirect } from "./utils.js";
 
 document.addEventListener("DOMContentLoaded", function () {
   //part handles login form submission
-
   const loginform = document.getElementById("login-form");
   const errorMessageContainer1 = document.getElementById("error-message-login");
   if (loginform) {
@@ -16,7 +15,8 @@ document.addEventListener("DOMContentLoaded", function () {
       const res = await postrequest("/auth/token/", "POST", data);
       if (res.status === 200 || res.status === 201) {
         console.log("Login successful");
-        window.location.href = "/dashboard/";
+     
+        await redirect("/dashboard/");
       } else {
         errorMessageContainer1.style.display = "block";
         errorMessageContainer1.innerHTML =
@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log("Registration successful");
         alert("Registration successful");
       } else {
-        errorMessageContainer.style.display = "block"; // Show the error message container
+        errorMessageContainer.style.display = "block"; 
         errorMessageContainer.innerHTML =
           "Registration failed. Please check your credentials and try again.";
       }
@@ -76,9 +76,9 @@ document.addEventListener("DOMContentLoaded", function () {
         if (res.status === 201 || res.status === 200) {
           console.log("Guest registration successful");
           alert("Guest registration successful . Please confirm your email");
-          window.location.href = "/dashboard/";
+          await redirect("/dashboard/");
         } else {
-          errorMessageContainer.style.display = "block"; // Show the error message container
+          errorMessageContainer.style.display = "block"; 
           errorMessageContainer.innerHTML =
             "Guest registration fail. Please check your credentials and try again.";
         }

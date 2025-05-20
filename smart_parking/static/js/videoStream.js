@@ -132,7 +132,6 @@ document.addEventListener("DOMContentLoaded", async () => {
           const actualSpot = spotNameToIndexMap[areaId].reverseMap[i];
           p.textContent = actualSpot?.match(/\d+/)?.[0] || `?`;
           parking_slots.appendChild(p);
-          // parking_slots.textContent = `${i + 1}`;
           if (i < areaLength / 2 || areaLength < 6) {
             parking_slots_holder_target_1.appendChild(parking_slots);
             MaxareaTop = MaxareaTop + 1;

@@ -10,7 +10,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
   const path = window.location.pathname;
   console.log("path : ", path);
-  // Mapping current path to button IDs
   const pathToButtonId = {
     "/parking/video/": "DVA",
     "/parking/pickupSpot/": "markSpot",

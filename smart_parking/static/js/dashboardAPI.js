@@ -1,5 +1,5 @@
 let websocket;
-import { sendrequest, initwebsocketconn } from "./utils.js";
+import { sendrequest, initwebsocketconn, redirect } from "./utils.js";
 
 async function deleteUser(userId) {
   if (confirm("Are you sure you want to delete this user?")) {
@@ -11,7 +11,7 @@ async function deleteUser(userId) {
 
       if (response.data) {
         alert("User deleted successfully.");
-        window.location.href = "/dashboard/";
+        await redirect("/dashboard/Forms/");
       } else {
         alert(`Error: delete user`);
       }
@@ -90,29 +90,56 @@ document.addEventListener("DOMContentLoaded", async function () {
       ), url('${imageUrl}')`;
     });
   }
-  const dvabtn = document.getElementById("DVA");
-  if (dvabtn) {
-    console.log("DVA button found");
-    dvabtn.addEventListener("click", function () {
-      window.location.href = "/parking/video/";
+  const parkingbtn = document.getElementById("navbar__logo");
+  if (parkingbtn) {
+    parkingbtn.addEventListener("click", async (e) => {
+      e.preventDefault();
+      await redirect("/dashboard/");
     });
   }
 
-  const LCdbtn = document.getElementById("LCD");
-  if (LCdbtn) {
-    console.log("LCdbtn button found");
-    LCdbtn.addEventListener("click", function () {
-      window.location.href = "/dashboard/lcd/";
+  const dvabtn = document.getElementById("DVA");
+  const simulationCard = document.getElementById("simulationCard");
+  if (dvabtn) {
+    console.log("DVA button found");
+    dvabtn.addEventListener("click", async function () {
+      await redirect("/parking/video/");
+    });
+  }
+  if (simulationCard) {
+    simulationCard.addEventListener("click", async function () {
+      await redirect("/parking/video/");
+    });
+  }
+
+  const LCDbtn = document.getElementById("LCD");
+  const lcdCard = document.getElementById("lcdCard");
+  if (LCDbtn) {
+    console.log("LCDbtn button found");
+    LCDbtn.addEventListener("click", async function () {
+      await redirect("/dashboard/lcd/");
+    });
+  }
+  if (lcdCard) {
+    lcdCard.addEventListener("click", async function () {
+      await redirect("/dashboard/lcd/");
     });
   }
 
   //redirect the admin to conigure parking spot
 
   const markupspotButton = document.getElementById("markSpot");
+  const PickupCard = document.getElementById("PickupCard");
+
   if (markupspotButton) {
     console.log("button markup spot found");
-    markupspotButton.addEventListener("click", function () {
-      window.location.href = "/parking/pickupSpot/";
+    markupspotButton.addEventListener("click", async function () {
+      await redirect("/parking/pickupSpot/");
+    });
+  }
+  if (PickupCard) {
+    PickupCard.addEventListener("click", async function () {
+      await redirect("/parking/pickupSpot/");
     });
   }
 
@@ -123,8 +150,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     logoutbutton.addEventListener("click", async () => {
       const data = await sendrequest("/auth/logout/", "POST");
       if (data.data.success) {
-        alert(data.data.message);
-        window.location.href = "/auth/login/";
+        window.location.href = "/";
       } else {
         alert("Logout failed: " + data.data.error);
       }
@@ -132,17 +158,31 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
 
   const cameraButton = document.getElementById("cameraconfig");
+  const SetupCard = document.getElementById("SetupCard");
   if (cameraButton) {
     console.log("Camera button found!");
-    cameraButton.addEventListener("click", function () {
-      window.location.href = "/camera/config/";
+    cameraButton.addEventListener("click", async function () {
+      await redirect("/camera/config/");
     });
   }
+  if (SetupCard) {
+    SetupCard.addEventListener("click", async function () {
+      await redirect("/camera/config/");
+    });
+  }
+
   const cameraListButton = document.getElementById("Forms");
+  const FormsCard = document.getElementById("FormsCard");
+
   if (cameraListButton) {
     console.log("Camera list button found!");
-    cameraListButton.addEventListener("click", function () {
-      window.location.href = "/dashboard/Forms/";
+    cameraListButton.addEventListener("click", async function () {
+      await redirect("/dashboard/Forms/");
+    });
+  }
+  if (FormsCard) {
+    FormsCard.addEventListener("click", async function () {
+      await redirect("/dashboard/Forms/");
     });
   }
 

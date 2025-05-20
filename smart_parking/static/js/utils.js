@@ -1,32 +1,9 @@
-export async function scheduleStaticTokenRefresh() {
-  setInterval(async () => {
-    try {
-      console.log("Attempting token refresh...");
 
-      const res = await fetch("/auth/token/refresh/", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
 
-      if (!res.ok) {
-        console.warn("Token refresh failed. Redirecting to login...");
-        window.location.href = "/";
-      } else {
-        console.log("Token successfully refreshed.");
-      }
-    } catch (error) {
-      console.error("Token refresh error:", error);
-      window.location.href = "/";
-    }
-  }, 1680000);
-}
 
 export async function sendrequest(url, method) {
   try {
-    const response = await fetch(url, {
+    let response = await fetch(url, {
       method: method,
       headers: {
         "Content-Type": "application/json",
@@ -34,8 +11,29 @@ export async function sendrequest(url, method) {
       credentials: "include",
     });
 
-    if (response.status === 403) {
-      alert("only admin");
+    if (response.status === 401) {
+      console.log("Token expired, refreshing...");
+      const refreshRes = await fetch("/auth/token/refresh/", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (refreshRes.ok) {
+        console.log("Token refreshed successfully.");
+        response = await fetch(url, {
+          method: method,
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        });
+      } else {
+        window.location.href = "/";
+        return;
+      }
     }
 
     if (response.status === 403) {
@@ -54,7 +52,7 @@ export async function sendrequest(url, method) {
   }
 }
 
-export function initwebsocketconn(wsschema , path) {
+export function initwebsocketconn(wsschema, path) {
   const websocket = new WebSocket(
     `${wsschema}://${window.location.host}/${path}`
   );
@@ -64,8 +62,12 @@ export function initwebsocketconn(wsschema , path) {
   return websocket;
 }
 
+
+
+
+
 export async function postrequest(url, method, payload) {
-  try {
+  async function makeRequest() {
     const response = await fetch(url, {
       method: method,
       headers: {
@@ -77,7 +79,35 @@ export async function postrequest(url, method, payload) {
       body: JSON.stringify(payload),
     });
 
-    console.log("response:", response);
+    return response;
+  }
+
+  try {
+    let response = await makeRequest();
+
+    if (response.status === 401) {
+      console.warn("Token expired. Trying to refresh...");
+
+      const refreshResponse = await fetch("/auth/token/refresh/", {
+        method: "POST",
+        credentials: "include", 
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (refreshResponse.ok) {
+        console.log("Token refreshed. Retrying original request...");
+        response = await makeRequest();
+      } else {
+        console.error("Token refresh failed.");
+        return {
+          status: 401,
+          ok: false,
+          data: { error: "Token refresh failed" },
+        };
+      }
+    }
 
     const result = await response.json();
 
@@ -89,5 +119,38 @@ export async function postrequest(url, method, payload) {
   } catch (error) {
     console.error("postrequest error:", error);
     return { status: 500, ok: false, data: { error: error.message } };
+  }
+}
+
+
+export async function redirect(url) {
+  console.log("Checking authentication...");
+  const res = await fetch("/auth/check-auth/", {
+    method: "GET",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      "x-csrf-token":
+        document.querySelector("[name=csrfmiddlewaretoken]")?.value || "",
+    },
+  });
+
+  if (res.status === 401) {
+    console.log("Token expired, refreshing...");
+    const refreshRes = await fetch("/auth/token/refresh/", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        "x-csrf-token":
+          document.querySelector("[name=csrfmiddlewaretoken]")?.value || "",
+      },
+    });
+    if (refreshRes.status === 200) {
+      console.log("Token refreshed successfully. RRRR");
+      window.location.href = url;
+    }
+  }else {
+    window.location.href = url;
   }
 }

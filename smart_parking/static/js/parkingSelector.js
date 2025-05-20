@@ -1,3 +1,5 @@
+import { sendrequest , postrequest } from "./utils.js";
+
 let selectedPoints = {}; // Store the selected points for each floor
 
 function getRectanglePointsFromTwoPoints(p1, p2) {
@@ -103,7 +105,7 @@ function selectPoint(event, area) {
   }
 }
 
-function sendCoordinates() {
+async function sendCoordinates() {
   const csrfToken = document.querySelector(
     'input[name="csrfmiddlewaretoken"]'
   ).value;
@@ -122,41 +124,39 @@ function sendCoordinates() {
     };
   });
 
-  fetch("/parking/saveSpotCoordinates/", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRFToken": csrfToken,
-    },
-    body: JSON.stringify(formattedData),
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("error saving coordinates");
-      }
-      return response.json();
-    })
-    .then((data) => {
-      alert(data.message);
-      selectedPoints = {};
-    })
-    .catch((error) => alert("Erreur : " + error.message));
+
+  const res  = await postrequest(
+    "/parking/saveSpotCoordinates/",
+    "POST",
+    formattedData
+  );
+
+  if(res.status === 201) {
+    alert("Coordinates saved successfully!");
+    selectedPoints = {};
+  }else {
+    alert("Error saving coordinates.");
+    selectedPoints = {};
+  }
 }
 
 async function loadCoordinates() {
   try {
-    const response = await fetch("/parking/coordinates/", {
-      method: "GET",
-      headers: {
-        Accept: "application/json",
-      },
-    });
+  
+    const res  = await sendrequest(
+      "/parking/coordinates/",
+      "GET",
+    )
+    console.log("response : " , res);
 
-    if (!response.ok) {
+    if (!res.ok) {
       console.log("erreur loading json file");
     }
 
-    const result = await response.json();
+    const result = res.data;
+
+    console.log("result : ", result);
+
     console.log("Coordinates:", result.data);
     result.data.forEach((areaObj) => {
       const area = areaObj.area;
@@ -225,8 +225,14 @@ function clearAllSpots() {
   selectedPoints = {};
   loadCoordinates();
 }
+window.selectPoint = selectPoint;
+window.sendCoordinates = sendCoordinates;
+window.clearAllSpots = clearAllSpots;
+window.handleRightClickOnRectangle = handleRightClickOnRectangle;
+
 
 document.addEventListener("DOMContentLoaded", async () => {
   const Undo = document.getElementById("Undo");
   loadCoordinates();
 });
+
