@@ -196,9 +196,6 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   document.getElementById("cancelBtn").addEventListener("click", hideModal);
-  document
-    .getElementById("Confirm-Btn")
-    .addEventListener("click", hideConfirmModal);
 });
 
 function showModal(id = null, mode = "delete") {
@@ -214,22 +211,7 @@ function showModal(id = null, mode = "delete") {
   }
 }
 
-function showConfirmModal(text) {
-  document.getElementById("confirmModal").style.display = "flex";
-  const message = document.getElementById("ConfirmText");
-  if (message) {
-    message.textContent = text;
-  }
-}
-
 function hideModal() {
   pendingDeleteId = null;
   document.getElementById("Modal").style.display = "none";
 }
-function hideConfirmModal() {
-  document.getElementById("confirmModal").style.display = "none";
-}
-
-window.showModal = showModal;
-window.hideConfirmModal = hideConfirmModal;
-window.showConfirmModal = showConfirmModal;
