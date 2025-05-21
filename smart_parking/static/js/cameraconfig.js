@@ -1,8 +1,8 @@
 let pendingDeleteId = null;
 let modalMode = null;
-
+let swiper;
 document.addEventListener("DOMContentLoaded", function () {
-  const swiper = new Swiper(".swiper", {
+  swiper = new Swiper(".swiper", {
     navigation: {
       nextEl: ".swiper-button-next",
       prevEl: ".swiper-button-prev",
@@ -51,6 +51,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const originalForm = document.getElementById("formContainer");
     const clonedForm = originalForm.cloneNode(true);
+    const inputs = clonedForm.querySelectorAll("input");
+    inputs.forEach((input) => {
+      input.value = "";
+    });
 
     const h1 = clonedForm.querySelector("h1");
     if (h1) h1.textContent = `Camera N_${currentId} Adding page`;
@@ -197,6 +201,43 @@ document.addEventListener("DOMContentLoaded", function () {
 
   document.getElementById("cancelBtn").addEventListener("click", hideModal);
 });
+
+function resetCameraForms() {
+  const slides = document.querySelectorAll(".swiper-slide");
+  slides.forEach((slide) => {
+    const content = slide.querySelector(".main__content");
+    if (content && content.id !== "slide-0") {
+      slide.remove();
+    }
+  });
+
+  const initialInputs = document.querySelectorAll("#slide-0 input");
+  initialInputs.forEach((input) => {
+    input.value = "";
+  });
+
+  const controls = document.querySelectorAll(".slide-control");
+  controls.forEach((ctrl) => {
+    if (ctrl.getAttribute("data-control-id") !== "0") {
+      ctrl.remove();
+    }
+  });
+
+  usedIds = new Set([0]);
+  releasedIds = [];
+  slideCount = 1;
+
+  const addButton = document.getElementById("add-slide-btn");
+  if (addButton) {
+    addButton.disabled = false;
+    addButton.textContent = "Add";
+  }
+
+  if (typeof swiper !== "undefined") {
+    swiper.update();
+    swiper.slideTo(0);
+  }
+}
 
 function showModal(id = null, mode = "delete") {
   pendingDeleteId = id;

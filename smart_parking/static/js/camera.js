@@ -110,6 +110,7 @@ async function SendData(data) {
     const response = await postrequest("/camera/config/", "POST", data);
     if (response && response.ok) {
       showConfirmModal("Cameras added successfully!");
+      resetCameraForms();
     } else {
       showConfirmModal("Error submitting cameras.");
     }

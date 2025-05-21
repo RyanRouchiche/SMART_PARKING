@@ -16,18 +16,18 @@
       href="{% static 'css/swiper/swiper-bundle.min.css' %}"
     />
 
+    <!-- partials links -->
+    <link rel="stylesheet" href="{%static 'css/partials/navbar.css' %}" />
+    <link rel="stylesheet" href="{%static 'css/partials/modal.css' %}" />
+    <script src="{% static 'js/partials/navbar.js' %}"></script>
+    <script src="{% static 'js/partials/ConfirmModal.js' %}"></script>
+
     <!-- related links -->
     <link rel="stylesheet" href="{% static 'css/camera.css' %}" />
     <script defer src="{% static 'css/swiper/swiper-bundle.min.js' %}"></script>
     <script type="module" src="{% static 'js/camera.js' %}"></script>
     <script src="{% static 'js/cameraconfig.js' %}"></script>
     <script type="module" src="{% static 'js/dashboardAPI.js' %}"></script>
-
-    <!-- partials links -->
-    <link rel="stylesheet" href="{%static 'css/partials/navbar.css' %}" />
-    <link rel="stylesheet" href="{%static 'css/partials/modal.css' %}" />
-    <script src="{% static 'js/partials/navbar.js' %}"></script>
-    <script src="{% static 'js/partials/ConfirmModal.js' %}"></script>
   </head>
   <body>
     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
