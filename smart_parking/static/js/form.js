@@ -19,6 +19,10 @@ function showForm(formId) {
 }
 
 function hideError() {
-  errorLogin.style.display = "none";
-  errorRegister.style.display = "none";
+  if (errorLogin) {
+    errorLogin.style.display = "none";
+  }
+  if (errorRegister) {
+    errorRegister.style.display = "none";
+  }
 }

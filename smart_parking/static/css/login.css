@@ -5,6 +5,12 @@
   font-family: "Kumbh Sans", sans-serif;
 }
 
+html,
+body {
+  overflow: hidden;
+  height: 100%;
+}
+
 .navbar {
   background: #131313;
   height: 80px;
@@ -67,11 +73,6 @@
 }
 
 /* main-container */
-html,
-body {
-  overflow: hidden;
-  height: 100%;
-}
 
 .main__container {
   display: flex;

@@ -2,24 +2,36 @@ let websocket;
 import { sendrequest, initwebsocketconn, redirect } from "./utils.js";
 
 async function deleteUser(userId) {
-  if (confirm("Are you sure you want to delete this user?")) {
+  ConfirmPopup();
+  const message = document.getElementById("modalMessage");
+  if (message) {
+    message.textContent = "Are you sure you want to delete this user?";
+  }
+
+  const confirmBtn = document.getElementById("confirmBtn");
+  const cancelBtn = document.getElementById("cancelBtn");
+
+  confirmBtn.onclick = async () => {
+    HidePopup();
     try {
       const response = await sendrequest(
         `/dashboard/users/${userId}/delete/`,
         "DELETE"
       );
-
       if (response.data) {
-        alert("User deleted successfully.");
-        await redirect("/dashboard/Forms/");
+        showConfirmModal("User deleted successfully.");
+        rechargeUsers();
       } else {
-        alert(`Error: delete user`);
+        showConfirmModal("Error: delete user.");
       }
     } catch (error) {
-      console.error("Error deleting user:", error);
-      alert("An error occurred. Please try again.");
+      showConfirmModal("An error occurred. Please try again.");
     }
-  }
+  };
+
+  cancelBtn.onclick = () => {
+    HidePopup();
+  };
 }
 
 function updateUserStatus(event) {
@@ -187,14 +199,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
 
   if (window.location.pathname === "/dashboard/Forms/") {
-    const data = await sendrequest("/dashboard/users/users-list/", "POST");
-    populateUserTable(data.data.users);
-    document.querySelectorAll(".delete-user-btn").forEach((button) => {
-      button.addEventListener("click", async (e) => {
-        const userId = e.target.getAttribute("data-user-id");
-        deleteUser(userId);
-      });
-    });
+    rechargeUsers();
   }
 });
 
@@ -203,3 +208,15 @@ window.addEventListener("beforeunload", async () => {
     websocket.close();
   }
 });
+
+async function rechargeUsers() {
+  const data = await sendrequest("/dashboard/users/users-list/", "POST");
+  populateUserTable(data.data.users);
+  document.querySelectorAll(".delete-user-btn").forEach((button) => {
+    button.addEventListener("click", async (e) => {
+      const userId = e.target.getAttribute("data-user-id");
+      deleteUser(userId);
+    });
+  });
+}
+window.rechargeUsers = rechargeUsers;

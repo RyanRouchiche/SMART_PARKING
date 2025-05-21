@@ -65,30 +65,34 @@ document.addEventListener("DOMContentLoaded", async function (e) {
   }
 
   if (window.location.pathname === "/dashboard/Forms/") {
-    console.log("calling the fetch request...");
-    const res = await sendrequest("/camera/list-cameras/", "POST");
-    if (res?.data?.success && Array.isArray(res.data.cameras)) {
-      console.log("Cameras loaded successfully.");
-      const cams = res.data.cameras;
-      console.log(cams);
-      loadcameras(cams);
-    } else {
-      alert("Error loading cameras.");
-    }
+    rechargeCams();
   }
 });
 
 async function deleteCamera(cameraId) {
-  if (!confirm("Are you sure you want to delete this camera?")) {
-    return;
+  ConfirmPopup();
+  const message = document.getElementById("modalMessage");
+  if (message) {
+    message.textContent = "Are you sure you want to delete this camera?";
   }
-  const response = await sendrequest(`/camera/delete/${cameraId}/`, "DELETE");
-  if (response.data) {
-    alert("Camera deleted successfully!");
-    await redirect("/dashboard/");
-  } else {
-    alert("Error deleting camera.");
-  }
+
+  const confirmBtn = document.getElementById("confirmBtn");
+  const cancelBtn = document.getElementById("cancelBtn");
+
+  confirmBtn.onclick = async () => {
+    HidePopup();
+    const response = await sendrequest(`/camera/delete/${cameraId}/`, "DELETE");
+    if (response.data) {
+      showConfirmModal("Camera deleted successfully!");
+      rechargeCams();
+    } else {
+      showConfirmModal("Error deleting camera.");
+    }
+  };
+
+  cancelBtn.onclick = () => {
+    HidePopup();
+  };
 }
 
 function hideError() {
@@ -112,5 +116,35 @@ async function SendData(data) {
   }
 }
 
+function ConfirmPopup() {
+  document.getElementById("Modal").style.display = "flex";
+}
+function HidePopup() {
+  document.getElementById("Modal").style.display = "none";
+}
+
+async function rechargeCams() {
+  console.log("calling the fetch request...");
+  const res = await sendrequest("/camera/list-cameras/", "POST");
+  if (res?.data?.success && Array.isArray(res.data.cameras)) {
+    console.log("Cameras loaded successfully.");
+    const cams = res.data.cameras;
+    console.log(cams);
+    loadcameras(cams);
+  } else {
+    showConfirmModal("Error loading cameras.");
+  }
+}
+function resetGuestForm() {
+  const form = document.getElementById("guest-form");
+  if (form) {
+    form.reset();
+  }
+}
+
 window.sendCamData = sendCamData;
 window.SendData = SendData;
+window.rechargeCams = rechargeCams;
+window.ConfirmPopup = ConfirmPopup;
+window.HidePopup = HidePopup;
+window.resetGuestForm = resetGuestForm;

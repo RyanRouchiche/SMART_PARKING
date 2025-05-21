@@ -15,13 +15,15 @@
       rel="stylesheet"
       href="{% static 'css/swiper/swiper-bundle.min.css' %}"
     />
-
+    <link rel="stylesheet" href="{%static 'css/partials/modal.css' %}" />
     <script defer src="{% static 'css/swiper/swiper-bundle.min.js' %}"></script>
     <script type="module" src="{% static 'js/swiper.js' %}"></script>
     <script type="module" src="{% static 'js/camera.js' %}"></script>
     <script type="module" src="{% static 'js/auth.js' %}"></script>
     <script type="module" src="{% static 'js/dashboardAPI.js' %}"></script>
     <script src="{% static 'js/partials/navbar.js' %}"></script>
+    <script src="{% static 'js/partials/ConfirmModal.js' %}"></script>
+
   <body>
     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
 
@@ -59,7 +61,7 @@
             <div class="formContainer" id="formContainer-2">
               <div class="list-form" id="cams">
                 <h2>cams List</h2>
-               <button class="recharge-btn">recharge cams</button>
+               <button class="recharge-btn" onclick="rechargeCams()">recharge cams</button>
                  <table id="cameraTable">
                    <thead>
                      <tr>
@@ -108,5 +110,12 @@
       <div class="swiper-button-next"></div>
       <div class="swiper-button-prev"></div>
       <div class="swiper-pagination"></div>
+    
+    <!-- Confirm/Undo Pop up -->
+    {% include 'partials/modal.html' %}
+
+    <!-- Confirm Pop up -->
+    {% include 'partials/modalConfirm.html'%}
+
   </body>
 </html>
