@@ -7,6 +7,7 @@
     <title>Dashboard</title>
     <link rel="stylesheet" href="{%static 'css/pick_up_spot.css' %}" />
     <link rel="stylesheet" href="{%static 'css/partials/navbar.css' %}" />
+    <link rel="stylesheet" href="{%static 'css/partials/modal.css' %}" />
     <link
       href="https://fonts.googleapis.com/css2?family=Kumbh+Sans:wght@100..900&display=swap"
       rel="stylesheet"
@@ -14,6 +15,7 @@
     <script type="module" src="{% static 'js/dashboardAPI.js' %}"></script>
     <script type="module" src="{% static 'js/parkingSelector.js' %}"></script>
     <script src="{% static 'js/partials/navbar.js' %}"></script>
+    <script src="{% static 'js/partials/ConfirmModal.js' %}"></script>
   </head>
   <body>
     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
@@ -49,5 +51,19 @@
         </div>
       </div>
     </div>
+
+    <!-- Confirm with input -->
+    <div id="InputModal" class="modal-overlay">
+      <div class="modal-content">
+        <p id="InputmodalMessage">Pick a name for the spot (e.g., Spot 1)</p>
+        <input type="text" id="inputField" />
+        <div class="modal-actions">
+          <button id="confirmButton" class="modal__btn">Yes, Confirm</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Confirm Pop up -->
+    {% include 'partials/modalConfirm.html'%}
   </body>
 </html>

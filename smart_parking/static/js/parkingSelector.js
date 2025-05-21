@@ -1,4 +1,4 @@
-import { sendrequest , postrequest } from "./utils.js";
+import { sendrequest, postrequest } from "./utils.js";
 
 let selectedPoints = {}; // Store the selected points for each floor
 
@@ -38,10 +38,10 @@ function handleRightClickOnRectangle(event) {
   );
   dots.forEach((dot) => dot.remove());
   Undo.style.display = "block";
-  alert(`Spot "${spotName}" deleted.`);
+  showConfirmModal(`Spot "${spotName}" deleted.`);
 }
 
-function selectPoint(event, area) {
+async function selectPoint(event, area) {
   if (!selectedPoints[area]) {
     selectedPoints[area] = [];
   }
@@ -81,11 +81,12 @@ function selectPoint(event, area) {
     Object.values(currentSpot)[0].length = 0;
     fullPoints.forEach((pt) => Object.values(currentSpot)[0].push(pt));
 
-    let spotName = prompt("Pick a name for the spot (e.g., Spot 1)");
+    const existingNames = selectedPoints[area].map(
+      (spot) => Object.keys(spot)[0]
+    );
+    let spotName = await getSpotNameFromModal();
+
     if (!spotName) {
-      const existingNames = selectedPoints[area].map(
-        (spot) => Object.keys(spot)[0]
-      );
       let counter = 1;
       while (existingNames.includes(`Spot ${counter}`)) {
         counter++;
@@ -101,7 +102,7 @@ function selectPoint(event, area) {
 
     renderSpot(area, spotName, points);
     Undo.style.display = "block";
-    alert(`Spot selected: ${spotName} in area ${area}.`);
+    showConfirmModal(`Spot selected: ${spotName} in area ${area}.`);
   }
 }
 
@@ -124,30 +125,25 @@ async function sendCoordinates() {
     };
   });
 
-
-  const res  = await postrequest(
+  const res = await postrequest(
     "/parking/saveSpotCoordinates/",
     "POST",
     formattedData
   );
 
-  if(res.status === 201) {
-    alert("Coordinates saved successfully!");
+  if (res.status === 201) {
+    showConfirmModal("Coordinates saved successfully!");
     selectedPoints = {};
-  }else {
-    alert("Error saving coordinates.");
+  } else {
+    showConfirmModal("Error saving coordinates.");
     selectedPoints = {};
   }
 }
 
 async function loadCoordinates() {
   try {
-  
-    const res  = await sendrequest(
-      "/parking/coordinates/",
-      "GET",
-    )
-    console.log("response : " , res);
+    const res = await sendrequest("/parking/coordinates/", "GET");
+    console.log("response : ", res);
 
     if (!res.ok) {
       console.log("erreur loading json file");
@@ -225,14 +221,37 @@ function clearAllSpots() {
   selectedPoints = {};
   loadCoordinates();
 }
+
+function getSpotNameFromModal() {
+  return new Promise((resolve) => {
+    const modal = document.getElementById("InputModal");
+    const inputField = document.getElementById("inputField");
+    const confirmButton = document.getElementById("confirmButton");
+
+    inputField.value = "";
+
+    modal.style.display = "flex";
+
+    function cleanup() {
+      confirmButton.removeEventListener("click", onConfirm);
+      modal.style.display = "none";
+    }
+
+    function onConfirm() {
+      const value = inputField.value.trim();
+      cleanup();
+      resolve(value || null);
+    }
+    confirmButton.addEventListener("click", onConfirm);
+  });
+}
+
 window.selectPoint = selectPoint;
 window.sendCoordinates = sendCoordinates;
 window.clearAllSpots = clearAllSpots;
 window.handleRightClickOnRectangle = handleRightClickOnRectangle;
 
-
 document.addEventListener("DOMContentLoaded", async () => {
   const Undo = document.getElementById("Undo");
   loadCoordinates();
 });
-
