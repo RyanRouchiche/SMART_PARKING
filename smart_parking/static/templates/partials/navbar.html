@@ -1,3 +1,4 @@
+{% load i18n %}
 <nav class="navbar">
   <div class="navbar__container">
     <a href="" id="navbar__logo">PARKING</a>
@@ -8,22 +9,41 @@
     </div>
     <ul class="navbar__menu">
       <li class="navbar__item">
-        <button class="navbar__links" id="Forms">dashboard</button>
+        <button class="navbar__links" id="Forms">
+          {% trans "dashboard" %}
+        </button>
       </li>
       <li class="navbar__item">
-        <button class="navbar__links" id="DVA">parking status</button>
+        <button class="navbar__links" id="DVA">
+          {% trans "parking status" %}
+        </button>
       </li>
       <li class="navbar__item">
-        <button class="navbar__links" id="cameraconfig">setup</button>
+        <button class="navbar__links" id="cameraconfig">
+          {% trans "setup" %}
+        </button>
       </li>
       <li class="navbar__item">
-        <button class="navbar__links" id="markSpot">initialization</button>
+        <button class="navbar__links" id="markSpot">
+          {% trans "Initialization" %}
+        </button>
       </li>
       <li class="navbar__item">
-        <button class="navbar__links" id="LCD">LCD</button>
+        <button class="navbar__links" id="LCD">{% trans "LCD" %}</button>
       </li>
       <li class="navbar__btn">
-        <button class="button" id="logout-btn">Logout</button>
+        <button class="button" id="logout-btn">{% trans "logout" %}</button>
+      </li>
+      <li class="navbar__item">
+        <form id="lang-form" action="{% url 'set_language' %}" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.path }}" />
+          <input type="hidden" name="language" id="lang-input" />
+          <select name="language" id="lang-select" class="navbar__links">
+            <option value="en">English</option>
+            <option value="fr">Français</option>
+          </select>
+        </form>
       </li>
     </ul>
   </div>

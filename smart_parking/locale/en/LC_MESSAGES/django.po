@@ -1,0 +1,205 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-05-22 18:07+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: .\static\templates\dashboard.html:26
+#: .\staticfiles\templates\dashboard.html:26
+msgid "Welcome,"
+msgstr ""
+
+#: .\static\templates\dashboard.html:31
+#: .\staticfiles\templates\dashboard.html:31
+msgid "View your parking simulation."
+msgstr ""
+
+#: .\static\templates\dashboard.html:33
+#: .\staticfiles\templates\dashboard.html:33
+msgid "View Status"
+msgstr ""
+
+#: .\static\templates\dashboard.html:48
+#: .\staticfiles\templates\dashboard.html:48
+msgid "What are we offering ?"
+msgstr ""
+
+#: .\static\templates\dashboard.html:55
+#: .\staticfiles\templates\dashboard.html:55
+msgid "Dashboard"
+msgstr ""
+
+#: .\static\templates\dashboard.html:56
+#: .\staticfiles\templates\dashboard.html:56
+msgid "Manage your users database"
+msgstr ""
+
+#: .\static\templates\dashboard.html:57 .\static\templates\dashboard.html:67
+#: .\static\templates\dashboard.html:74 .\static\templates\dashboard.html:84
+#: .\staticfiles\templates\dashboard.html:57
+#: .\staticfiles\templates\dashboard.html:67
+#: .\staticfiles\templates\dashboard.html:74
+#: .\staticfiles\templates\dashboard.html:84
+msgid "Get Started"
+msgstr ""
+
+#: .\static\templates\dashboard.html:65
+#: .\staticfiles\templates\dashboard.html:65
+msgid "Setup"
+msgstr ""
+
+#: .\static\templates\dashboard.html:66
+#: .\staticfiles\templates\dashboard.html:66
+msgid "Add/Delete cameras from your database"
+msgstr ""
+
+#: .\static\templates\dashboard.html:73
+#: .\staticfiles\templates\dashboard.html:73
+msgid "Parking data displayed on LCD"
+msgstr ""
+
+#: .\static\templates\dashboard.html:82
+#: .\static\templates\partials\navbar.html:28
+#: .\staticfiles\templates\dashboard.html:82
+#: .\staticfiles\templates\partials\navbar.html:28
+msgid "Initialization"
+msgstr ""
+
+#: .\static\templates\dashboard.html:83
+#: .\staticfiles\templates\dashboard.html:83
+msgid "you can manually change your parking spots!"
+msgstr ""
+
+#: .\static\templates\dashboard.html:95
+#: .\staticfiles\templates\dashboard.html:95
+msgid "About us"
+msgstr ""
+
+#: .\static\templates\dashboard.html:96
+#: .\staticfiles\templates\dashboard.html:96
+msgid "How it works"
+msgstr ""
+
+#: .\static\templates\dashboard.html:97
+#: .\staticfiles\templates\dashboard.html:97
+msgid "Testimonals"
+msgstr ""
+
+#: .\static\templates\dashboard.html:98
+#: .\staticfiles\templates\dashboard.html:98
+msgid "Carrers"
+msgstr ""
+
+#: .\static\templates\dashboard.html:99
+#: .\staticfiles\templates\dashboard.html:99
+msgid "Investements"
+msgstr ""
+
+#: .\static\templates\dashboard.html:100
+#: .\staticfiles\templates\dashboard.html:100
+msgid "Terms of Service"
+msgstr ""
+
+#: .\static\templates\dashboard.html:103
+#: .\staticfiles\templates\dashboard.html:103
+msgid "Contact us"
+msgstr ""
+
+#: .\static\templates\dashboard.html:104
+#: .\staticfiles\templates\dashboard.html:104
+msgid "Contact"
+msgstr ""
+
+#: .\static\templates\dashboard.html:105
+#: .\staticfiles\templates\dashboard.html:105
+msgid "Support"
+msgstr ""
+
+#: .\static\templates\dashboard.html:106
+#: .\staticfiles\templates\dashboard.html:106
+msgid "Destinations"
+msgstr ""
+
+#: .\static\templates\dashboard.html:107
+#: .\staticfiles\templates\dashboard.html:107
+msgid "Sponsorships"
+msgstr ""
+
+#: .\static\templates\dashboard.html:112
+#: .\staticfiles\templates\dashboard.html:112
+msgid "Video"
+msgstr ""
+
+#: .\static\templates\dashboard.html:113
+#: .\staticfiles\templates\dashboard.html:113
+msgid "Submit video"
+msgstr ""
+
+#: .\static\templates\dashboard.html:114
+#: .\staticfiles\templates\dashboard.html:114
+msgid "Ambasadors"
+msgstr ""
+
+#: .\static\templates\dashboard.html:115
+#: .\staticfiles\templates\dashboard.html:115
+msgid "Agency"
+msgstr ""
+
+#: .\static\templates\dashboard.html:116
+#: .\staticfiles\templates\dashboard.html:116
+msgid "Influencer"
+msgstr ""
+
+#: .\static\templates\dashboard.html:119
+#: .\staticfiles\templates\dashboard.html:119
+msgid "Social Media"
+msgstr ""
+
+#: .\static\templates\dashboard.html:133
+#: .\staticfiles\templates\dashboard.html:133
+msgid "2025.All rights reserved"
+msgstr ""
+
+#: .\static\templates\partials\navbar.html:13
+#: .\staticfiles\templates\partials\navbar.html:13
+msgid "dashboard"
+msgstr ""
+
+#: .\static\templates\partials\navbar.html:18
+#: .\staticfiles\templates\partials\navbar.html:18
+msgid "parking status"
+msgstr ""
+
+#: .\static\templates\partials\navbar.html:23
+#: .\staticfiles\templates\partials\navbar.html:23
+msgid "setup"
+msgstr ""
+
+#: .\static\templates\partials\navbar.html:32
+#: .\staticfiles\templates\partials\navbar.html:32
+msgid "LCD"
+msgstr ""
+
+#: .\static\templates\partials\navbar.html:35
+#: .\staticfiles\templates\partials\navbar.html:35
+msgid "logout"
+msgstr ""
+
+#: .\static\templates\video_feed.html:28
+#: .\staticfiles\templates\video_feed.html:28
+msgid "Areas"
+msgstr ""

@@ -185,3 +185,18 @@
 .navbar__item > button.active {
   color: #f77602 !important;
 }
+
+#lang-toggle {
+  color: #fff;
+  background-color: transparent;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 1rem;
+  text-transform: uppercase;
+  transition: color 0.3s ease;
+}
+
+#lang-toggle:hover {
+  color: #f77602;
+}

@@ -1,4 +1,28 @@
 document.addEventListener("DOMContentLoaded", function () {
+  const langSelect = document.getElementById("lang-select");
+  const langForm = document.getElementById("lang-form");
+  let currentLanguage = localStorage.getItem("language");
+  if (!currentLanguage) {
+    currentLanguage = document.documentElement.lang || "en";
+  }
+
+  if (langSelect) {
+    langSelect.value = currentLanguage;
+  }
+
+  if (langSelect && langForm) {
+    langSelect.addEventListener("change", function () {
+      const selectedLanguage = langSelect.value;
+      localStorage.setItem("language", selectedLanguage);
+      const langInput = document.getElementById("lang-input");
+      if (langInput) {
+        langInput.value = selectedLanguage;
+      }
+      langForm.submit();
+    });
+  }
+
+  // Handle menu toggle for mobile view
   const menu = document.querySelector("#mobile-menu");
   const menuLinks = document.querySelector(".navbar__menu");
 
@@ -8,8 +32,9 @@ document.addEventListener("DOMContentLoaded", function () {
       menuLinks.classList.toggle("active");
     });
   }
+
+  // Highlight active button based on the current URL
   const path = window.location.pathname;
-  console.log("path : ", path);
   const pathToButtonId = {
     "/parking/video/": "DVA",
     "/parking/pickupSpot/": "markSpot",
