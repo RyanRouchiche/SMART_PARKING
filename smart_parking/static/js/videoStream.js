@@ -20,13 +20,18 @@ open.addEventListener("click", () => {
 
 // Function to handle token refresh +  dynamic div creation based on websocket data
 document.addEventListener("DOMContentLoaded", async () => {
+  let currentLanguage = localStorage.getItem("language");
+  if (!currentLanguage) {
+    currentLanguage = document.documentElement.lang || "en";
+  }
   const res = await sendrequest("/parking/areas/", "GET");
   const areas = await res.data;
 
   areas.forEach((areaId, index) => {
     indexToAreaIdMap[index] = areaId;
     const li = document.createElement("li");
-    li.textContent = `Area ${areaId}`;
+    li.textContent =
+      currentLanguage == "en" ? `Area ${areaId}` : `Zone ${areaId}`;
     li.dataset.index = index;
     if (index === 0) li.classList.add("active");
 
@@ -45,13 +50,17 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const title = document.createElement("div");
     title.classList.add("area-title");
-    title.textContent = `Area ${areaId}`;
+    title.textContent =
+      currentLanguage == "en" ? `Area ${areaId}` : `Zone ${areaId}`;
     slide.appendChild(title);
 
     const spotLabel = document.createElement("div");
     spotLabel.classList.add("available-spots");
     spotLabel.id = `available-${areaId}`;
-    spotLabel.textContent = "Spots disponibles: ?";
+    console.log(currentLanguage);
+    spotLabel.textContent =
+      currentLanguage == "en" ? "Available spots : ?" : "Spots disponibles: ?";
+
     slide.appendChild(spotLabel);
 
     const grid = document.createElement("div");
@@ -94,7 +103,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       areaLength = data.spot_details.length;
       const availableLabel = document.getElementById(`available-${data.area}`);
       if (availableLabel) {
-        availableLabel.textContent = `Spots disponibles: ${data.available_spots}`;
+        availableLabel.textContent =
+          currentLanguage === "en"
+            ? `Available spots : ${data.available_spots}`
+            : `Spots disponibles: ${data.available_spots}`;
       }
 
       const slotGrid = document.getElementById(`slot-grid-${data.area}`);
