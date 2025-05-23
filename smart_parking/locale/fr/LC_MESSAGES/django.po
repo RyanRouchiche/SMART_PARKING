@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-05-22 18:37+0100\n"
+"POT-Creation-Date: 2025-05-23 16:07+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,21 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: .\static\templates\cameraconfig.html:45
+#: .\staticfiles\templates\cameraconfig.html:45
+msgid "Camera Configuration"
+msgstr "Configuration de la caméra"
+
+#: .\static\templates\cameraconfig.html:81
+#: .\staticfiles\templates\cameraconfig.html:81
+msgid "Add"
+msgstr "Ajouter"
+
+#: .\static\templates\cameraconfig.html:83
+#: .\staticfiles\templates\cameraconfig.html:83
+msgid "Validate and send"
+msgstr "Valider et envoyer"
 
 #: .\static\templates\dashboard.html:26
 #: .\staticfiles\templates\dashboard.html:26
@@ -218,18 +233,24 @@ msgstr "zone"
 msgid "link"
 msgstr "lien"
 
-#: .\static\templates\forms.html:73 .\staticfiles\templates\forms.html:73
-#| msgid "parking status"
-msgid "status"
+#: .\static\templates\forms.html:73 .\static\templates\forms.html:97
+#: .\staticfiles\templates\forms.html:73 .\staticfiles\templates\forms.html:97
+msgid "Status"
 msgstr "statut"
 
 #: .\static\templates\forms.html:88 .\staticfiles\templates\forms.html:88
 msgid "Users List"
 msgstr "Liste des utilisateurs"
 
-#: .\static\templates\forms.html:97 .\staticfiles\templates\forms.html:97
-msgid "Status"
-msgstr "statut"
+#: .\static\templates\partials\modal.html:6
+msgid "Undo"
+msgstr "Annuler"
+
+#: .\static\templates\partials\modal.html:9
+#: .\static\templates\pick_up_spot.html:64
+#: .\staticfiles\templates\pick_up_spot.html:64
+msgid "Yes, Confirm"
+msgstr "Oui, Je confirme."
 
 #: .\static\templates\partials\navbar.html:13
 #: .\staticfiles\templates\partials\navbar.html:13
@@ -256,10 +277,42 @@ msgstr ""
 msgid "logout"
 msgstr "Déconnexion"
 
+#: .\static\templates\pick_up_spot.html:30
+#: .\staticfiles\templates\pick_up_spot.html:30
+msgid "Pick a parking spot"
+msgstr "Choisis une place de parking."
+
+#: .\static\templates\pick_up_spot.html:34
+#: .\staticfiles\templates\pick_up_spot.html:34
+msgid "Area"
+msgstr "Zones"
+
+#: .\static\templates\pick_up_spot.html:45
+#: .\staticfiles\templates\pick_up_spot.html:45
+msgid "Undo Changes"
+msgstr "Annuler les modifications"
+
+#: .\static\templates\pick_up_spot.html:48
+#: .\staticfiles\templates\pick_up_spot.html:48
+msgid "Save Changes"
+msgstr "Enregistrer les modifications"
+
+#: .\static\templates\pick_up_spot.html:59
+#: .\staticfiles\templates\pick_up_spot.html:59
+msgid "Pick a name for the spot (e.g., Spot 1)"
+msgstr "Choisis un nom pour la place (par exemple : Place 1)."
+
 #: .\static\templates\video_feed.html:28
 #: .\staticfiles\templates\video_feed.html:28
 msgid "Areas"
 msgstr "Zones"
+
+#~ msgid "Surveillance Camera Configuration"
+#~ msgstr "Configuration de la caméra de surveillance"
+
+#~| msgid "parking status"
+#~ msgid "status"
+#~ msgstr "statut"
 
 #~ msgid "Spots disponibles: ?"
 #~ msgstr "Available Spots ?"

@@ -1,4 +1,4 @@
-{% load static %}
+{% load static %} {% load i18n %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -42,7 +42,7 @@
           <div class="main__content" id="slide-0">
             <div class="formContainer" id="formContainer">
               <div class="camera-form">
-                <h1>Camera Adding page</h1>
+                <h1>{% trans "Camera Configuration" %}</h1>
                 <label>Zone (area):</label>
                 <input
                   type="text"
@@ -50,7 +50,7 @@
                   placeholder="Ex: 1"
                   autocomplete="off"
                 />
-                <label>Référence (ref):</label>
+                <label>Reference (ref):</label>
                 <input
                   type="text"
                   name="ref"
@@ -78,8 +78,10 @@
 
     <!-- Button container -->
     <div class="right-section" id="top_section">
-      <button class="main__btn" id="add-slide-btn">Add</button>
-      <button class="main__btn" id="validatecam">Validate and send</button>
+      <button class="main__btn" id="add-slide-btn">{% trans "Add" %}</button>
+      <button class="main__btn" id="validatecam">
+        {% trans "Validate and send" %}
+      </button>
     </div>
     <div class="right-section" id="bottom_section">
       <!-- Dynamic buttons will be added here -->

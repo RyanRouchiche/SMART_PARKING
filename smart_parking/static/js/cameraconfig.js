@@ -1,6 +1,7 @@
 let pendingDeleteId = null;
 let modalMode = null;
 let swiper;
+let currentLanguage;
 document.addEventListener("DOMContentLoaded", function () {
   swiper = new Swiper(".swiper", {
     navigation: {
@@ -55,9 +56,14 @@ document.addEventListener("DOMContentLoaded", function () {
     inputs.forEach((input) => {
       input.value = "";
     });
-
     const h1 = clonedForm.querySelector("h1");
-    if (h1) h1.textContent = `Camera N_${currentId} Adding page`;
+    currentLanguage = getCurrentLanguage();
+    if (h1) {
+      h1.textContent =
+        currentLanguage === "en"
+          ? `Camera N_${currentId} Configuration`
+          : `Configuration de la caméra N_${currentId}`;
+    }
 
     clonedForm.id = `formContainer-${currentId}`;
 
@@ -203,6 +209,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function resetCameraForms() {
+  currentLanguage = getCurrentLanguage();
   const slides = document.querySelectorAll(".swiper-slide");
   slides.forEach((slide) => {
     const content = slide.querySelector(".main__content");
@@ -230,7 +237,8 @@ function resetCameraForms() {
   const addButton = document.getElementById("add-slide-btn");
   if (addButton) {
     addButton.disabled = false;
-    addButton.textContent = "Add";
+
+    addButton.textContent = currentLanguage === "en" ? "Add" : "Ajouter";
   }
 
   if (typeof swiper !== "undefined") {
@@ -240,15 +248,23 @@ function resetCameraForms() {
 }
 
 function showModal(id = null, mode = "delete") {
+  currentLanguage = getCurrentLanguage();
   pendingDeleteId = id;
   modalMode = mode;
   document.getElementById("Modal").style.display = "flex";
   const message = document.getElementById("modalMessage");
   if (message) {
-    message.textContent =
-      mode === "delete"
-        ? "Are you sure you want to delete this slide?"
-        : "Do you want to validate and submit all cameras?";
+    if (currentLanguage == "en") {
+      message.textContent =
+        mode === "delete"
+          ? "Are you sure you want to delete this slide?"
+          : "Do you want to validate and submit all cameras?";
+    } else {
+      message.textContent =
+        mode === "delete"
+          ? "Êtes-vous sûr de vouloir supprimer cette diapositive ?"
+          : "Voulez-vous valider et soumettre toutes les caméras ?";
+    }
   }
 }
 

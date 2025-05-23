@@ -13,6 +13,8 @@
     />
     <script type="module" src="{% static 'js/dashboardAPI.js' %}"></script>
     <script src="{% static 'js/partials/navbar.js' %}"></script>
+    <script src="{% static 'js/partials/ConfirmModal.js' %}"></script>
+    <link rel="stylesheet" href="{%static 'css/partials/modal.css' %}" />
   </head>
   <body>
     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
@@ -135,5 +137,8 @@
         </div>
       </div>
     </div>
+
+    <!-- Confirm Pop up -->
+    {% include 'partials/modalConfirm.html'%}
   </body>
 </html>

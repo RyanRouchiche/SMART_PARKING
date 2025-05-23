@@ -1,16 +1,21 @@
 let websocket;
 import { sendrequest, initwebsocketconn, redirect } from "./utils.js";
+let currentLanguage;
 
 async function deleteUser(userId) {
+  currentLanguage = getCurrentLanguage();
   ConfirmPopup();
   const message = document.getElementById("modalMessage");
   if (message) {
-    message.textContent = "Are you sure you want to delete this user?";
+    const msg =
+      currentLanguage === "en"
+        ? "Are you sure you want to delete this user?"
+        : "Êtes-vous sûr de vouloir supprimer cet utilisateur ?";
+    message.textContent = msg;
   }
 
   const confirmBtn = document.getElementById("confirmBtn");
   const cancelBtn = document.getElementById("cancelBtn");
-
   confirmBtn.onclick = async () => {
     HidePopup();
     try {
@@ -19,13 +24,25 @@ async function deleteUser(userId) {
         "DELETE"
       );
       if (response.data) {
-        showConfirmModal("User deleted successfully.");
+        let userDeleted =
+          currentLanguage === "en"
+            ? "User deleted successfully."
+            : "Utilisateur supprimé avec succès.";
+        showConfirmModal(userDeleted);
         rechargeUsers();
       } else {
-        showConfirmModal("Error: delete user.");
+        let userDeleted =
+          currentLanguage === "en"
+            ? "Error: delete user."
+            : "Erreur : suppression de l'utilisateur.";
+        showConfirmModal(userDeleted);
       }
     } catch (error) {
-      showConfirmModal("An error occurred. Please try again.");
+      let userDeleted =
+        currentLanguage === "en"
+          ? "An error occurred. Please try again."
+          : "Une erreur est survenue. Veuillez réessayer.";
+      showConfirmModal(userDeleted);
     }
   };
 
@@ -158,13 +175,22 @@ document.addEventListener("DOMContentLoaded", async function () {
   //logout button
   const logoutbutton = document.getElementById("logout-btn");
   if (logoutbutton) {
+    currentLanguage = getCurrentLanguage();
     console.log("Logout button found!");
     logoutbutton.addEventListener("click", async () => {
       const data = await sendrequest("/auth/logout/", "POST");
       if (data.data.success) {
-        window.location.href = "/";
+        const msg =
+          currentLanguage === "en"
+            ? "logout succesfull"
+            : "Déconnexion aves succees";
+        showConfirmModal(msg, () => {
+          window.location.href = "/";
+        });
       } else {
-        alert("Logout failed: " + data.data.error);
+        const msg =
+          currentLanguage === "en" ? "logout failed" : "Déconnexion échouée";
+        showConfirmModal(msg);
       }
     });
   }

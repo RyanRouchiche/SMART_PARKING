@@ -1,5 +1,5 @@
 import { sendrequest, postrequest } from "./utils.js";
-
+let currentLanguage;
 let selectedPoints = {}; // Store the selected points for each floor
 
 function getRectanglePointsFromTwoPoints(p1, p2) {
@@ -38,7 +38,12 @@ function handleRightClickOnRectangle(event) {
   );
   dots.forEach((dot) => dot.remove());
   Undo.style.display = "block";
-  showConfirmModal(`Spot "${spotName}" deleted.`);
+  currentLanguage = getCurrentLanguage();
+  const deletedmsg =
+    currentLanguage === "en"
+      ? `Spot "${spotName}" deleted.`
+      : `Place  ${spotName} supprimée`;
+  showConfirmModal(deletedmsg);
 }
 
 async function selectPoint(event, area) {
@@ -102,7 +107,12 @@ async function selectPoint(event, area) {
 
     renderSpot(area, spotName, points);
     Undo.style.display = "block";
-    showConfirmModal(`Spot selected: ${spotName} in area ${area}.`);
+    currentLanguage = getCurrentLanguage();
+    const Selectedmsg =
+      currentLanguage === "en"
+        ? `Spot selected: ${spotName} in area ${area}.`
+        : `Place sélectionnée : ${spotName} dans la zone ${area}`;
+    showConfirmModal(Selectedmsg);
   }
 }
 
@@ -130,12 +140,19 @@ async function sendCoordinates() {
     "POST",
     formattedData
   );
-
+  currentLanguage = getCurrentLanguage();
   if (res.status === 201) {
-    showConfirmModal("Coordinates saved successfully!");
+    const msgSuccees =
+      currentLanguage === "en"
+        ? "Coordinates saved successfully!."
+        : "Coordonnées enregistrées avec succès !";
     selectedPoints = {};
   } else {
-    showConfirmModal("Error saving coordinates.");
+    const msgError =
+      currentLanguage === "en"
+        ? "Error saving coordinates."
+        : "Erreur lors de l’enregistrement des coordonnées.";
+    showConfirmModal(msgError);
     selectedPoints = {};
   }
 }
@@ -252,6 +269,7 @@ window.clearAllSpots = clearAllSpots;
 window.handleRightClickOnRectangle = handleRightClickOnRectangle;
 
 document.addEventListener("DOMContentLoaded", async () => {
+  currentLanguage = getCurrentLanguage();
   const Undo = document.getElementById("Undo");
   loadCoordinates();
 });

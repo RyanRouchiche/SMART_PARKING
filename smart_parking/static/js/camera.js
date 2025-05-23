@@ -1,23 +1,25 @@
 console.log("JS chargé");
 import { sendrequest, postrequest, redirect } from "./utils.js";
-
+let currentLanguage;
 function sendCamData() {
   const forms = document.getElementsByClassName("camera-form");
   const data = [];
-
+  currentLanguage = getCurrentLanguage();
   for (let form of forms) {
     const area = form.querySelector('input[name="area"]').value.trim();
     const ref = form.querySelector('input[name="ref"]').value.trim();
     const path = form.querySelector('input[name="path"]').value.trim();
 
     if (!area || !ref || !path) {
-      showConfirmModal("Please fill in all fields for each camera.");
+      const msg =
+        currentLanguage === "en"
+          ? "Please fill in all fields for each camera."
+          : "Veuillez remplir tous les champs pour chaque caméra.";
+      showConfirmModal(msg);
       return;
     }
-
     data.push({ area, ref, path });
   }
-
   return data;
 }
 
@@ -72,8 +74,13 @@ document.addEventListener("DOMContentLoaded", async function (e) {
 async function deleteCamera(cameraId) {
   ConfirmPopup();
   const message = document.getElementById("modalMessage");
+  currentLanguage = getCurrentLanguage();
   if (message) {
-    message.textContent = "Are you sure you want to delete this camera?";
+    const msg =
+      currentLanguage === "en"
+        ? "Are you sure you want to delete this camera?"
+        : "Êtes-vous sûr de vouloir supprimer cette caméra ?";
+    message.textContent = msg;
   }
 
   const confirmBtn = document.getElementById("confirmBtn");
@@ -83,10 +90,18 @@ async function deleteCamera(cameraId) {
     HidePopup();
     const response = await sendrequest(`/camera/delete/${cameraId}/`, "DELETE");
     if (response.data) {
-      showConfirmModal("Camera deleted successfully!");
+      const successMsg =
+        currentLanguage === "en"
+          ? "Camera deleted successfully!"
+          : "Caméra supprimée avec succès !";
+      showConfirmModal(successMsg);
       rechargeCams();
     } else {
-      showConfirmModal("Error deleting camera.");
+      const errorMsg =
+        currentLanguage === "en"
+          ? "Error deleting camera."
+          : "Erreur lors de la suppression de la caméra.";
+      showConfirmModal(errorMsg);
     }
   };
 
@@ -106,13 +121,23 @@ document.querySelectorAll("#guest-form input").forEach((input) => {
 });
 
 async function SendData(data) {
+  const currentLanguage = getCurrentLanguage();
   if (data) {
     const response = await postrequest("/camera/config/", "POST", data);
+    const successMsg =
+      currentLanguage === "en"
+        ? "Cameras added successfully!"
+        : "Caméras ajoutées avec succès !";
+    const errorMsg =
+      currentLanguage === "en"
+        ? "Error submitting cameras."
+        : "Erreur lors de la soumission des caméras.";
+
     if (response && response.ok) {
-      showConfirmModal("Cameras added successfully!");
+      showConfirmModal(successMsg);
       resetCameraForms();
     } else {
-      showConfirmModal("Error submitting cameras.");
+      showConfirmModal(errorMsg);
     }
   }
 }
@@ -125,17 +150,24 @@ function HidePopup() {
 }
 
 async function rechargeCams() {
+  const currentLanguage = getCurrentLanguage();
   console.log("calling the fetch request...");
   const res = await sendrequest("/camera/list-cameras/", "POST");
+
   if (res?.data?.success && Array.isArray(res.data.cameras)) {
     console.log("Cameras loaded successfully.");
     const cams = res.data.cameras;
     console.log(cams);
     loadcameras(cams);
   } else {
-    showConfirmModal("Error loading cameras.");
+    const errorMsg =
+      currentLanguage === "en"
+        ? "Error loading cameras."
+        : "Erreur lors du chargement des caméras.";
+    showConfirmModal(errorMsg);
   }
 }
+
 function resetGuestForm() {
   const form = document.getElementById("guest-form");
   if (form) {

@@ -1,11 +1,14 @@
+{% load i18n %}
 <div id="Modal" class="modal-overlay">
   <div class="modal-content">
     <p id="modalMessage">Are you sure you want to delete this slide?</p>
     <div class="modal-actions">
       <button id="cancelBtn" class="modal__btn" style="background: gray">
-        Undo
+        {% trans "Undo" %}
       </button>
-      <button id="confirmBtn" class="modal__btn">Yes, Confirm</button>
+      <button id="confirmBtn" class="modal__btn">
+        {% trans "Yes, Confirm" %}
+      </button>
     </div>
   </div>
 </div>

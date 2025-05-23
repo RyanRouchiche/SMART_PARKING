@@ -1,4 +1,4 @@
-{% load static %}
+{% load static %} {% load i18n %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -27,11 +27,11 @@
     <div class="main">
       <div class="main__container">
         <div class="main__content">
-          <h1>Pick a parking spot</h1>
+          <h1>{% trans "Pick a parking spot" %}</h1>
           <div class="area-container">
             {% for area, image_url in images.items %}
             <div class="image-container" id="container-{{ area }}">
-              <h2>Area {{ area }}</h2>
+              <h2>{% trans "Area" %} {{ area }}</h2>
               <img
                 src="{{ image_url }}"
                 alt="Camera in area {{ area }}"
@@ -42,10 +42,10 @@
           </div>
           <div class="bottom__area">
             <button class="save-button" onclick="clearAllSpots()" id="Undo">
-              Undo Changes
+              {% trans "Undo Changes" %}
             </button>
             <button class="save-button" onclick="sendCoordinates()">
-              Save Changes
+              {% trans "Save Changes" %}
             </button>
           </div>
         </div>
@@ -55,10 +55,14 @@
     <!-- Confirm with input -->
     <div id="InputModal" class="modal-overlay">
       <div class="modal-content">
-        <p id="InputmodalMessage">Pick a name for the spot (e.g., Spot 1)</p>
+        <p id="InputmodalMessage">
+          {% trans "Pick a name for the spot (e.g., Spot 1)" %}
+        </p>
         <input type="text" id="inputField" />
         <div class="modal-actions">
-          <button id="confirmButton" class="modal__btn">Yes, Confirm</button>
+          <button id="confirmButton" class="modal__btn">
+            {% trans "Yes, Confirm" %}
+          </button>
         </div>
       </div>
     </div>

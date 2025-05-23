@@ -16,6 +16,8 @@
     <script defer src="{% static 'css/swiper/swiper-bundle.min.js' %}"></script>
     <script type="module" src="{% static 'js/dashboardAPI.js' %}"></script>
     <script src="{% static 'js/partials/navbar.js' %}"></script>
+    <script src="{% static 'js/partials/ConfirmModal.js' %}"></script>
+    <link rel="stylesheet" href="{%static 'css/partials/modal.css' %}" />
   </head>
   <body>
     <!-- navbar section -->
@@ -32,6 +34,9 @@
         <div class="swiper-wrapper" id="swiper-wrapper"></div>
       </div>
     </div>
+
+    <!-- Confirm Pop up -->
+    {% include 'partials/modalConfirm.html'%}
     <script>
       window.CAR_IMAGE_URL = "{% static 'images/car.png' %}";
     </script>

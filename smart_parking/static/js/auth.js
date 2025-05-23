@@ -1,6 +1,10 @@
 import { postrequest, redirect } from "./utils.js";
 
 document.addEventListener("DOMContentLoaded", function () {
+  let currentLanguage = localStorage.getItem("language");
+  if (!currentLanguage) {
+    currentLanguage = document.documentElement.lang || "en";
+  }
   //part handles login form submission
   const loginform = document.getElementById("login-form");
   const errorMessageContainer1 = document.getElementById("error-message-login");
@@ -20,7 +24,9 @@ document.addEventListener("DOMContentLoaded", function () {
       } else {
         errorMessageContainer1.style.display = "block";
         errorMessageContainer1.innerHTML =
-          "Login failed. Please check your credentials and try again.";
+          currentLanguage == "en"
+            ? "Login failed. Please check your credentials and try again."
+            : "Échec de la connexion. Veuillez vérifier vos identifiants et réessayer.";
       }
     });
   }
@@ -45,13 +51,21 @@ document.addEventListener("DOMContentLoaded", function () {
       const res = await postrequest("/auth/register/", "POST", data);
       if (res.status === 200 || res.status === 201) {
         console.log("Registration successful");
-        showConfirmModal("Registration successful", () => {
-          showForm("login-form-id");
-        });
+        if (currentLanguage == "en") {
+          showConfirmModal("Registration successful", () => {
+            showForm("login-form-id");
+          });
+        } else {
+          showConfirmModal("Inscription réussie", () => {
+            showForm("login-form-id");
+          });
+        }
       } else {
         errorMessageContainer.style.display = "block";
         errorMessageContainer.innerHTML =
-          "Registration failed. Please check your credentials and try again.";
+          currentLanguage == "en"
+            ? "Registration failed. Please check your credentials and try again."
+            : " Échec de l'inscription. Veuillez vérifier vos informations et réessayer.";
       }
     });
   }
@@ -90,21 +104,35 @@ document.addEventListener("DOMContentLoaded", function () {
 
           if (res.status === 201 || res.status === 200) {
             console.log("Guest registration successful");
-            showConfirmModal(
-              "Guest registration successful. Please confirm your email",
-              () => {
-                resetGuestForm();
-              }
-            );
+            if (currentLanguage == "en") {
+              showConfirmModal(
+                "Guest registration successful. Please confirm your email",
+                () => {
+                  resetGuestForm();
+                }
+              );
+            } else {
+              showConfirmModal(
+                "Inscription invité réussie. Veuillez confirmer votre adresse e-mail.",
+                () => {
+                  resetGuestForm();
+                }
+              );
+            }
           } else {
             errorMessageContainer.style.display = "block";
             errorMessageContainer.innerHTML =
-              "Guest registration failed. Please check your credentials and try again.";
+              currentLanguage == "en"
+                ? "Guest registration failed. Please check your credentials and try again."
+                : "L'inscription en tant qu'invité a échoué. Veuillez vérifier vos informations et réessayer.";
           }
         } catch (err) {
           console.error("Request failed:", err);
           errorMessageContainer.style.display = "block";
-          errorMessageContainer.innerHTML = "An unexpected error occurred.";
+          errorMessageContainer.innerHTML =
+            currentLanguage == "en"
+              ? "An unexpected error occurred."
+              : "Une erreur inattendue est survenue.";
         } finally {
           if (submitBtn) submitBtn.disabled = false;
           rechargeUsers();

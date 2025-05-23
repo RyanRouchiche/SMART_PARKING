@@ -51,3 +51,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 });
+function getCurrentLanguage() {
+  currentLanguage = localStorage.getItem("language");
+  if (!currentLanguage) {
+    currentLanguage = document.documentElement.lang || "en";
+  }
+  return currentLanguage;
+}
