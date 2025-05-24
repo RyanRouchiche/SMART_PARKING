@@ -83,7 +83,7 @@ body::-webkit-scrollbar-thumb {
 
 .camera-form input {
   width: 100%;
-  padding: 12px 16px;
+  padding: 12px 0;
   margin-bottom: 15px;
   border: 1px solid #ccc;
   border-radius: 4px;
@@ -91,6 +91,7 @@ body::-webkit-scrollbar-thumb {
   background-color: #1e1e1e;
   color: #fff;
   transition: border-color 0.3s;
+  text-indent: 12px;
 }
 
 .camera-form input:focus {
@@ -110,7 +111,6 @@ body::-webkit-scrollbar-thumb {
   border-radius: 4px;
   cursor: pointer;
   margin-top: 10px;
-  margin-left: 3%;
   transition: background 0.3s ease;
 }
 
@@ -120,6 +120,7 @@ body::-webkit-scrollbar-thumb {
 
 #guest {
   margin-bottom: 60px;
+  font-family: "Kumbh Sans", sans-serif;
 }
 
 @media screen and (max-width: 768px) {
