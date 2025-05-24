@@ -5,6 +5,20 @@
   font-family: "Kumbh Sans", sans-serif;
 }
 
+body::-webkit-scrollbar {
+  width: 8px;
+}
+
+body::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+body::-webkit-scrollbar-thumb {
+  background-color: #f77062;
+  border-radius: 10px;
+  border: 2px solid #1a1a1a;
+}
+
 /* Main section css */
 .main {
   background-color: #141414;
@@ -231,7 +245,7 @@
   cursor: pointer;
 }
 
-@media screen and (max-width: 850px) {
+@media screen and (max-width: 864px) {
   .services {
     height: 2600px;
   }
@@ -241,7 +255,7 @@
     margin-top: 12rem;
   }
 }
-@media screen and (min-width: 850px) and (max-width: 1000px) {
+@media screen and (min-width: 864px) and (max-width: 950px) {
   .services {
     height: 1400px;
   }
@@ -251,7 +265,7 @@
     margin-top: 12rem;
   }
 }
-@media screen and (min-width: 1000px) and (max-width: 1750px) {
+@media screen and (min-width: 950px) and (max-width: 1750px) {
   .services {
     height: 1500px;
   }

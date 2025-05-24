@@ -62,7 +62,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 0 1rem;
   width: 100%;
 }
 
@@ -122,8 +121,9 @@
     opacity: 1;
     transition: all 0.5s ease;
     z-index: 99;
-    height: 50vh;
+    height: 70vh;
     font-size: 1.6rem;
+    padding-left: 0px;
   }
 
   #navbar__logo {
@@ -146,7 +146,7 @@
 
   .navbar__links {
     text-align: center;
-    padding: 2rem;
+    padding: 0 2rem;
     width: 100%;
     display: table;
   }
@@ -157,17 +157,12 @@
     right: 5%;
     transform: translate(5%, 20%);
   }
-
-  .navbar__btn {
-    padding-bottom: 2rem;
-  }
-
   .button {
     display: flex;
     justify-content: center;
     align-self: center;
-    width: 80%;
-    height: 80px;
+    width: 40%;
+    height: 60px;
     margin: 0;
   }
 
@@ -182,21 +177,11 @@
     transform: translateY(-8px) rotate(-45deg);
   }
 }
+
 .navbar__item > button.active {
   color: #f77602 !important;
 }
 
-#lang-toggle {
-  color: #fff;
-  background-color: transparent;
-  border: none;
-  font-size: 1.2rem;
-  cursor: pointer;
-  padding: 0 1rem;
-  text-transform: uppercase;
-  transition: color 0.3s ease;
-}
-
-#lang-toggle:hover {
-  color: #f77602;
+#lang-select {
+  padding-right: 1.2rem;
 }

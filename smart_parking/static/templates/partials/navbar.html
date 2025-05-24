@@ -34,7 +34,7 @@
       <li class="navbar__btn">
         <button class="button" id="logout-btn">{% trans "logout" %}</button>
       </li>
-      <li class="navbar__item">
+      <li class="navbar__item navbar__item--lang">
         <form id="lang-form" action="{% url 'set_language' %}" method="post">
           {% csrf_token %}
           <input type="hidden" name="next" value="{{ request.path }}" />

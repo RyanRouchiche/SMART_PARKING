@@ -1,4 +1,4 @@
-{% load static %}
+{% load static %} {% load i18n %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -18,13 +18,26 @@
       <div class="navbar__container">
         <a href="" id="navbar__logo">PARKING</a>
       </div>
+      <ul class="navbar__menu">
+        <li class="navbar__item">
+          <form id="lang-form" action="{% url 'set_language' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.path }}" />
+            <input type="hidden" name="language" id="lang-input" />
+            <select name="language" id="lang-select" class="navbar__links">
+              <option value="en">English</option>
+              <option value="fr">Français</option>
+            </select>
+          </form>
+        </li>
+      </ul>
     </nav>
 
     <!-- main-container -->
     <div class="main__container">
       <div class="container">
         <div class="form-box active" id="login-form-id">
-          <h2>Login</h2>
+          <h2>{% trans "Login" %}</h2>
           <p class="error-message" id="error-message-login"></p>
           <form action="" id="login-form">
             {% csrf_token %}
@@ -45,19 +58,19 @@
               autocomplete="off"
             />
             <button type="submit" class="submit" onclick="hideError()">
-              Login
+              {% trans "Login" %}
             </button>
             <p>
-              Don't have an account ?
+              {% trans "Don't have an account ?" %}
               <a href="#" onclick="showForm('register-form-id'),hideError()"
-                >Register</a
+                >{% trans "Register" %}</a
               >
             </p>
           </form>
         </div>
 
         <div class="form-box" id="register-form-id">
-          <h2>Register</h2>
+          <h2>{% trans "Register" %}</h2>
           <p class="error-message" id="error-message-register"></p>
           <form action="" id="register-form">
             <input
@@ -101,12 +114,12 @@
               autocomplete="off"
             />
             <button class="submit" type="submit" onclick="hideError()">
-              Register
+              {% trans "Register" %}
             </button>
             <p>
-              Already have an account ?
+              {% trans "Already have an account ?" %}
               <a href="#" onclick="showForm('login-form-id'),hideError()"
-                >Login</a
+                >{% trans "Login" %}</a
               >
             </p>
           </form>
