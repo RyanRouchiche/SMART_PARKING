@@ -63,6 +63,7 @@
   justify-content: center;
   align-items: center;
   width: 100%;
+  padding: 0 1rem;
 }
 
 .button {
@@ -164,6 +165,9 @@
     width: 40%;
     height: 60px;
     margin: 0;
+  }
+  .navbar__btn {
+    padding: 0rem;
   }
 
   #mobile-menu.is-active .bar:nth-child(2) {
