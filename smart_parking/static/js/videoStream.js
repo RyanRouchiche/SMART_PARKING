@@ -13,9 +13,13 @@ const swiperWrapper = document.getElementById("swiper-wrapper");
 const items = document.querySelectorAll("#area-list li");
 const sidebar = document.getElementById("sidebar");
 const open = document.getElementById("open");
+const arrow = document.getElementById("arrow");
 
 open.addEventListener("click", () => {
   sidebar.classList.toggle("close");
+  arrow.innerHTML = sidebar.classList.contains("close")
+    ? "&lt;&lt;"
+    : "&gt;&gt;";
 });
 
 // Function to handle token refresh +  dynamic div creation based on websocket data

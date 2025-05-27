@@ -6,25 +6,31 @@
       <meta charset="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <title>Canera</title>
+
+      <!-- swiper links -->
+      <link
+        rel="stylesheet"
+        href="{% static 'css/swiper/swiper-bundle.min.css' %}"
+      />
+      <script defer src="{% static 'css/swiper/swiper-bundle.min.js' %}"></script>
+      <script type="module" src="{% static 'js/swiper.js' %}"></script>
+      
+      <!-- partials links -->
+      <script src="{% static 'js/partials/navbar.js' %}"></script>
+      <script src="{% static 'js/partials/ConfirmModal.js' %}"></script>
+      <link rel="stylesheet" href="{%static 'css/partials/modal.css' %}" />
+
+      <!-- related links -->
+      <script type="module" src="{% static 'js/camera.js' %}"></script>
+      <script type="module" src="{% static 'js/auth.js' %}"></script>
+      <script type="module" src="{% static 'js/dashboardAPI.js' %}"></script>
       <link rel="stylesheet" href="{% static 'css/forms.css' %}" />
       <link rel="stylesheet" href="{%static 'css/partials/navbar.css' %}" />
       <link
         href="https://fonts.googleapis.com/css2?family=Kumbh+Sans:wght@100..900&display=swap"
         rel="stylesheet"
       />
-      <link
-        rel="stylesheet"
-        href="{% static 'css/swiper/swiper-bundle.min.css' %}"
-      />
-      <link rel="stylesheet" href="{%static 'css/partials/modal.css' %}" />
-      <script defer src="{% static 'css/swiper/swiper-bundle.min.js' %}"></script>
-      <script type="module" src="{% static 'js/swiper.js' %}"></script>
-      <script type="module" src="{% static 'js/camera.js' %}"></script>
-      <script type="module" src="{% static 'js/auth.js' %}"></script>
-      <script type="module" src="{% static 'js/dashboardAPI.js' %}"></script>
-      <script src="{% static 'js/partials/navbar.js' %}"></script>
-      <script src="{% static 'js/partials/ConfirmModal.js' %}"></script>
-
+    </head>
     <body>
       <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
 

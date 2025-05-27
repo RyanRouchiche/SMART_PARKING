@@ -5,17 +5,21 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dashboard</title>
-    <link rel="stylesheet" href="{%static 'css/pick_up_spot.css' %}" />
+    <!-- partials links -->
+    <script src="{% static 'js/partials/navbar.js' %}"></script>
+    <script src="{% static 'js/partials/ConfirmModal.js' %}"></script>
     <link rel="stylesheet" href="{%static 'css/partials/navbar.css' %}" />
     <link rel="stylesheet" href="{%static 'css/partials/modal.css' %}" />
+
+    <!-- related links -->
+    <link rel="stylesheet" href="{%static 'css/pick_up_spot.css' %}" />
+
     <link
       href="https://fonts.googleapis.com/css2?family=Kumbh+Sans:wght@100..900&display=swap"
       rel="stylesheet"
     />
     <script type="module" src="{% static 'js/dashboardAPI.js' %}"></script>
     <script type="module" src="{% static 'js/parkingSelector.js' %}"></script>
-    <script src="{% static 'js/partials/navbar.js' %}"></script>
-    <script src="{% static 'js/partials/ConfirmModal.js' %}"></script>
   </head>
   <body>
     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
