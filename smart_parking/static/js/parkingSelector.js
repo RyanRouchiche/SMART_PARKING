@@ -1,5 +1,5 @@
 import { sendrequest, postrequest } from "./utils.js";
-let currentLanguage;
+let currentLanguage, Undo;
 let selectedPoints = {}; // Store the selected points for each floor
 
 function getRectanglePointsFromTwoPoints(p1, p2) {
@@ -146,15 +146,15 @@ async function sendCoordinates() {
       currentLanguage === "en"
         ? "Coordinates saved successfully!."
         : "Coordonnées enregistrées avec succès !";
-    selectedPoints = {};
+    showConfirmModal(msgSuccees);
   } else {
     const msgError =
       currentLanguage === "en"
         ? "Error saving coordinates."
         : "Erreur lors de l’enregistrement des coordonnées.";
     showConfirmModal(msgError);
-    selectedPoints = {};
   }
+  clearAllSpots();
 }
 
 async function loadCoordinates() {
@@ -270,6 +270,6 @@ window.handleRightClickOnRectangle = handleRightClickOnRectangle;
 
 document.addEventListener("DOMContentLoaded", async () => {
   currentLanguage = getCurrentLanguage();
-  const Undo = document.getElementById("Undo");
+  Undo = document.getElementById("Undo");
   loadCoordinates();
 });
