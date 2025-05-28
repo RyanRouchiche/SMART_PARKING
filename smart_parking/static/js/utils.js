@@ -100,7 +100,10 @@ export async function postrequest(url, method, payload) {
         console.log("Token refreshed. Retrying original request...");
         response = await makeRequest();
       } else {
+
         console.error("Token refresh failed.");
+        window.location.href = "/";
+        
         return {
           status: 401,
           ok: false,

@@ -37,7 +37,7 @@ EMAIL_HOST_PASSWORD=os.getenv('EMAIL_HOST_PASSWORD')
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost' , '172.25.90.121']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost' , '172.25.90.121' , '172.27.72.167']
 
 APPEND_SLASH = True
 
@@ -82,7 +82,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("172.25.90.121", 6379)],  
+            "hosts": [("172.27.72.167", 6379)],  
         },
     },
 }
@@ -99,6 +99,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.locale.LocaleMiddleware',
+    'users.middlewares.InvalidJWTMiddleware',
+
+
 ]
 
 ROOT_URLCONF = 'smart_parking.urls'
@@ -211,6 +214,7 @@ REST_FRAMEWORK = {
 
 
 
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
@@ -231,4 +235,5 @@ LOGGING = {
         'handlers': ['console'],
         'level': 'DEBUG',
     },
+    
 }
