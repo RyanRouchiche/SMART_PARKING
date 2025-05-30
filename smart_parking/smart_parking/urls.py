@@ -11,8 +11,8 @@ urlpatterns = [
     path('dashboard/', include('dashboard.urls')),
     path('camera/', include('camera.urls')),
     path('', LoginView.as_view(), name='login'), 
+    path('i18n/', include('django.conf.urls.i18n')),
 ]   
 
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-    urlpatterns += path('i18n/', include('django.conf.urls.i18n')), 

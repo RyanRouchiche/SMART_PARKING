@@ -4,6 +4,8 @@ const errorRegister = document.getElementById("error-message-register");
 document.addEventListener("DOMContentLoaded", function () {
   const langSelect = document.getElementById("lang-select");
   const langForm = document.getElementById("lang-form");
+  const langInput = document.getElementById("lang-input");
+
   let currentLanguage = localStorage.getItem("language");
   if (!currentLanguage) {
     currentLanguage = document.documentElement.lang || "en";
@@ -17,7 +19,7 @@ document.addEventListener("DOMContentLoaded", function () {
     langSelect.addEventListener("change", function () {
       const selectedLanguage = langSelect.value;
       localStorage.setItem("language", selectedLanguage);
-      const langInput = document.getElementById("lang-input");
+
       if (langInput) {
         langInput.value = selectedLanguage;
       }
@@ -53,7 +55,7 @@ function hideError() {
 }
 
 function getCurrentLanguage() {
-  currentLanguage = localStorage.getItem("language");
+  let currentLanguage = localStorage.getItem("language");
   if (!currentLanguage) {
     currentLanguage = document.documentElement.lang || "en";
   }

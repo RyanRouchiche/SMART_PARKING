@@ -246,7 +246,7 @@ msgstr "Liste des utilisateurs"
 #: .\static\templates\login.html:122 .\staticfiles\templates\login.html:40
 #: .\staticfiles\templates\login.html:61 .\staticfiles\templates\login.html:122
 msgid "Login"
-msgstr "Connexion "
+msgstr "Connexion"
 
 #: .\static\templates\login.html:64 .\staticfiles\templates\login.html:64
 msgid "Don't have an account ?"

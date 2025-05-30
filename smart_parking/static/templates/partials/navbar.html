@@ -36,7 +36,11 @@
       </li>
       <li class="navbar__item navbar__item--lang">
         <form id="lang-form" action="{% url 'set_language' %}" method="post">
-          {% csrf_token %}
+          <input
+            type="hidden"
+            name="csrfmiddlewaretoken"
+            value="{{ csrf_token }}"
+          />
           <input type="hidden" name="next" value="{{ request.path }}" />
           <input type="hidden" name="language" id="lang-input" />
           <select name="language" id="lang-select" class="navbar__links">

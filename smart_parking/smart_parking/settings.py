@@ -82,7 +82,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("172.27.72.167", 6379)],  
+            "hosts": [("172.25.90.121", 6379)],  
         },
     },
 }
@@ -100,8 +100,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'users.middlewares.InvalidJWTMiddleware',
-
-
 ]
 
 ROOT_URLCONF = 'smart_parking.urls'
