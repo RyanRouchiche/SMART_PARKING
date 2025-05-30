@@ -7,6 +7,7 @@
     <title>Login</title>
 
     <!-- partials links -->
+    <script type="module" src="{% static 'js/partials/Language.js' %}"></script>
     <link rel="stylesheet" href="{%static 'css/partials/modal.css' %}" />
 
     <!-- related links -->
@@ -25,7 +26,11 @@
       <ul class="navbar__menu">
         <li class="navbar__item">
           <form id="lang-form" action="{% url 'set_language' %}" method="post">
-            {% csrf_token %}
+            <input
+              type="hidden"
+              name="csrfmiddlewaretoken"
+              value="{{ csrf_token }}"
+            />
             <input type="hidden" name="next" value="{{ request.path }}" />
             <input type="hidden" name="language" id="lang-input" />
             <select name="language" id="lang-select" class="navbar__links">

@@ -1,6 +1,3 @@
-
-
-
 export async function sendrequest(url, method) {
   try {
     let response = await fetch(url, {
@@ -62,10 +59,6 @@ export function initwebsocketconn(wsschema, path) {
   return websocket;
 }
 
-
-
-
-
 export async function postrequest(url, method, payload) {
   async function makeRequest() {
     const response = await fetch(url, {
@@ -90,7 +83,7 @@ export async function postrequest(url, method, payload) {
 
       const refreshResponse = await fetch("/auth/token/refresh/", {
         method: "POST",
-        credentials: "include", 
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -100,10 +93,9 @@ export async function postrequest(url, method, payload) {
         console.log("Token refreshed. Retrying original request...");
         response = await makeRequest();
       } else {
-
         console.error("Token refresh failed.");
         window.location.href = "/";
-        
+
         return {
           status: 401,
           ok: false,
@@ -124,7 +116,6 @@ export async function postrequest(url, method, payload) {
     return { status: 500, ok: false, data: { error: error.message } };
   }
 }
-
 
 export async function redirect(url) {
   console.log("Checking authentication...");
@@ -153,7 +144,56 @@ export async function redirect(url) {
       console.log("Token refreshed successfully. RRRR");
       window.location.href = url;
     }
-  }else {
+  } else {
     window.location.href = url;
   }
+}
+export async function formPostRequest(url, payloadObj) {
+  const formData = new URLSearchParams();
+  for (const key in payloadObj) {
+    formData.append(key, payloadObj[key]);
+  }
+
+  const csrfToken =
+    document.querySelector("[name=csrfmiddlewaretoken]")?.value || "";
+
+  async function makeRequest() {
+    return await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "X-CSRFToken": csrfToken,
+      },
+      credentials: "include",
+      body: formData.toString(),
+    });
+  }
+
+  let response = await makeRequest();
+
+  if (response.status === 401) {
+    console.warn("Token expired. Refreshing before retry...");
+
+    const refreshRes = await fetch("/auth/token/refresh/", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (refreshRes.ok) {
+      console.log("Token refreshed. Retrying form POST...");
+      response = await makeRequest();
+    } else {
+      console.error("Token refresh failed.");
+      return { status: 401, ok: false, data: "Token refresh failed" };
+    }
+  }
+
+  return {
+    status: response.status,
+    ok: response.ok,
+    data: await response.text(),
+  };
 }
