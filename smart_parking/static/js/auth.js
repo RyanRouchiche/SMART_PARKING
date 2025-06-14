@@ -19,7 +19,6 @@ document.addEventListener("DOMContentLoaded", function () {
       const res = await postrequest("/auth/token/", "POST", data);
       if (res.status === 200 || res.status === 201) {
         console.log("Login successful");
-
         await redirect("/dashboard/");
       } else {
         errorMessageContainer1.style.display = "block";

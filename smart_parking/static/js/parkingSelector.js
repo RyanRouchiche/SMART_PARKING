@@ -185,15 +185,13 @@ async function loadCoordinates() {
 }
 
 function renderSpot(area, spotName, points) {
+  const container = document.getElementById(`container-${area}`);
+  if (!container) return;
   if (!selectedPoints[area]) {
     selectedPoints[area] = [];
   }
-
   // Add spot to selectedPoints
   selectedPoints[area].push({ [spotName]: points });
-
-  const container = document.getElementById(`container-${area}`);
-  if (!container) return;
 
   // Draw dots
   points.forEach(([x, y]) => {

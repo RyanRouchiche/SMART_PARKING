@@ -28,7 +28,10 @@ export async function sendrequest(url, method) {
           credentials: "include",
         });
       } else {
-        window.location.href = "/";
+        const res1 = await sendrequest("/auth/logout/", "POST");
+        if (res1.status === 200) {
+          window.location.href = "/";
+        }
         return;
       }
     }
@@ -94,7 +97,12 @@ export async function postrequest(url, method, payload) {
         response = await makeRequest();
       } else {
         console.error("Token refresh failed.");
-        window.location.href = "/";
+        if (window.location.pathname !== "/") {
+          const res1 = await sendrequest("/auth/logout/", "POST");
+          if (res1.status === 200) {
+            window.location.href = "/";
+          }
+        }
 
         return {
           status: 401,
@@ -143,6 +151,11 @@ export async function redirect(url) {
     if (refreshRes.status === 200) {
       console.log("Token refreshed successfully. RRRR");
       window.location.href = url;
+    } else {
+      const res1 = await sendrequest("/auth/logout/", "POST");
+      if (res1.status === 200) {
+        window.location.href = "/";
+      }
     }
   } else {
     window.location.href = url;

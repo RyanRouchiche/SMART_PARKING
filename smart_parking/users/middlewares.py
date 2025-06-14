@@ -13,7 +13,7 @@ class InvalidJWTMiddleware:
             request.path.startswith("/static/") or
             request.path.startswith("/staticfiles/") or
             request.path.startswith("/media/") or
-            request.path in ["/logout/", "/login/", "/register/", "/" , "/auth/token/" , "/auth/token/refresh/","/i18n/setlang/"] 
+            request.path in ["/auth/logout/", "/login/", "/register/", "/" , "/auth/token/" , "/auth/token/refresh/","/i18n/setlang/","/auth/activate/<uidb64>/<token>/"] 
         ):
             return self.get_response(request)
 
