@@ -1,6 +1,3 @@
-const errorLogin = document.getElementById("error-message-login");
-const errorRegister = document.getElementById("error-message-register");
-
 function showForm(formId) {
   document
     .querySelectorAll(".form-box")
@@ -19,7 +16,10 @@ function showForm(formId) {
 }
 
 function hideError() {
+  const errorLogin = document.getElementById("error-message-login");
+  const errorRegister = document.getElementById("error-message-register");
   if (errorLogin) {
+    console.log("Hiding error messages");
     errorLogin.style.display = "none";
   }
   if (errorRegister) {

@@ -13,6 +13,7 @@ urlpatterns = [
     path('areas/', views.get_available_areas, name='get_available_areas'),
     path('camera/' , include('camera.urls')),
     path('coordinates/', views.get_jsonFile, name='get_jsonFile'), 
+    path('test/', views.test.as_view(), name='test'), 
 ]
 
 if settings.DEBUG:

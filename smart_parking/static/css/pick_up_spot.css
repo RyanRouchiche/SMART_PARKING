@@ -9,6 +9,7 @@ html,
 body {
   height: 100%;
   background-color: #141414;
+  overflow-x: hidden;
 }
 
 body::-webkit-scrollbar {
@@ -31,6 +32,21 @@ body::-webkit-scrollbar-thumb {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  overflow-x: auto;
+}
+
+.main::-webkit-scrollbar {
+  height: 8px;
+}
+
+.main::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+.main::-webkit-scrollbar-thumb {
+  background-color: #f77062;
+  border-radius: 10px;
+  border: 2px solid #1a1a1a;
 }
 
 .main__container {
@@ -40,15 +56,9 @@ body::-webkit-scrollbar-thumb {
 }
 
 .area-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-  margin-bottom: 20px;
-
-  max-width: 1200px;
-  margin-left: auto;
-  margin-right: auto;
-  padding: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3%;
 }
 
 .image-container {
@@ -59,6 +69,7 @@ body::-webkit-scrollbar-thumb {
 
 .image-container img {
   display: block;
+  margin-bottom: 5%;
 }
 
 .selected-point {
@@ -78,14 +89,28 @@ body::-webkit-scrollbar-thumb {
   font-size: 12px;
   text-align: center;
   line-height: 1.2;
-  pointer-events: auto;
+  pointer-events: none;
   font-weight: bold;
   cursor: pointer;
+}
+.spot-rectangle.context-menu-enabled {
+  pointer-events: auto;
+}
+
+.spot-rectangle.context-menu-enabled::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: auto;
 }
 
 .main__content h1 {
   display: flex;
   justify-content: center;
+  text-align: center;
   font-size: 4rem;
   background-image: linear-gradient(to right, #ff0844 0%, #ffb199 100%);
   background-size: 100%;
@@ -154,8 +179,8 @@ body::-webkit-scrollbar-thumb {
   .area-container {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    grid-template-columns: 1fr;
+    justify-content: center;
+    flex-wrap: nowrap;
   }
 }
 

@@ -162,3 +162,8 @@ class stream_page(APIView) :
     def get(self, request, *args, **kwargs) : 
         return render(request, 'video_feed.html')
 
+class test(APIView) :
+    permission_classes = [AllowAny]
+
+    def get(self, request, *args, **kwargs) :
+        return render(request, 'test.html')

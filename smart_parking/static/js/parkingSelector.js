@@ -47,6 +47,9 @@ function handleRightClickOnRectangle(event) {
 }
 
 async function selectPoint(event, area) {
+  // Ignore only right-clicks inside rectangle
+  if (event.button !== 0) return;
+
   if (!selectedPoints[area]) {
     selectedPoints[area] = [];
   }
@@ -100,12 +103,15 @@ async function selectPoint(event, area) {
     }
 
     const points = Object.values(currentSpot)[0];
-    selectedPoints[area].pop();
-
     const tempDots = imgContainer.querySelectorAll('[data-temp="true"]');
     tempDots.forEach((dot) => dot.remove());
 
+    // Replace the unnamed spot with the new named one
+    selectedPoints[area][selectedPoints[area].length - 1] = {
+      [spotName]: points,
+    };
     renderSpot(area, spotName, points);
+
     Undo.style.display = "block";
     currentLanguage = getCurrentLanguage();
     const Selectedmsg =
@@ -215,15 +221,27 @@ function renderSpot(area, spotName, points) {
 
   // Draw rectangle
   const rectangle = document.createElement("div");
-  rectangle.classList.add("spot-rectangle");
+  rectangle.classList.add("spot-rectangle", "context-menu-enabled");
   rectangle.style.left = `${minX}px`;
   rectangle.style.top = `${minY}px`;
   rectangle.style.width = `${width}px`;
   rectangle.style.height = `${height}px`;
-  rectangle.innerText = spotName;
+  // rectangle.innerText = spotName;
   rectangle.setAttribute("data-spot-name", spotName);
   rectangle.setAttribute("data-area", area);
-  rectangle.addEventListener("contextmenu", handleRightClickOnRectangle);
+  rectangle.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+    handleRightClickOnRectangle(e);
+  });
+  const span = document.createElement("span");
+  span.textContent = spotName;
+  span.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+    console.log("Right-clicked span!");
+
+    handleRightClickOnRectangle(e);
+  });
+  rectangle.appendChild(span);
   container.appendChild(rectangle);
 }
 
@@ -270,4 +288,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   currentLanguage = getCurrentLanguage();
   Undo = document.getElementById("Undo");
   loadCoordinates();
+
+  // Add click listeners to all area containers
+  document.querySelectorAll("[id^='container-']").forEach((container) => {
+    const area = container.id.replace("container-", "");
+    container.addEventListener("mousedown", (e) => {
+      selectPoint(e, area);
+    });
+    container.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+    });
+  });
 });
