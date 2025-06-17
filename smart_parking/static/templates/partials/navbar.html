@@ -44,8 +44,8 @@
           <input type="hidden" name="next" value="{{ request.path }}" />
           <input type="hidden" name="language" id="lang-input" />
           <select name="language" id="lang-select" class="navbar__links">
-            <option value="en">English</option>
-            <option value="fr">Français</option>
+              <option value="en" {% if LANGUAGE_CODE == 'en' %}selected{% endif %}>English</option>
+              <option value="fr" {% if LANGUAGE_CODE == 'fr' %}selected{% endif %}>Français</option>
           </select>
         </form>
       </li>
