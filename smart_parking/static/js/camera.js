@@ -171,5 +171,4 @@ function resetGuestForm() {
 window.sendCamData = sendCamData;
 window.SendData = SendData;
 window.rechargeCams = rechargeCams;
-window.HidePopup = HidePopup;
 window.resetGuestForm = resetGuestForm;
