@@ -142,13 +142,6 @@ async function SendData(data) {
   }
 }
 
-function ConfirmPopup() {
-  document.getElementById("Modal").style.display = "flex";
-}
-function HidePopup() {
-  document.getElementById("Modal").style.display = "none";
-}
-
 async function rechargeCams() {
   const currentLanguage = getCurrentLanguage();
   console.log("calling the fetch request...");
@@ -178,6 +171,5 @@ function resetGuestForm() {
 window.sendCamData = sendCamData;
 window.SendData = SendData;
 window.rechargeCams = rechargeCams;
-window.ConfirmPopup = ConfirmPopup;
 window.HidePopup = HidePopup;
 window.resetGuestForm = resetGuestForm;

@@ -178,20 +178,37 @@ document.addEventListener("DOMContentLoaded", async function () {
     currentLanguage = getCurrentLanguage();
     console.log("Logout button found!");
     logoutbutton.addEventListener("click", async () => {
-      const data = await sendrequest("/auth/logout/", "POST");
-      if (data.data.success) {
+      ConfirmPopup();
+      const message = document.getElementById("modalMessage");
+      if (message) {
         const msg =
           currentLanguage === "en"
-            ? "logout succesfull"
-            : "Déconnexion aves succees";
-        showConfirmModal(msg, () => {
-          window.location.href = "/";
-        });
-      } else {
-        const msg =
-          currentLanguage === "en" ? "logout failed" : "Déconnexion échouée";
-        showConfirmModal(msg);
+            ? "Are you sure you want to log out?"
+            : "Êtes-vous sûr de vouloir vous deconnecter ?";
+        message.textContent = msg;
       }
+      const confirmBtn = document.getElementById("confirmBtn");
+      const cancelBtn = document.getElementById("cancelBtn");
+      confirmBtn.onclick = async () => {
+        HidePopup();
+        const data = await sendrequest("/auth/logout/", "POST");
+        if (data.data.success) {
+          const msg =
+            currentLanguage === "en"
+              ? "logout succesfull"
+              : "Déconnexion aves succees";
+          showConfirmModal(msg, () => {
+            window.location.href = "/";
+          });
+        } else {
+          const msg =
+            currentLanguage === "en" ? "logout failed" : "Déconnexion échouée";
+          showConfirmModal(msg);
+        }
+      };
+      cancelBtn.onclick = () => {
+        HidePopup();
+      };
     });
   }
 
@@ -245,4 +262,14 @@ async function rechargeUsers() {
     });
   });
 }
+
+function ConfirmPopup() {
+  document.getElementById("Modal").style.display = "flex";
+}
+function HidePopup() {
+  document.getElementById("Modal").style.display = "none";
+}
+
+window.ConfirmPopup = ConfirmPopup;
 window.rechargeUsers = rechargeUsers;
+window.HidePopup = HidePopup;
