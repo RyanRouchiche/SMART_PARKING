@@ -146,7 +146,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           parking_slots.id = `slot-${areaId}-${i}`;
           const p = document.createElement("p");
           const actualSpot = spotNameToIndexMap[areaId].reverseMap[i];
-          p.textContent = actualSpot?.match(/\d+/)?.[0] || `?`;
+          p.textContent = actualSpot;
           parking_slots.appendChild(p);
           if (i < areaLength / 2 || areaLength < 6) {
             parking_slots_holder_target_1.appendChild(parking_slots);
