@@ -6,7 +6,8 @@ import cv2
 
 def predict_single_image(model, frame, target_size=(180, 180), threshold=0.5):
     
-    image_rsized = cv2.resize(frame, target_size)
+    rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    image_rsized = cv2.resize(rgb_frame, target_size)
     img_array = image.img_to_array(image_rsized) / 255.0
     img_array = np.expand_dims(img_array, axis=0)
     start_time = time.time()
