@@ -1,0 +1,10 @@
+*
+!requirements.txt
+!docker/constraints.txt
+!server/
+**/__pycache__
+**/*.pyc
+server/DJANGO_SERVER/staticfiles
+server/DJANGO_SERVER/cropped_spots
+server/DJANGO_SERVER/parking/Data
+server/MODEL_SERVER/*.ipynb

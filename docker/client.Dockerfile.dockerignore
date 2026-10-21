@@ -1,0 +1,5 @@
+*
+!client/
+!docker/nginx.conf
+client/node_modules
+client/dist
