@@ -54,6 +54,7 @@ services:
     volumes:
       - ../server/DJANGO_SERVER/parking/Spots:/app/DJANGO_SERVER/parking/Spots
       - ../server/DJANGO_SERVER/cropped_spots:/app/DJANGO_SERVER/cropped_spots
+      - ../server/DJANGO_SERVER/parking/Data:/app/DJANGO_SERVER/parking/Data:ro
     depends_on:
       db:
         condition: service_healthy
@@ -71,6 +72,14 @@ services:
       - "${CLIENT_PORT:-8080}:80"
     depends_on:
       - django
+    restart: unless-stopped
+
+  website:
+    profiles: [website]
+    build:
+      context: ../../SMART_PARKING_WEBSITE
+    ports:
+      - "${WEBSITE_PORT:-8081}:80"
     restart: unless-stopped
 
 volumes:

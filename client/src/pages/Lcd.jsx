@@ -1,69 +1,86 @@
-import { useEffect, useState } from "react";
-import css from "../styles/lcd.css?inline";
-import { api, openSocket } from "../api.js";
+import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useT } from "../i18n.jsx";
+import { useZone } from "../zones.jsx";
+import "../styles/lcd.css";
+
+function spotNumber(code) {
+  return Number(code.match(/(\d+)$/)?.[1] ?? 0);
+}
 
 export default function Lcd() {
   const t = useT();
-  const [areas, setAreas] = useState([]);
-  const [area, setArea] = useState(null);
-  const [emptySpots, setEmptySpots] = useState([]);
+  const navigate = useNavigate();
+  const { area } = useParams();
+  const { zone, zones } = useZone(area);
 
-  useEffect(() => {
-    api("/parking/areas/").then((res) => {
-      if (res.ok && res.data.areas.length) {
-        setAreas(res.data.areas);
-        setArea(res.data.areas[0]);
-      }
-    });
-  }, []);
+  if (!zones) {
+    return <div className="lcd" />;
+  }
+  if (!area || !zone) {
+    return zones.length ? <Navigate to={`/lcd/${zones[0].area}`} replace /> : <Navigate to="/" replace />;
+  }
 
-  useEffect(() => {
-    if (area === null) {
-      return;
-    }
-    setEmptySpots([]);
-    const socket = openSocket(`video/${area}/`);
-    socket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      setEmptySpots(data.spot_details.filter((s) => s.status === "empty").map((s) => s.spot));
-    };
-    return () => socket.close();
-  }, [area]);
+  const free = zone.spots.filter((s) => s.status === "empty");
+  const left = free.filter((s) => spotNumber(s.code) % 2 === 1);
+  const right = free.filter((s) => spotNumber(s.code) % 2 === 0);
+  const unavailable = zone.state === "offline" || zone.state === "stale" || zone.state === "connecting";
+
+  let headline;
+  if (unavailable) {
+    headline = <p className="lcd__word lcd__word--alert">{t("OUT OF SERVICE")}</p>;
+  } else if (zone.state === "full") {
+    headline = <p className="lcd__word lcd__word--alert">{t("FULL")}</p>;
+  } else {
+    headline = (
+      <>
+        <p key={zone.free} className="lcd__count num">
+          {zone.free}
+        </p>
+        <p className="lcd__unit">{t(zone.free === 1 ? "free spot" : "free spots")}</p>
+      </>
+    );
+  }
 
   return (
-    <>
-      <style>{css}</style>
-      <div className="container">
+    <div className="lcd" style={{ "--zone": zone.color }}>
+      <header className="lcd__head">
         <h1>
-          {t("Area")} : {area}
+          <span className="lcd__dot" aria-hidden="true" />
+          {zone.code} · {t("Zone {n}", { n: zone.area })}
         </h1>
-
-        <label htmlFor="areaSelect">{t("Choose an area")} :</label>
-        <select id="areaSelect" value={area ?? ""} onChange={(e) => setArea(Number(e.target.value))}>
-          {areas.map((a) => (
-            <option key={a} value={a}>
-              {a}
-            </option>
-          ))}
-        </select>
-
-        <div className="status">
-          <h2>
-            {t("Available spots")} : <span>{emptySpots.length}</span>
-          </h2>
-          <ul>
-            {emptySpots.map((spot) => {
-              const number = Number(spot.match(/\d+/)?.[0] ?? 0);
-              return (
-                <li key={spot}>
-                  {spot} <span className="arrow">{number % 2 === 0 ? "→" : "←"}</span>
-                </li>
-              );
-            })}
-          </ul>
+        <div className="lcd__controls">
+          <select aria-label={t("Choose a zone")} value={zone.area} onChange={(e) => navigate(`/lcd/${e.target.value}`)}>
+            {zones.map((z) => (
+              <option key={z.area} value={z.area}>
+                {z.code}
+              </option>
+            ))}
+          </select>
+          <Link to="/">{t("Exit")}</Link>
         </div>
-      </div>
-    </>
+      </header>
+
+      <main className="lcd__main" aria-live="polite">
+        {headline}
+      </main>
+
+      {!unavailable && free.length > 0 && (
+        <footer className="lcd__spots">
+          {left.length > 0 && (
+            <p>
+              <ArrowLeft size={56} strokeWidth={2.5} aria-label={t("Left")} />
+              <span className="num">{left.map((s) => s.code.split("-").pop()).join("  ")}</span>
+            </p>
+          )}
+          {right.length > 0 && (
+            <p>
+              <span className="num">{right.map((s) => s.code.split("-").pop()).join("  ")}</span>
+              <ArrowRight size={56} strokeWidth={2.5} aria-label={t("Right")} />
+            </p>
+          )}
+        </footer>
+      )}
+    </div>
   );
 }

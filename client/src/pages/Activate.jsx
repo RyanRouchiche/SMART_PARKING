@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import css from "../styles/login.css?inline";
 import { api } from "../api.js";
 import { useT } from "../i18n.jsx";
+import { AuthLayout } from "./Login.jsx";
 
 export default function Activate() {
   const t = useT();
@@ -14,20 +14,22 @@ export default function Activate() {
   }, [uid, token]);
 
   return (
-    <>
-      <style>{css}</style>
-      <div className="main__container">
-        <div className="container">
-          <div className="form-box active">
-            {ok !== null && (
-              <h2>{t(ok ? "Account activated successfully!" : "Invalid activation link.")}</h2>
-            )}
-            <p>
-              <Link to="/login">{t("Go to login")}</Link>
+    <AuthLayout>
+      <div className="stack-form">
+        {ok === null ? (
+          <span className="skeleton" style={{ width: 240, height: 28 }} />
+        ) : (
+          <>
+            <h1 className="page__title">{t(ok ? "Account activated" : "Invalid activation link")}</h1>
+            <p className="muted">
+              {t(ok ? "You can now log in." : "The link has expired or was already used. Ask an administrator for a new one.")}
             </p>
-          </div>
-        </div>
+          </>
+        )}
+        <Link to="/login" className="btn btn--primary btn--block">
+          {t("Go to login")}
+        </Link>
       </div>
-    </>
+    </AuthLayout>
   );
 }
