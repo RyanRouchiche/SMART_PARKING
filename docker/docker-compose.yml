@@ -52,7 +52,6 @@ services:
       DB_SSLMODE: disable
       ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1}
     volumes:
-      - ../server/DJANGO_SERVER/parking/Spots:/app/DJANGO_SERVER/parking/Spots
       - ../server/DJANGO_SERVER/cropped_spots:/app/DJANGO_SERVER/cropped_spots
     depends_on:
       db:

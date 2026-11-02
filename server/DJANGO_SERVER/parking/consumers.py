@@ -2,15 +2,17 @@ import asyncio
 import json
 import logging
 import time
+from urllib.parse import parse_qs
 
 import cv2
 import numpy as np
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
+from rest_framework.exceptions import PermissionDenied
 
 from camera.models import Camera
+from .access import resolve_parking
 from .model_client import predict_spots
-from .views import COORDINATES_FILE
 
 logger = logging.getLogger(__name__)
 
@@ -18,19 +20,17 @@ SPOT_SIZE = 180
 SPOT_DST = np.float32([[0, 0], [SPOT_SIZE, 0], [SPOT_SIZE, SPOT_SIZE], [0, SPOT_SIZE]])
 
 
-@database_sync_to_async
-def get_camera_path(area):
-    return Camera.objects.filter(area=area).values_list('path', flat=True).first()
-
-
-def load_area_coordinates(area):
+def zone_for(user, area, parking_id):
     try:
-        with open(COORDINATES_FILE, "r", encoding="utf-8") as f:
-            data = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError) as e:
-        logger.error(f"Error loading coordinates: {e}")
-        return None
-    return next((a["coordinates"] for a in data if a["area"] == str(area)), None)
+        parking = resolve_parking(user, parking_id)
+    except PermissionDenied:
+        return None, None
+    zone = parking.zones.filter(number=area).first()
+    path = Camera.objects.filter(parking=parking, area=area).values_list('path', flat=True).first()
+    return (zone.spots if zone else None), path
+
+
+load_zone = database_sync_to_async(zone_for)
 
 
 class VideoFeedConsumer(AsyncWebsocketConsumer):
@@ -39,14 +39,14 @@ class VideoFeedConsumer(AsyncWebsocketConsumer):
         self.area = int(self.scope['url_route']['kwargs']['area'])
         self.streaming = False
         self.cap = None
+        parking_id = parse_qs(self.scope.get('query_string', b'').decode()).get('parking', [None])[0]
+        self.area_coordinates, video_path = await load_zone(self.scope['user'], self.area, parking_id)
         await self.accept()
 
-        self.area_coordinates = load_area_coordinates(self.area)
         if not self.area_coordinates:
             logger.warning(f"No coordinates found for area {self.area}")
             return await self.close()
 
-        video_path = await get_camera_path(self.area)
         self.cap = cv2.VideoCapture(video_path) if video_path else None
         if self.cap is None or not self.cap.isOpened():
             logger.warning(f"Unable to open video for area {self.area}")

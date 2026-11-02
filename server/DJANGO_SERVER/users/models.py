@@ -8,11 +8,15 @@ class User(AbstractUser):
     USER_TYPE_CHOICES = (
         ('admin', 'Admin'),
         ('guest', 'Guest'),
+        ('driver', 'Driver'),
     )
+    LANGUAGE_CHOICES = (('fr', 'Français'), ('ar', 'العربية'))
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user_type = models.CharField(max_length=10, choices=USER_TYPE_CHOICES, default='guest')
     created_by = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='created_users')
+    phone = models.CharField(max_length=32, blank=True)
+    language = models.CharField(max_length=2, choices=LANGUAGE_CHOICES, default='fr')
 
     def __str__(self):
         return self.username
