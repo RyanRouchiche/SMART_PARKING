@@ -245,6 +245,10 @@ class SpotOrderTests(TestCase):
     def test_natural_order_puts_p2_before_p10(self):
         self.assertEqual(sorted(["P10", "P2", "p1"], key=natural_key), ["p1", "P2", "P10"])
 
+    def test_natural_order_never_fails_on_unicode_digits(self):
+        names = ["P1²", "²", "P٣", "P10", "P2"]
+        self.assertEqual(sorted(names, key=natural_key), ["P1²", "P2", "P٣", "P10", "²"])
+
     def test_layouts_come_back_in_natural_order_from_jsonb(self):
         parking = Parking.objects.create(name="A")
         Zone.objects.create(parking=parking, number=1, spots={"Spot 10": SQUARE, "Spot 9": SQUARE, "Spot 1": SQUARE})
