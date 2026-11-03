@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.throttling import AnonRateThrottle, ScopedRateThrottle, SimpleRateThrottle, UserRateThrottle
+from rest_framework.throttling import AnonRateThrottle, BaseThrottle, ScopedRateThrottle, UserRateThrottle
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
@@ -61,16 +61,6 @@ def body(request):
     return request.data if isinstance(request.data, dict) else {}
 
 
-class UsernameRateThrottle(SimpleRateThrottle):
-    scope = 'login_user'
-
-    def get_cache_key(self, request, view):
-        username = body(request).get('username')
-        if not isinstance(username, str) or not username:
-            return None
-        return self.cache_format % {'scope': self.scope, 'ident': username.strip().lower()}
-
-
 class NearbyView(PublicAPIView):
     def get(self, request):
         lat = number(request.query_params, 'lat', -90, 90)
@@ -103,21 +93,24 @@ class RegisterView(AuthAPIView):
 
 
 class LoginView(AuthAPIView):
-    throttle_classes = [ScopedRateThrottle, UsernameRateThrottle]
-
     def post(self, request):
         data = body(request)
         username, password = data.get('username'), data.get('password')
-        if not username or not password:
+        if not isinstance(username, str) or not isinstance(password, str) or not username or not password:
             return Response({'error': 'Username and password are required'}, status=400)
+        client = BaseThrottle().get_ident(request)
+        if services.login_blocked(username, client):
+            return Response({'error': 'Too many failed attempts, try again in a minute'}, status=429)
         try:
             user = authenticate_user(username, password)
         except InvalidCredentials:
+            services.record_login_failure(username, client)
             return Response({'error': 'Invalid credentials'}, status=401)
         except InactiveAccount:
             return Response({'error': 'Your account is not activated, check your email'}, status=401)
         if user.user_type != DRIVER:
             return Response({'error': 'This account must use the web application'}, status=403)
+        services.clear_login_failures(username, client)
         access, refresh = issue_tokens(user)
         return Response({'access': access, 'refresh': refresh, 'user': driver_payload(user)})
 

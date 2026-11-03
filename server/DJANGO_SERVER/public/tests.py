@@ -223,9 +223,23 @@ class ThrottleIdentityTests(APITestCase):
             ]
         self.assertEqual(codes, [200, 200, 429])
 
-    def test_login_is_limited_per_username_across_addresses(self):
-        codes = [
-            self.client.post("/api/public/v1/auth/login/", {"username": "Victim", "password": f"guess{i}"}, format="json", HTTP_X_FORWARDED_FOR=f"198.51.100.{i}").status_code
-            for i in range(6)
-        ]
+    def login(self, password, address):
+        return self.client.post("/api/public/v1/auth/login/", {"username": "Victim", "password": password}, format="json", HTTP_X_FORWARDED_FOR=address).status_code
+
+    def test_failed_logins_are_limited_per_username_and_address(self):
+        codes = [self.login(f"guess{i}", "198.51.100.7") for i in range(6)]
         self.assertEqual(codes, [401] * 5 + [429])
+
+    def test_an_attacker_cannot_lock_out_the_real_driver(self):
+        User.objects.create_user(username="Victim", password="Str0ng-pass-word", user_type="driver", is_active=True)
+        attacker = [self.login(f"guess{i}", "203.0.113.66") for i in range(6)]
+        self.assertEqual(attacker[-1], 429)
+        self.assertEqual(self.login("Str0ng-pass-word", "203.0.113.66"), 429)
+        self.assertEqual(self.login("Str0ng-pass-word", "198.51.100.20"), 200)
+
+    def test_a_successful_login_resets_the_failures(self):
+        User.objects.create_user(username="Victim", password="Str0ng-pass-word", user_type="driver", is_active=True)
+        for i in range(4):
+            self.login(f"guess{i}", "198.51.100.30")
+        self.assertEqual(self.login("Str0ng-pass-word", "198.51.100.30"), 200)
+        self.assertEqual([self.login(f"again{i}", "198.51.100.30") for i in range(5)], [401] * 5)

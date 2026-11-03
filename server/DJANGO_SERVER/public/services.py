@@ -2,6 +2,7 @@ import logging
 from datetime import datetime, timezone
 
 from django.conf import settings
+from django.core.cache import cache
 from django.core.mail import send_mail
 
 from detection.interface import parking_availability
@@ -9,6 +10,8 @@ from parking.interface import published_parking, published_parkings_in_box
 from shared.geo import bounding_box, distance_m
 
 MAX_RESULTS = 20
+FAILED_LOGIN_LIMIT = 5
+FAILED_LOGIN_WINDOW = 60
 
 logger = logging.getLogger(__name__)
 
@@ -82,3 +85,24 @@ def detail(parking_id):
         'pricing_text': parking['pricing_text'],
         **availability(parking),
     }
+
+
+def failure_key(username, client):
+    return f"login_failures:{username.strip().lower()}:{client}"
+
+
+def login_blocked(username, client):
+    return cache.get(failure_key(username, client), 0) >= FAILED_LOGIN_LIMIT
+
+
+def record_login_failure(username, client):
+    key = failure_key(username, client)
+    if not cache.add(key, 1, FAILED_LOGIN_WINDOW):
+        try:
+            cache.incr(key)
+        except ValueError:
+            cache.set(key, 1, FAILED_LOGIN_WINDOW)
+
+
+def clear_login_failures(username, client):
+    cache.delete(failure_key(username, client))

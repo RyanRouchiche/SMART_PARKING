@@ -161,7 +161,6 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_THROTTLE_RATES': {
         'auth': '10/min',
-        'login_user': '5/min',
         'register': '5/hour',
         'anon': os.getenv('PUBLIC_ANON_RATE', '30/min'),
         'user': os.getenv('PUBLIC_USER_RATE', '60/min'),
