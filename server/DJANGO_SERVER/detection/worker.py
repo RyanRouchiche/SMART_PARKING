@@ -6,12 +6,11 @@ from dataclasses import dataclass
 
 from django.db import close_old_connections
 
-from camera.models import Camera
-from parking.models import Zone
+from camera.interface import VideoSource, all_camera_paths
+from parking.interface import all_zone_layouts
+from shared.geometry import normalized_crops, spot_transforms
 from . import events
-from .capture import VideoSource
 from .classifier import classify
-from .geometry import normalized_crops, spot_transforms
 
 logger = logging.getLogger(__name__)
 
@@ -85,12 +84,12 @@ def in_shard(config, shard, shards):
 
 
 def load_zones(shard=0, shards=1):
-    paths = {(str(p), a): path for p, a, path in Camera.objects.exclude(parking=None).values_list('parking_id', 'area', 'path')}
+    paths = {(str(p), a): path for (p, a), path in all_camera_paths().items()}
     configs = []
-    for zone in Zone.objects.exclude(spots={}):
-        path = paths.get((str(zone.parking_id), zone.number))
+    for parking_id, number, spots in all_zone_layouts():
+        path = paths.get((str(parking_id), number))
         if path:
-            config = ZoneConfig(str(zone.parking_id), zone.number, path, tuple((n, tuple(map(tuple, p))) for n, p in zone.spots.items()))
+            config = ZoneConfig(str(parking_id), number, path, tuple((n, tuple(map(tuple, p))) for n, p in spots.items()))
             if in_shard(config, shard, shards):
                 configs.append(config)
     return configs

@@ -1,6 +1,6 @@
 import cv2
 
-from camera.sources import is_url, open_source
+from .sources import is_url, open_source
 
 CAPTURE_TIMEOUTS = [cv2.CAP_PROP_OPEN_TIMEOUT_MSEC, 5000, cv2.CAP_PROP_READ_TIMEOUT_MSEC, 5000]
 

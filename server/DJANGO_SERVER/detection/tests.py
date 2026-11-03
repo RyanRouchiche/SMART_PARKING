@@ -1,6 +1,7 @@
 import os
 import tempfile
 import threading
+from unittest import mock
 
 import cv2
 import numpy as np
@@ -10,11 +11,11 @@ from channels.testing import WebsocketCommunicator
 from django.test import SimpleTestCase, TestCase, TransactionTestCase
 
 from camera.models import Camera
-from parking.consumers import VideoFeedConsumer
+from .consumers import VideoFeedConsumer
 from parking.models import Parking, ParkingMembership, Zone
 from users.models import User
 from . import events
-from .geometry import crop_size, order_corners
+from shared.geometry import crop_size, order_corners
 from .worker import ZoneConfig, ZoneWorker, detect, load_zones, spot_transforms
 
 SQUARE = [[10, 10], [60, 10], [60, 60], [10, 60]]
@@ -136,6 +137,23 @@ class VideoFeedConsumerTests(TransactionTestCase):
             self.operator.is_active = False
             await self.operator.asave()
             output = await communicator.receive_output()
+            await communicator.disconnect()
+            return output["type"]
+
+        self.assertEqual(async_to_sync(scenario)(), "websocket.close")
+
+    def test_periodic_recheck_closes_when_signals_were_bypassed(self):
+        message = {"area": 1, "available_spots": 0, "spot_details": []}
+        group = events.zone_group(self.parking.pk, 1)
+        layer = get_channel_layer()
+
+        async def scenario():
+            communicator = self.connect(self.operator)
+            await communicator.connect()
+            await User.objects.filter(pk=self.operator.pk).aupdate(is_active=False)
+            with mock.patch("detection.consumers.RECHECK_INTERVAL", 0):
+                await layer.group_send(group, {"type": "zone.occupancy", "message": message})
+                output = await communicator.receive_output()
             await communicator.disconnect()
             return output["type"]
 

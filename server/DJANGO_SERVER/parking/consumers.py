@@ -1,35 +1,45 @@
 import json
-from urllib.parse import parse_qs
 
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 
-from detection.events import zone_group
-from .access import zone_stream
-from .signals import access_group
+from .models import ParkingMembership
 
 
-class VideoFeedConsumer(AsyncWebsocketConsumer):
+def presence_groups(user):
+    rows = list(ParkingMembership.objects.filter(user=user).values_list('parking_id', 'role'))
+    watch = [f'presence_{p}' for p, role in rows if role == ParkingMembership.OWNER]
+    notify = [f'presence_{p}' for p, _ in rows]
+    return watch, notify
+
+
+class UserStatusConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.groups_joined = []
-        area = int(self.scope['url_route']['kwargs']['area'])
-        parking_id = parse_qs(self.scope.get('query_string', b'').decode()).get('parking', [None])[0]
-        parking_pk = await database_sync_to_async(zone_stream)(self.scope['user'], area, parking_id)
-        await self.accept()
-        if parking_pk is None:
+        self.user = self.scope['user']
+        self.watch, self.notify = [], []
+        if not self.user.is_authenticated:
             return await self.close()
-        self.groups_joined = [zone_group(parking_pk, area), access_group(self.scope['user'].pk, parking_pk)]
-        for group in self.groups_joined:
+        self.watch, self.notify = await database_sync_to_async(presence_groups)(self.user)
+        for group in self.watch:
             await self.channel_layer.group_add(group, self.channel_name)
+        await self.accept()
+        await self.update_user_status("Online")
 
     async def disconnect(self, close_code):
-        for group in self.groups_joined:
+        for group in self.watch:
             await self.channel_layer.group_discard(group, self.channel_name)
-        self.groups_joined = []
+        if self.user.is_authenticated:
+            await self.update_user_status("Offline")
 
-    async def zone_occupancy(self, event):
-        await self.send(text_data=json.dumps(event['message']))
+    async def update_user_status(self, status):
+        for group in self.notify:
+            await self.channel_layer.group_send(
+                group,
+                {'type': 'send_user_status', 'id': str(self.user.id), 'status': status},
+            )
 
-    async def access_revoked(self, event):
-        await self.disconnect(None)
-        await self.close()
+    async def send_user_status(self, event):
+        await self.send(text_data=json.dumps({
+            'user_id': event['id'],
+            'status': event['status']
+        }))

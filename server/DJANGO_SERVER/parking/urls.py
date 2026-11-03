@@ -1,8 +1,9 @@
 from django.urls import path
+
 from . import views
 
 urlpatterns = [
-    path('areas/', views.areas, name='areas'),
-    path('coordinates/', views.coordinates, name='coordinates'),
-    path('snapshots/', views.snapshots, name='snapshots'),
+    path('users/', views.OperatorListView.as_view(), name='users'),
+    path('users/<uuid:user_id>/', views.OperatorDetailView.as_view(), name='user_detail'),
+    path('parking/areas/', views.areas, name='areas'),
 ]

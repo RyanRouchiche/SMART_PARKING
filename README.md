@@ -65,6 +65,13 @@ L'interface est disponible en **français** et en **anglais** (sélecteur dans l
 - **`server/MODEL_SERVER/`** : petit serveur HTTP (bibliothèque standard Python) qui charge le modèle Keras une seule fois et classe un lot d'images de places.
 - **PostgreSQL** stocke les utilisateurs, les caméras et les tokens ; **Redis** sert de couche de messages à Channels.
 
+Le backend est un **monolithe modulaire strict** :
+- **Modules** : `users` → `parking` → `camera` → `detection`, plus le noyau partagé `shared`.
+- **Sens des dépendances** : un module ne dépend que des modules situés avant lui dans cette liste.
+- **Point d'entrée unique** : un module ne doit importer d'un autre module que son fichier `interface.py`. Les modèles, services et vues restent privés.
+- **Vérification** : le test `smart_parking/tests.py` vérifie ces deux règles.
+- **Seul couplage restant** : les clés étrangères en base (base partagée), qui sont déclarées par nom et sans import Python.
+
 ## Structure du dépôt
 
 ```
@@ -81,12 +88,13 @@ SMART_PARKING/
 │   └── vite.config.js           Proxy de développement vers Django
 ├── server/
 │   ├── DJANGO_SERVER/
-│   │   ├── smart_parking/       Settings, URLs, ASGI (assemblage des apps)
-│   │   ├── users/               Comptes, sessions JWT, opérateurs, présence (WebSocket)
-│   │   ├── camera/              Caméras, politique des sources (sources.py), captures
-│   │   ├── parking/             Parkings, membres, zones, accès par parking, WebSocket vidéo
+│   │   ├── smart_parking/       Settings, URLs, ASGI : assemble les modules, test d'architecture
+│   │   ├── users/               Identité : comptes, sessions JWT, inscription, activation
+│   │   ├── parking/             Parkings, membres, accès, zones, opérateurs, présence (WebSocket)
 │   │   │   └── Spots/coordinates.json   Places du parking pilote (migration initiale)
-│   │   ├── detection/           Géométrie des places, capture vidéo, client du modèle, worker
+│   │   ├── camera/              Caméras, politique des sources, capture, tracé des places
+│   │   ├── detection/           Worker de détection, client du modèle, flux d'occupation (WebSocket)
+│   │   ├── shared/              Noyau partagé sans état : géométrie des places
 │   │   └── manage.py
 │   └── MODEL_SERVER/
 │       ├── server.py            Serveur HTTP (/health, /predict)
@@ -177,7 +185,7 @@ Vérifications :
 
 ```sh
 cd server/DJANGO_SERVER && python manage.py check
-cd server/DJANGO_SERVER && python manage.py test users camera parking
+cd server/DJANGO_SERVER && python manage.py test users camera parking detection smart_parking
 cd client && npm run build
 ```
 

@@ -5,7 +5,7 @@ from rest_framework.test import APITestCase
 
 from camera.models import Camera
 from users.models import User
-from .access import zone_stream
+from .access import stream_parking
 from .models import Parking, ParkingMembership, Zone
 
 pilot = importlib.import_module("parking.migrations.0002_pilot_parking")
@@ -118,10 +118,10 @@ class ParkingAccessTests(APITestCase):
         self.assertTrue(User.objects.filter(id=self.operator_b.id).exists())
 
     def test_websocket_zone_lookup_checks_membership(self):
-        self.assertEqual(zone_stream(self.operator_a, 1, None), self.a.pk)
-        self.assertIsNone(zone_stream(self.operator_b, 1, None))
-        self.assertIsNone(zone_stream(self.operator_a, 1, str(self.b.id)))
-        self.assertIsNone(zone_stream(AnonymousUser(), 1, None))
+        self.assertEqual(stream_parking(self.operator_a, 1, None), self.a.pk)
+        self.assertIsNone(stream_parking(self.operator_b, 1, None))
+        self.assertIsNone(stream_parking(self.operator_a, 1, str(self.b.id)))
+        self.assertIsNone(stream_parking(AnonymousUser(), 1, None))
 
     def test_coordinates_are_bounded(self):
         self.as_user(self.owner_a)
