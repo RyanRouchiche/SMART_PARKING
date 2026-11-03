@@ -190,6 +190,7 @@ Fichier `.env` à la racine du dépôt :
 | `DEBUG` | non | `false` par défaut. `true` uniquement en développement local |
 | `SECURE_COOKIES` | non | `false` par défaut. `true` dès que l'application est servie en HTTPS |
 | `CAMERA_MEDIA_ROOT` | non | Dossier des vidéos locales, `server/DJANGO_SERVER/parking/Data` par défaut |
+| `CAMERA_NETWORKS` | recommandé en production | Réseaux autorisés pour les URL de caméras, séparés par des virgules (ex. `192.168.10.0/24`). Vide : tout sauf loopback, link-local, multicast et réservé |
 
 Côté MODEL_SERVER : `MODEL_SERVER_HOST` (défaut `127.0.0.1`) et `MODEL_SERVER_PORT` (défaut `8001`).
 

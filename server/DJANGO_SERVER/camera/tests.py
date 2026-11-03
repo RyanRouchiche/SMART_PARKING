@@ -1,3 +1,4 @@
+import ipaddress
 import os
 import tempfile
 
@@ -44,3 +45,9 @@ class CameraPathTests(APITestCase):
 
     def test_stored_internal_url_is_not_opened(self):
         self.assertFalse(open_source("http://127.0.0.1:8001/predict").isOpened())
+
+    def test_camera_networks_allowlist(self):
+        with override_settings(CAMERA_NETWORKS=[ipaddress.ip_network("192.168.10.0/24")]):
+            self.assertEqual(self.post("rtsp://192.168.10.5/stream").status_code, 201)
+            self.assertEqual(self.post("http://172.18.0.2:6379/").status_code, 400)
+        self.assertEqual(self.post("http://[::ffff:127.0.0.1]:8001/").status_code, 400)

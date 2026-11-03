@@ -1,3 +1,4 @@
+import ipaddress
 from pathlib import Path
 import os
 from dotenv import load_dotenv
@@ -31,6 +32,7 @@ WS_ALLOWED_ORIGINS = [o for o in os.getenv('WS_ALLOWED_ORIGINS', '').split(',') 
 MODEL_SERVER_URL = os.getenv('MODEL_SERVER_URL', 'http://127.0.0.1:8001')
 
 CAMERA_MEDIA_ROOT = Path(os.getenv('CAMERA_MEDIA_ROOT', BASE_DIR / 'parking' / 'Data'))
+CAMERA_NETWORKS = [ipaddress.ip_network(n.strip()) for n in os.getenv('CAMERA_NETWORKS', '').split(',') if n.strip()]
 os.environ.setdefault('OPENCV_FFMPEG_CAPTURE_OPTIONS', 'protocol_whitelist;file,crypto,tcp,tls,udp,rtp,rtsp,http,https')
 
 INSTALLED_APPS = [
@@ -55,6 +57,7 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': True,
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=1),
     'REFRESH_TOKEN_LIFETIME': timedelta(hours=1),
+    'CHECK_REVOKE_TOKEN': True,
 }
 
 CHANNEL_LAYERS = {

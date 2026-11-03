@@ -17,11 +17,13 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
 from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.settings import api_settings as jwt_settings
+from rest_framework_simplejwt.utils import get_md5_hash_password
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from parking.access import get_parking, member_parkings
 from parking.models import ParkingMembership
-from .models import User, auth
+from .models import User, auth, hash_token
 from .serializers import GuestSerializer, AdminSerializer, ListUserSerializer
 from .utils import SETupCOOKIE, send_username_taken_email, send_verif_email
 
@@ -69,7 +71,7 @@ class LoginView(PublicView):
         auth.objects.update_or_create(
             user=user,
             defaults={
-                'refresh_token': refresh_token,
+                'token_hash': hash_token(refresh_token),
                 'expires_at': now() + timedelta(hours=1),
                 'is_revoked': False,
                 'created_at': now(),
@@ -82,6 +84,14 @@ class LoginView(PublicView):
         return res
 
 
+def password_unchanged(refresh_token, user):
+    try:
+        claim = RefreshToken(refresh_token).get(jwt_settings.REVOKE_TOKEN_CLAIM)
+    except TokenError:
+        return False
+    return claim == get_md5_hash_password(user.password)
+
+
 class RefreshView(TokenRefreshView):
     permission_classes = [AllowAny]
     authentication_classes = []
@@ -91,8 +101,8 @@ class RefreshView(TokenRefreshView):
         if not refresh_token:
             return Response({'error': 'Refresh token not found in cookies'}, status=401)
 
-        token_obj = auth.objects.filter(refresh_token=refresh_token, is_revoked=False).first()
-        if token_obj is None:
+        token_obj = auth.objects.filter(token_hash=hash_token(refresh_token), is_revoked=False).first()
+        if token_obj is None or not password_unchanged(refresh_token, token_obj.user):
             return Response({'error': 'Refresh token is revoked or unknown'}, status=401)
 
         serializer = self.get_serializer(data={'refresh': refresh_token})
@@ -105,9 +115,9 @@ class RefreshView(TokenRefreshView):
         access_token = serializer.validated_data['access']
         new_refresh_token = serializer.validated_data['refresh']
 
-        token_obj.refresh_token = new_refresh_token
+        token_obj.token_hash = hash_token(new_refresh_token)
         token_obj.expires_at = now() + timedelta(hours=1)
-        token_obj.save(update_fields=['refresh_token', 'expires_at'])
+        token_obj.save(update_fields=['token_hash', 'expires_at'])
 
         res = Response({'refreshed': True})
         SETupCOOKIE(res, 'access_token', access_token)
@@ -119,7 +129,7 @@ class LogoutView(PublicView):
     def post(self, request):
         refresh_token = request.COOKIES.get('refresh_token')
         if refresh_token:
-            auth.objects.filter(refresh_token=refresh_token).update(is_revoked=True)
+            auth.objects.filter(token_hash=hash_token(refresh_token)).update(is_revoked=True)
             try:
                 RefreshToken(refresh_token).blacklist()
             except TokenError:
@@ -165,7 +175,8 @@ class ActivateView(PublicView):
             return Response({'error': 'Invalid activation link.'}, status=400)
 
         user.is_active = True
-        user.save(update_fields=['is_active'])
+        user.last_login = now()
+        user.save(update_fields=['is_active', 'last_login'])
         return Response({'message': 'Account activated successfully!'})
 
 
