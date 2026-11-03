@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { Trash2 } from "lucide-react";
-import { api } from "../api.js";
-import { useT } from "../i18n.jsx";
-import { useFeedback } from "../components/Feedback.jsx";
-import "../styles/forms.css";
+import { createOperator, deleteOperator, listOperators } from "../api.js";
+import { useT } from "../../../shared/i18n.jsx";
+import { useFeedback } from "../../../shared/ui/Feedback.jsx";
+import "../../../shared/styles/forms.css";
 
 const EMPTY_GUEST = { username: "", email: "", first_name: "", last_name: "", password: "" };
 const FIELDS = [
@@ -34,7 +34,7 @@ export default function Users() {
   const [saving, setSaving] = useState(false);
 
   const load = useCallback(async () => {
-    const res = await api("/users/");
+    const res = await listOperators();
     setUsers(res.ok ? res.data.users : []);
   }, []);
 
@@ -49,7 +49,7 @@ export default function Users() {
   const create = async (e) => {
     e.preventDefault();
     setSaving(true);
-    const res = await api("/users/", { method: "POST", body: guest });
+    const res = await createOperator(guest);
     setSaving(false);
     if (!res.ok) {
       setErrors(fieldErrors(res.data));
@@ -71,7 +71,7 @@ export default function Users() {
     if (!ok) {
       return;
     }
-    const res = await api(`/users/${user.id}/`, { method: "DELETE" });
+    const res = await deleteOperator(user.id);
     feedback.toast(t(res.ok ? "Account deleted." : "Could not delete this account."), { error: !res.ok });
     if (res.ok) {
       load();

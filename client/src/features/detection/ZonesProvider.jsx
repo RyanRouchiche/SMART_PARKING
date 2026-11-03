@@ -1,20 +1,13 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { api, openSocket } from "./api.js";
+import { openSocket } from "../../shared/http.js";
+import { LINE_COUNT, lineColor, spotCode } from "../../shared/zones/style.js";
+import { fetchLayouts } from "../cameras/index.js";
+import { listAreas } from "../parking/index.js";
 
 const STALE_AFTER_MS = 30000;
 const RETRY_AFTER_MS = 15000;
-const LINE_COUNT = 6;
 
 const ZonesContext = createContext(null);
-
-export function lineColor(area) {
-  return `var(--line-${((Number(area) - 1) % LINE_COUNT + LINE_COUNT) % LINE_COUNT + 1})`;
-}
-
-export function spotCode(area, name) {
-  const digits = String(name).match(/\d+/)?.[0];
-  return digits ? `Z${area}-P${digits.padStart(2, "0")}` : `Z${area}-${name}`;
-}
 
 function useNow(intervalMs) {
   const [now, setNow] = useState(() => Date.now());
@@ -71,7 +64,7 @@ export function ZonesProvider({ children }) {
   const now = useNow(5000);
 
   useEffect(() => {
-    Promise.all([api("/parking/areas/"), api("/parking/coordinates/")]).then(([areasRes, coordsRes]) => {
+    Promise.all([listAreas(), fetchLayouts()]).then(([areasRes, coordsRes]) => {
       const coordinates = coordsRes.ok ? coordsRes.data.data : [];
       const areas = areasRes.ok ? areasRes.data.areas : [];
       setLayout(

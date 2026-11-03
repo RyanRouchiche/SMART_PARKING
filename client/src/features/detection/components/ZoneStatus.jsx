@@ -1,5 +1,5 @@
 import { CircleAlert, CircleCheck, CircleOff, LoaderCircle } from "lucide-react";
-import { useT } from "../i18n.jsx";
+import { useT } from "../../../shared/i18n.jsx";
 
 const CHIPS = {
   ok: { className: "chip--free", icon: CircleCheck, label: "Available" },

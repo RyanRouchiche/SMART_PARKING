@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { RotateCcw, Save } from "lucide-react";
-import { api } from "../api.js";
-import { useT } from "../i18n.jsx";
-import { lineColor, spotCode } from "../zones.jsx";
-import { useFeedback } from "../components/Feedback.jsx";
+import { fetchLayouts, fetchSnapshots, saveLayouts } from "../api.js";
+import { useT } from "../../../shared/i18n.jsx";
+import { lineColor, spotCode } from "../../../shared/zones/style.js";
+import { useFeedback } from "../../../shared/ui/Feedback.jsx";
 import "../styles/spots.css";
 
 function rectangleFrom([x1, y1], [x2, y2]) {
@@ -36,7 +36,7 @@ export default function SpotPicker() {
   const [saving, setSaving] = useState(false);
 
   const loadCoordinates = useCallback(async () => {
-    const res = await api("/parking/coordinates/");
+    const res = await fetchLayouts();
     if (!res.ok) {
       return;
     }
@@ -54,7 +54,7 @@ export default function SpotPicker() {
   }, []);
 
   useEffect(() => {
-    api("/parking/snapshots/").then((res) => setImages(res.ok ? res.data.images : {}));
+    fetchSnapshots().then((res) => setImages(res.ok ? res.data.images : {}));
     loadCoordinates();
   }, [loadCoordinates]);
 
@@ -121,7 +121,7 @@ export default function SpotPicker() {
       area: String(area),
       coordinates: Object.fromEntries(areaSpots.map(({ name, points }) => [name, points.map((p) => p.map(Math.round))])),
     }));
-    const res = await api("/parking/coordinates/", { method: "POST", body: payload });
+    const res = await saveLayouts(payload);
     setSaving(false);
     feedback.toast(t(res.ok ? "Spots saved." : "The spots could not be saved."), { error: !res.ok });
     if (res.ok) {

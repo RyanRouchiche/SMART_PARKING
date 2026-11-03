@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, Navigate, NavLink, useParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
-import { useT } from "../i18n.jsx";
-import { useZone } from "../zones.jsx";
+import { useT } from "../../../shared/i18n.jsx";
+import { useZone } from "../ZonesProvider.jsx";
 import { StateChip, useAgo } from "../components/ZoneStatus.jsx";
 import carImage from "../assets/car.png";
 import "../styles/zone.css";

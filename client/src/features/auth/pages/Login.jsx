@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Navigate } from "react-router-dom";
-import { api } from "../api.js";
-import { useAuth } from "../auth.jsx";
-import { LanguageSelect, useT } from "../i18n.jsx";
-import { useFeedback } from "../components/Feedback.jsx";
+import { register } from "../api.js";
+import { useAuth } from "../AuthProvider.jsx";
+import { LanguageSelect, useT } from "../../../shared/i18n.jsx";
+import { useFeedback } from "../../../shared/ui/Feedback.jsx";
 import "../styles/auth.css";
 
 const EMPTY_REGISTRATION = { username: "", password: "", email: "", first_name: "", last_name: "" };
@@ -79,7 +79,7 @@ export default function Login() {
   const onRegister = async (e) => {
     e.preventDefault();
     setBusy(true);
-    const res = await api("/auth/register/", { method: "POST", body: registration });
+    const res = await register(registration);
     setBusy(false);
     if (!res.ok) {
       const first = res.data && typeof res.data === "object" ? Object.values(res.data).flat()[0] : null;

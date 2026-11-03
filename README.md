@@ -6,6 +6,7 @@ Application de gestion de parking intelligent. Des caméras filment les places d
 
 - [Fonctionnalités](#fonctionnalités)
 - [Architecture](#architecture)
+- [Architecture du client](#architecture-du-client)
 - [Structure du dépôt](#structure-du-dépôt)
 - [Démarrage rapide avec Docker](#démarrage-rapide-avec-docker)
 - [Développement sans Docker](#développement-sans-docker)
@@ -20,16 +21,16 @@ Application de gestion de parking intelligent. Des caméras filment les places d
 
 | Page | Route | Accès | Rôle |
 |---|---|---|---|
-| Connexion / inscription | `/login` | public | Connexion, création d'un compte admin (activation par email) |
+| Connexion / inscription | `/login` | public | Connexion, création d'un compte propriétaire (activation par email) |
 | Activation | `/activate/:uid/:token` | public | Lien reçu par email pour activer un compte |
-| Accueil | `/` | connecté | Page d'accueil et accès aux services |
-| Statut du parking | `/parking` | connecté | Plan animé par zone : les voitures entrent et sortent selon les prédictions |
-| LCD | `/lcd` | connecté | Affichage simplifié du nombre de places libres et de leur direction |
-| Gestion | `/management` | admin | Création de guests, liste des caméras, liste des utilisateurs (statut en ligne en direct) |
-| Configuration caméras | `/setup` | admin | Ajout de 1 à 10 caméras (zone, référence, URL RTSP/HTTP) |
-| Initialisation des places | `/spots` | admin | Dessin des places sur une capture de chaque caméra |
+| Réseau de zones | `/` | connecté | Vue d'ensemble : places libres par zone, état de chaque ligne (libre, se remplit, complet, hors ligne) |
+| Plan de zone | `/zones/:area` | connecté | Plan animé d'une zone (les voitures entrent et sortent selon les prédictions) et tableau des places |
+| Écran LCD | `/lcd/:area` | connecté | Affichage plein écran pour une borne : places libres de la zone et direction |
+| Caméras | `/cameras` | propriétaire | Ajout, état et suppression des caméras (une caméra filme une zone) |
+| Places | `/spots` | propriétaire | Dessin des places sur une capture de chaque caméra |
+| Utilisateurs | `/users` | propriétaire | Création et suppression des comptes guest, statut en ligne en direct |
 
-L'interface est disponible en **français** et en **anglais** (sélecteur dans la barre de navigation).
+L'interface est en **français** par défaut, avec l'**anglais** disponible depuis le sélecteur de langue. Elle suit le design system décrit dans `SYSTEM_DESIGN.md` ; `PRODUCT.md` résume le produit.
 
 ## Architecture
 
@@ -58,7 +59,7 @@ L'interface est disponible en **français** et en **anglais** (sélecteur dans l
 └──────────────┘                                   caméras (RTSP / HTTP / fichier vidéo)
 ```
 
-- **`client/`** : application React (Vite). Elle ne parle qu'à Django, via `/api` (HTTP) et `/ws` (WebSockets).
+- **`client/`** : application React (Vite). Elle ne parle qu'à Django, via `/api` (HTTP) et `/ws` (WebSockets). Elle est découpée en couches, sur le même modèle que le backend (voir [Architecture du client](#architecture-du-client)).
 - **`server/DJANGO_SERVER/`** : API REST (Django REST Framework), WebSockets (Django Channels), authentification JWT. Le même code tourne en deux services :
   - `django` : API et WebSockets. Les WebSockets vidéo ne font que s'abonner aux résultats d'une zone.
   - `detection` (`python manage.py run_detection`) : capture chaque zone une seule fois, quel que soit le nombre de spectateurs, et publie l'occupation dans Redis. Il se répartit sur plusieurs instances avec `--shard` et `--shards`.
@@ -72,19 +73,44 @@ Le backend est un **monolithe modulaire strict** :
 - **Vérification** : le test `smart_parking/tests.py` vérifie ces deux règles.
 - **Seul couplage restant** : les clés étrangères en base (base partagée), qui sont déclarées par nom et sans import Python.
 
+## Architecture du client
+
+Le client reprend le découpage du backend : une couche d'assemblage, un noyau partagé et une fonctionnalité par domaine.
+
+```
+client/src/
+├── app/                 main.jsx, routes (App.jsx), mise en page (AppShell), RequireAuth
+├── shared/              ne dépend d'aucune fonctionnalité
+│   ├── http.js          api() et openSocket() : cookies, renouvellement du token sur 401
+│   ├── i18n.jsx         traductions FR/EN
+│   ├── ui/              Feedback (toasts, confirmations, saisies)
+│   ├── zones/style.js   couleur de ligne et code de place (Z1-P01)
+│   └── styles/          tokens du design system (app.css), formulaires
+└── features/
+    ├── auth/            api.js (me, login, logout, register, activate) · AuthProvider · Login, Activate
+    ├── parking/         api.js (opérateurs, zones) · usePresence (ws/user-status) · Users
+    ├── cameras/         api.js (caméras, captures, places) · Cameras, SpotPicker
+    └── detection/       ZonesProvider (un ws/video par zone) · Network, ZonePlan, Lcd
+```
+
+Règles, vérifiées par `npm run check`, qui est lancé automatiquement avant `npm run build` :
+1. **Ordre des fonctionnalités** : `auth` → `parking` → `cameras` → `detection`. Une fonctionnalité ne dépend que de celles qui la précèdent.
+2. **Point d'entrée unique** : une fonctionnalité n'importe une autre fonctionnalité que par son `index.js`.
+3. **Noyau partagé** : `shared/` n'importe aucune fonctionnalité, et les fonctionnalités n'importent jamais `app/`.
+4. **Appels réseau** : les URL de l'API ne sont écrites que dans le `api.js` de chaque fonctionnalité, et seul `shared/http.js` appelle `fetch`.
+
+Les composants (pages) ne font que l'affichage et l'état de l'écran. Pour ajouter un écran, on crée la page dans la fonctionnalité concernée, on l'exporte depuis son `index.js` et on déclare la route dans `app/App.jsx`.
+
 ## Structure du dépôt
 
 ```
 SMART_PARKING/
-├── client/                      Frontend React
+├── client/                      Frontend React (voir « Architecture du client »)
 │   ├── src/
-│   │   ├── api.js               Appels API (refresh automatique du token) et WebSockets
-│   │   ├── auth.jsx             Contexte d'authentification, garde des routes
-│   │   ├── i18n.jsx             Traductions FR/EN
-│   │   ├── components/          Navbar, modales (confirmation, saisie, notification)
-│   │   ├── pages/               Une page par route
-│   │   ├── styles/              Feuilles de style de chaque page
-│   │   └── assets/              Images
+│   │   ├── app/                 Point d'entrée, routes, mise en page, garde d'authentification
+│   │   ├── shared/              Client HTTP/WebSocket, traductions, composants et styles communs
+│   │   └── features/            auth · parking · cameras · detection (une fonctionnalité par dossier)
+│   ├── scripts/check-architecture.mjs   Vérifie les règles de dépendance avant chaque build
 │   └── vite.config.js           Proxy de développement vers Django
 ├── server/
 │   ├── DJANGO_SERVER/
@@ -186,7 +212,7 @@ Vérifications :
 ```sh
 cd server/DJANGO_SERVER && python manage.py check
 cd server/DJANGO_SERVER && python manage.py test users camera parking detection smart_parking
-cd client && npm run build
+cd client && npm run build                           # lance aussi npm run check (règles d'architecture)
 ```
 
 ## Configuration
@@ -216,42 +242,46 @@ Côté MODEL_SERVER : `MODEL_SERVER_HOST` (défaut `127.0.0.1`), `MODEL_SERVER_P
 
 ## Utilisation de l'application
 
-1. **Se connecter** avec un compte admin.
-2. **Setup** (`/setup`) : ajouter les caméras. Une caméra = un numéro de zone, une référence et une URL (`rtsp://…`, `rtsps://…`, `http(s)://…`) ou un fichier vidéo. Les URL vers `localhost`, le loopback ou les adresses link-local sont refusées. Un fichier vidéo doit se trouver dans `CAMERA_MEDIA_ROOT/<id du parking>/` et s'indique par son nom relatif (ex. `parking.mp4`).
-3. **Initialisation** (`/spots`) : une capture de chaque caméra active s'affiche.
-   - Deux clics gauches = un rectangle (deux coins opposés), puis on nomme la place (par défaut `Spot N`).
-   - Clic droit sur un rectangle = suppression.
-   - **Enregistrer** sauvegarde toutes les zones dans `coordinates.json`, **Annuler** recharge la dernière version enregistrée.
-4. **Statut du parking** (`/parking`) : une diapositive par zone. Les places se mettent à jour toutes les 5 secondes, avec une animation d'entrée et de sortie des voitures.
-5. **LCD** (`/lcd`) : choix d'une zone, nombre de places libres et flèche de direction pour chaque place.
-6. **Gestion** (`/management`) : créer des comptes guest (un email d'activation leur est envoyé), voir et supprimer les caméras et les guests.
+1. **Se connecter** avec un compte propriétaire.
+2. **Caméras** (`/cameras`) : ajouter les caméras. Une caméra = un numéro de zone, une référence et une adresse (`rtsp://…`, `rtsps://…`, `http(s)://…`) ou un fichier vidéo.
+   - Les adresses vers `localhost`, le loopback ou les adresses link-local sont refusées. En production, `CAMERA_NETWORKS` limite les caméras à leurs réseaux.
+   - Un fichier vidéo doit se trouver dans `CAMERA_MEDIA_ROOT/<id du parking>/` et s'indique par son nom relatif (ex. `parking.mp4`).
+   - L'état de chaque flux est vérifié en parallèle et gardé 30 secondes.
+3. **Places** (`/spots`) : une capture de chaque caméra active s'affiche.
+   - Deux clics sur deux coins opposés dessinent une place.
+   - Clic sur une place pour la sélectionner, puis touche Suppr ou clic droit pour la supprimer.
+   - L'enregistrement sauvegarde les places de chaque zone en base et exporte un crop par place dans `cropped_spots/`.
+4. **Réseau de zones** (`/`) : état de toutes les zones, mis à jour toutes les 5 secondes.
+5. **Plan de zone** (`/zones/<n>`) : plan animé de la zone (entrée et sortie des voitures) et tableau des places (`Z1-P01`, …).
+6. **Écran LCD** (`/lcd/<n>`) : vue plein écran pour une borne, avec les places libres et leur direction.
+7. **Utilisateurs** (`/users`) : créer des comptes guest (un email d'activation leur est envoyé), voir leur statut en ligne, les supprimer.
 
 ## API
 
-Toutes les routes sont préfixées par `/api` et renvoient du JSON. L'authentification passe par des cookies HttpOnly, il n'y a donc pas d'en-tête `Authorization` à envoyer.
+Toutes les routes sont préfixées par `/api`, n'acceptent et ne renvoient que du JSON. L'authentification passe par des cookies HttpOnly, il n'y a donc pas d'en-tête `Authorization` à envoyer. Les routes d'un parking prennent un paramètre facultatif `?parking=<uuid>` (par défaut : le premier parking de l'utilisateur) ; un parking dont on n'est pas membre renvoie 403.
 
-| Méthode | Route | Accès | Description |
-|---|---|---|---|
-| POST | `/auth/login/` | public | `{username, password}` → pose les cookies, renvoie l'utilisateur |
-| POST | `/auth/refresh/` | cookie refresh | Renouvelle les tokens |
-| POST | `/auth/logout/` | public | Révoque le refresh token et efface les cookies |
-| POST | `/auth/register/` | public | Crée un compte admin inactif et envoie l'email d'activation |
-| GET | `/auth/activate/<uid>/<token>/` | public | Active un compte |
-| GET | `/auth/me/` | connecté | Utilisateur courant |
-| GET / POST | `/users/` | admin | Liste des guests (avec statut en ligne) / création d'un guest |
-| DELETE | `/users/<uuid>/` | admin | Supprime un utilisateur et blackliste ses tokens |
-| GET / POST | `/cameras/` | admin | Liste (avec `is_active`) / création en lot `[{area, ref, path}]` |
-| DELETE | `/cameras/<uuid>/` | admin | Supprime une caméra |
-| GET | `/parking/areas/` | public | Zones ayant des places définies |
-| GET / POST | `/parking/coordinates/` | lecture publique, écriture admin | Places de toutes les zones |
-| GET | `/parking/snapshots/` | admin | Une capture JPEG (base64) par caméra active |
+| Méthode | Route | Accès | Module | Description |
+|---|---|---|---|---|
+| POST | `/auth/login/` | public, 10/min | users | `{username, password}` → pose les cookies, renvoie l'utilisateur |
+| POST | `/auth/refresh/` | cookie refresh | users | Renouvelle les tokens (refusé si le mot de passe a changé) |
+| POST | `/auth/logout/` | public | users | Révoque le refresh token et efface les cookies |
+| POST | `/auth/register/` | public, 5/h | users | Crée un compte propriétaire inactif et envoie l'email d'activation (même réponse si le nom est déjà pris) |
+| GET | `/auth/activate/<uid>/<token>/` | public | users | Active un compte (lien à usage unique) |
+| GET | `/auth/me/` | connecté | users | Utilisateur courant |
+| GET / POST | `/users/` | propriétaire | parking | Opérateurs du parking (avec statut en ligne) / création d'un opérateur |
+| DELETE | `/users/<uuid>/` | propriétaire | parking | Retire l'opérateur du parking ; le compte n'est supprimé que s'il n'appartient plus à aucun parking |
+| GET | `/parking/areas/` | membre | parking | Zones ayant des places définies |
+| GET / POST | `/cameras/` | propriétaire | camera | Liste (avec `is_active`) / création en lot `[{area, ref, path}]` |
+| DELETE | `/cameras/<uuid>/` | propriétaire | camera | Supprime une caméra |
+| GET / POST | `/parking/coordinates/` | lecture membre, écriture propriétaire | camera | Places de toutes les zones |
+| GET | `/parking/snapshots/` | propriétaire | camera | Une capture JPEG (base64) par caméra active |
 
 WebSockets :
 
 | Route | Messages |
 |---|---|
-| `/ws/video/<zone>/` | Toutes les 5 s : `{area, available_spots, spot_details: [{spot, status}]}`, avec `status` ∈ `empty`, `occupied`, `error` |
-| `/ws/user-status/` | `{user_id, status}` quand un utilisateur connecté ouvre ou ferme l'application |
+| `/ws/video/<zone>/` | Membres du parking. Toutes les 5 s : `{area, available_spots, spot_details: [{spot, status}]}`, avec `status` ∈ `empty`, `occupied`, `error` |
+| `/ws/user-status/` | `{user_id, status}` quand un membre du parking ouvre ou ferme l'application (seuls les propriétaires de ce parking le reçoivent) |
 
 MODEL_SERVER :
 
@@ -278,14 +308,14 @@ MODEL_SERVER :
 
 - **Tokens JWT** (SimpleJWT) stockés en cookies `HttpOnly` et `SameSite=Strict` : le token d'accès dure 1 minute, le refresh 1 heure, avec rotation et blacklist. Le frontend renouvelle automatiquement le token sur une réponse 401.
 - Un seul refresh token valide par utilisateur (table `users_refreshsession`, stocké haché) : se reconnecter révoque la session précédente.
-- La connexion ouvre aussi une **session Django**, utilisée pour authentifier le WebSocket de statut en ligne.
+- La connexion ouvre aussi une **session Django**, utilisée pour authentifier les WebSockets. Retirer un membre d'un parking ou désactiver son compte ferme ses flux vidéo ouverts.
 - **Rôles** :
   - `admin` : propriétaire de parking. Créé par l'inscription publique (après activation par email), sans accès à l'admin Django. Seul `createsuperuser` crée un compte d'administration Django.
-  - `guest` : créé par un admin, accès en lecture (accueil, statut, LCD).
+  - `guest` : opérateur créé par un propriétaire pour son parking, accès en lecture (réseau, plan de zone, LCD).
+- **Multi-parkings** : chaque utilisateur ne voit que les parkings dont il est membre (propriétaire ou opérateur).
 
 ## Limites connues
 
-- **Gestion des guests** : chaque admin voit et peut supprimer tous les guests, pas seulement ceux qu'il a créés.
 - **Versions figées** : le modèle Keras ne se charge pas avec les versions récentes de TensorFlow/Keras, d'où `tensorflow==2.19.0` et `keras==3.5.0` dans `requirements.txt`. L'image Docker utilise en plus `docker/constraints.txt` pour figer les autres dépendances.
 - **Statut des caméras** : la liste des caméras vérifie chaque flux en parallèle et garde le résultat 30 secondes en cache, donc un changement d'état peut mettre jusqu'à 30 secondes à apparaître.
 - **HTTPS** : la stack Docker sert l'application en HTTP. En production, placer un proxy TLS devant nginx et mettre `SECURE_COOKIES=true`.

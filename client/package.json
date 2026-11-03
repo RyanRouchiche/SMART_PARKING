@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "check": "node scripts/check-architecture.mjs",
+    "prebuild": "npm run check",
     "build": "vite build",
     "preview": "vite preview"
   },

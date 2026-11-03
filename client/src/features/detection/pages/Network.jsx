@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../auth.jsx";
-import { useT } from "../i18n.jsx";
-import { useZones } from "../zones.jsx";
+import { useAuth } from "../../auth/index.js";
+import { useT } from "../../../shared/i18n.jsx";
+import { useZones } from "../ZonesProvider.jsx";
 import { StateChip, isAlert, useAgo } from "../components/ZoneStatus.jsx";
 import "../styles/network.css";
 
