@@ -1,6 +1,6 @@
 import numpy as np
-from asgiref.sync import async_to_sync
 from .Camera import Camera
+from .models import Camera as CamModel
 
 
 def calculate_width_height(rect):
@@ -26,13 +26,10 @@ def sort_parking_spot_points(pts):
 
     return rect
 
-async def initialize_cameras():
-    active_cameras = await Camera.get_available_cameras()
-    cameras = {area: Camera(path, area=area) for area, path in active_cameras.items()}
+def open_cameras(parking_id):
+    paths = CamModel.objects.filter(parking_id=parking_id).values_list('area', 'path')
+    cameras = {area: Camera(path, area=area) for area, path in paths}
     return {area: cam for area, cam in cameras.items() if cam.cap.isOpened()}
-
-def async_initialize_cameras():
-    return async_to_sync(initialize_cameras)()
 
 def convert_ndarray_to_list(data):
     if isinstance(data, dict):

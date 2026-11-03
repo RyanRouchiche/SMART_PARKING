@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 
 class AreaSerializer(serializers.Serializer):
-    area = serializers.CharField()
+    area = serializers.RegexField(r"^\d{1,4}$")
     coordinates = serializers.DictField(
         child=serializers.ListField(
             child=serializers.ListField(

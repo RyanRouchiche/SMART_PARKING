@@ -2,6 +2,7 @@ smart_parking_env/
 parking_conda_env/
 .venv/
 certs/
+certs.rar
 .env
 
 __pycache__/

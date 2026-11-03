@@ -1,6 +1,4 @@
 import cv2
-from .models import Camera as CamModel
-from channels.db import database_sync_to_async
 
 
 class Camera:
@@ -25,8 +23,3 @@ class Camera:
     def reset(self):
         if self.cap.isOpened():
             self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
-
-    @staticmethod
-    @database_sync_to_async
-    def get_available_cameras():
-        return dict(CamModel.objects.values_list('area', 'path'))

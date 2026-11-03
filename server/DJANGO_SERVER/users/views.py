@@ -16,8 +16,11 @@ from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, Bl
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 
+from django.db import transaction
+
+from parking.access import get_parking, member_parkings
+from parking.models import ParkingMembership
 from .models import User, auth
-from .permission import IsAdmin
 from .serializers import GuestSerializer, AdminSerializer, ListUserSerializer
 from .utils import SETupCOOKIE, send_verif_email
 
@@ -150,26 +153,36 @@ class ActivateView(APIView):
 
 
 class UserListView(APIView):
-    permission_classes = [IsAuthenticated, IsAdmin]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        users = User.objects.filter(user_type='guest').annotate(
+        parking = get_parking(request, owner=True)
+        users = User.objects.filter(
+            memberships__parking=parking, memberships__role=ParkingMembership.OPERATOR
+        ).annotate(
             is_online=Exists(auth.objects.filter(user=OuterRef('pk'), is_revoked=False))
         )
         return Response({'users': ListUserSerializer(users, many=True).data})
 
     def post(self, request):
+        parking = get_parking(request, owner=True)
         serializer = GuestSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
-        send_verif_email(request, serializer.save())
+        with transaction.atomic():
+            guest = serializer.save()
+            ParkingMembership.objects.create(user=guest, parking=parking, role=ParkingMembership.OPERATOR)
+        send_verif_email(request, guest)
         return Response({'message': 'Guest created, activation email sent'}, status=status.HTTP_201_CREATED)
 
 
 class UserDetailView(APIView):
-    permission_classes = [IsAuthenticated, IsAdmin]
+    permission_classes = [IsAuthenticated]
 
     def delete(self, request, user_id):
-        user = User.objects.filter(id=user_id).first()
+        owned = member_parkings(request.user, ParkingMembership.OWNER)
+        user = User.objects.filter(
+            id=user_id, memberships__parking__in=owned, memberships__role=ParkingMembership.OPERATOR
+        ).exclude(memberships__role=ParkingMembership.OWNER).first()
         if user is None:
             return Response({'error': 'User not found'}, status=404)
 
