@@ -1,14 +1,10 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-import { RequireAdmin, RequireAuth } from "./auth.jsx";
-import AppShell from "./components/AppShell.jsx";
-import Login from "./pages/Login.jsx";
-import Activate from "./pages/Activate.jsx";
-import Network from "./pages/Network.jsx";
-import ZonePlan from "./pages/ZonePlan.jsx";
-import Cameras from "./pages/Cameras.jsx";
-import SpotPicker from "./pages/SpotPicker.jsx";
-import Users from "./pages/Users.jsx";
-import Lcd from "./pages/Lcd.jsx";
+import { Activate, Login, RequireAdmin } from "../features/auth/index.js";
+import { Users } from "../features/parking/index.js";
+import { Cameras, SpotPicker } from "../features/cameras/index.js";
+import { Lcd, Network, ZonePlan } from "../features/detection/index.js";
+import AppShell from "./AppShell.jsx";
+import RequireAuth from "./RequireAuth.jsx";
 
 export default function App() {
   return (

@@ -1,8 +1,8 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { Camera, LayoutGrid, LogOut, Monitor, Network, SquareDashedMousePointer, Users } from "lucide-react";
-import { useAuth } from "../auth.jsx";
-import { LanguageSelect, useT } from "../i18n.jsx";
-import { useFeedback } from "./Feedback.jsx";
+import { useAuth } from "../features/auth/index.js";
+import { LanguageSelect, useT } from "../shared/i18n.jsx";
+import { useFeedback } from "../shared/ui/Feedback.jsx";
 
 const LINKS = [
   { to: "/", label: "Network", icon: Network, end: true },

@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { Plus, Trash2, X } from "lucide-react";
-import { api } from "../api.js";
-import { useT } from "../i18n.jsx";
-import { useFeedback } from "../components/Feedback.jsx";
-import "../styles/forms.css";
+import { addCameras, deleteCamera, listCameras } from "../api.js";
+import { useT } from "../../../shared/i18n.jsx";
+import { useFeedback } from "../../../shared/ui/Feedback.jsx";
+import "../../../shared/styles/forms.css";
 
 const MAX_DRAFTS = 10;
 let draftId = 0;
@@ -38,7 +38,7 @@ export default function Cameras() {
   const [saving, setSaving] = useState(false);
 
   const load = useCallback(async () => {
-    const res = await api("/cameras/");
+    const res = await listCameras();
     setCameras(res.ok ? res.data.cameras : []);
     if (!res.ok) {
       feedback.toast(t("Could not load the cameras."), { error: true });
@@ -59,10 +59,7 @@ export default function Cameras() {
       return;
     }
     setSaving(true);
-    const res = await api("/cameras/", {
-      method: "POST",
-      body: drafts.map(({ area, ref, path }) => ({ area: Number(area), ref: ref.trim(), path: path.trim() })),
-    });
+    const res = await addCameras(drafts.map(({ area, ref, path }) => ({ area: Number(area), ref: ref.trim(), path: path.trim() })));
     setSaving(false);
     if (!res.ok) {
       feedback.toast(t("The cameras could not be saved."), { error: true });
@@ -82,7 +79,7 @@ export default function Cameras() {
     if (!ok) {
       return;
     }
-    const res = await api(`/cameras/${camera.id}/`, { method: "DELETE" });
+    const res = await deleteCamera(camera.id);
     feedback.toast(t(res.ok ? "Camera {ref} deleted." : "Could not delete camera {ref}.", { ref: camera.ref }), { error: !res.ok });
     if (res.ok) {
       load();

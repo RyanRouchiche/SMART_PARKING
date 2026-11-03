@@ -1,7 +1,7 @@
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { useT } from "../i18n.jsx";
-import { useZone } from "../zones.jsx";
+import { useT } from "../../../shared/i18n.jsx";
+import { useZone } from "../ZonesProvider.jsx";
 import "../styles/lcd.css";
 
 function spotNumber(code) {

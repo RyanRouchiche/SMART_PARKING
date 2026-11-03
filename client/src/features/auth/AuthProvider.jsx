@@ -1,7 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import { api, openSocket } from "./api.js";
-import { ZonesProvider } from "./zones.jsx";
+import * as authApi from "./api.js";
 
 const AuthContext = createContext(null);
 
@@ -9,17 +8,14 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(undefined);
 
   useEffect(() => {
-    api("/auth/me/").then((res) => setUser(res.ok ? res.data.user : null));
+    authApi.fetchMe().then((res) => setUser(res.ok ? res.data.user : null));
     const onExpired = () => setUser(null);
     window.addEventListener("session-expired", onExpired);
     return () => window.removeEventListener("session-expired", onExpired);
   }, []);
 
   const login = useCallback(async (username, password) => {
-    const res = await api("/auth/login/", {
-      method: "POST",
-      body: { username, password },
-    });
+    const res = await authApi.login(username, password);
     if (res.ok) {
       setUser(res.data.user);
     }
@@ -27,7 +23,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   const logout = useCallback(async () => {
-    const res = await api("/auth/logout/", { method: "POST" });
+    const res = await authApi.logout();
     setUser(null);
     return res;
   }, []);
@@ -41,34 +37,6 @@ export function AuthProvider({ children }) {
 
 export function useAuth() {
   return useContext(AuthContext);
-}
-
-export function RequireAuth() {
-  const { user } = useAuth();
-
-  useEffect(() => {
-    if (!user) {
-      return;
-    }
-    const socket = openSocket("user-status/");
-    socket.onmessage = (event) =>
-      window.dispatchEvent(
-        new CustomEvent("user-status", { detail: JSON.parse(event.data) })
-      );
-    return () => socket.close();
-  }, [user]);
-
-  if (user === undefined) {
-    return null;
-  }
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-  return (
-    <ZonesProvider>
-      <Outlet />
-    </ZonesProvider>
-  );
 }
 
 export function RequireAdmin() {

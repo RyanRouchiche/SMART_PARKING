@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { api } from "../api.js";
-import { useT } from "../i18n.jsx";
+import { activate } from "../api.js";
+import { useT } from "../../../shared/i18n.jsx";
 import { AuthLayout } from "./Login.jsx";
 
 export default function Activate() {
@@ -10,7 +10,7 @@ export default function Activate() {
   const [ok, setOk] = useState(null);
 
   useEffect(() => {
-    api(`/auth/activate/${encodeURIComponent(uid)}/${encodeURIComponent(token)}/`).then((res) => setOk(res.ok));
+    activate(uid, token).then((res) => setOk(res.ok));
   }, [uid, token]);
 
   return (
