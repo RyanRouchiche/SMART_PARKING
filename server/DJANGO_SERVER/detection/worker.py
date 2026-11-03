@@ -43,7 +43,7 @@ def detect(frame, area, transforms, classifier=classify):
 
 
 class ZoneWorker(threading.Thread):
-    def __init__(self, config, publish=events.publish, classifier=classify):
+    def __init__(self, config, publish, classifier=classify):
         super().__init__(daemon=True, name=f"zone-{config.parking_id}-{config.area}")
         self.config = config
         self.publish = publish
@@ -97,10 +97,11 @@ def load_zones(shard=0, shards=1):
 
 
 class Supervisor:
-    def __init__(self, shard=0, shards=1, worker_class=ZoneWorker):
+    def __init__(self, shard=0, shards=1, worker_class=ZoneWorker, publish=None):
         self.shard = shard
         self.shards = shards
         self.worker_class = worker_class
+        self.publish = publish or events.Publisher()
         self.workers = {}
 
     def sync(self):
@@ -112,7 +113,7 @@ class Supervisor:
                 del self.workers[key]
         for key, config in wanted.items():
             if key not in self.workers:
-                self.workers[key] = self.worker_class(config)
+                self.workers[key] = self.worker_class(config, self.publish)
                 self.workers[key].start()
 
     def stop(self):

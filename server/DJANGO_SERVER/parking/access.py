@@ -37,6 +37,3 @@ def zone_stream(user, area, parking_id=None):
     has_camera = parking.cameras.filter(area=area).exists()
     return parking.pk if zone and has_camera else None
 
-
-def still_member(user_id, parking_id):
-    return ParkingMembership.objects.filter(user_id=user_id, parking_id=parking_id, user__is_active=True).exists()

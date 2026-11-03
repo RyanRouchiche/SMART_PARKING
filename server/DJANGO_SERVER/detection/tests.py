@@ -129,6 +129,18 @@ class VideoFeedConsumerTests(TransactionTestCase):
 
         self.assertEqual(async_to_sync(scenario)(), (message, "websocket.close"))
 
+    def test_deactivating_the_user_closes_the_stream(self):
+        async def scenario():
+            communicator = self.connect(self.operator)
+            await communicator.connect()
+            self.operator.is_active = False
+            await self.operator.asave()
+            output = await communicator.receive_output()
+            await communicator.disconnect()
+            return output["type"]
+
+        self.assertEqual(async_to_sync(scenario)(), "websocket.close")
+
     def test_outsiders_are_closed_without_data(self):
         outsider = User.objects.create_user(username="outsider")
 

@@ -8,7 +8,10 @@ from rest_framework.test import APITestCase
 from parking.models import Parking, ParkingMembership
 from users.models import User
 from .models import Camera
+from .services import camera_health
 from .sources import open_source
+from unittest import mock
+from django.core.cache import cache
 
 
 class CameraPathTests(APITestCase):
@@ -51,3 +54,10 @@ class CameraPathTests(APITestCase):
             self.assertEqual(self.post("rtsp://192.168.10.5/stream").status_code, 201)
             self.assertEqual(self.post("http://172.18.0.2:6379/").status_code, 400)
         self.assertEqual(self.post("http://[::ffff:127.0.0.1]:8001/").status_code, 400)
+
+    def test_camera_health_is_probed_once_per_ttl(self):
+        cache.clear()
+        with mock.patch("camera.services.probe", return_value=True) as probe:
+            self.assertEqual(camera_health(["a.mp4", "b.mp4"]), {"a.mp4": True, "b.mp4": True})
+            self.assertEqual(camera_health(["a.mp4", "b.mp4"]), {"a.mp4": True, "b.mp4": True})
+        self.assertEqual(probe.call_count, 2)
