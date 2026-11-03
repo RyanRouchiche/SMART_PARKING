@@ -69,6 +69,10 @@ services:
       - ../server/DJANGO_SERVER/cropped_spots:/app/DJANGO_SERVER/cropped_spots
       - ../server/DJANGO_SERVER/parking/Data:/app/DJANGO_SERVER/parking/Data:ro
 
+  django-api:
+    <<: *django-service
+    command: sh -c "uvicorn smart_parking.asgi:application --host 0.0.0.0 --port 8000 --no-access-log --workers $${API_CONCURRENCY:-2}"
+
   detection:
     <<: *django-service
     command: python manage.py run_detection
@@ -83,6 +87,7 @@ services:
       - "${CLIENT_PORT:-8080}:80"
     depends_on:
       - django
+      - django-api
     restart: unless-stopped
 
   website:
