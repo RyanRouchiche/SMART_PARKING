@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'parking',
     'detection',
+    'public',
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
@@ -160,6 +161,8 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_RATES': {
         'auth': '10/min',
         'register': '5/hour',
+        'anon': os.getenv('PUBLIC_ANON_RATE', '30/min'),
+        'user': os.getenv('PUBLIC_USER_RATE', '60/min'),
     },
 }
 

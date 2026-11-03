@@ -42,6 +42,21 @@ class GuestSerializer(AccountSerializer):
         )
 
 
+class DriverSerializer(AccountSerializer):
+    class Meta(AccountSerializer.Meta):
+        fields = ['username', 'password', 'email', 'first_name', 'last_name', 'language']
+        extra_kwargs = {'username': {'validators': []}}
+
+    def create(self, validated_data):
+        return User.objects.create_user(
+            **validated_data,
+            user_type='driver',
+            is_superuser=False,
+            is_staff=False,
+            is_active=False,
+        )
+
+
 class ListUserSerializer(serializers.ModelSerializer):
     status = serializers.SerializerMethodField()
 
