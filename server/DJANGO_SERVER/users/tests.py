@@ -12,8 +12,8 @@ from rest_framework.test import APITestCase
 
 from parking.models import Parking, ParkingMembership
 from smart_parking.asgi import application
-from .consumer import UserStatusConsumer
-from .models import User, auth, hash_token
+from .consumers import UserStatusConsumer
+from .models import RefreshSession, User, hash_token
 
 STRONG = "Gr33n-Parking-Lot!"
 
@@ -75,7 +75,7 @@ class SessionTests(APITestCase):
         later = timezone.now() + timedelta(minutes=2)
         with mock.patch("rest_framework_simplejwt.tokens.aware_utcnow", return_value=later):
             self.assertEqual(self.client.post("/api/auth/logout/").status_code, 200)
-        self.assertTrue(auth.objects.get(user=self.user).is_revoked)
+        self.assertTrue(RefreshSession.objects.get(user=self.user).is_revoked)
         self.assertEqual(self.client.post("/api/auth/refresh/").status_code, 401)
 
     def login(self):
@@ -84,9 +84,9 @@ class SessionTests(APITestCase):
     def test_refresh_token_is_stored_hashed(self):
         self.login()
         cookie = self.client.cookies["refresh_token"].value
-        self.assertEqual(auth.objects.get(user=self.user).token_hash, hash_token(cookie))
+        self.assertEqual(RefreshSession.objects.get(user=self.user).token_hash, hash_token(cookie))
         self.assertEqual(self.client.post("/api/auth/refresh/").status_code, 200)
-        self.assertEqual(auth.objects.get(user=self.user).token_hash, hash_token(self.client.cookies["refresh_token"].value))
+        self.assertEqual(RefreshSession.objects.get(user=self.user).token_hash, hash_token(self.client.cookies["refresh_token"].value))
 
     def test_password_change_ends_the_refresh_chain(self):
         self.login()

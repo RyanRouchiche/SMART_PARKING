@@ -26,3 +26,17 @@ def resolve_parking(user, parking_id=None, owner=False):
 
 def get_parking(request, owner=False):
     return resolve_parking(request.user, request.query_params.get('parking'), owner)
+
+
+def zone_stream(user, area, parking_id=None):
+    try:
+        parking = resolve_parking(user, parking_id)
+    except PermissionDenied:
+        return None
+    zone = parking.zones.filter(number=area).exclude(spots={}).first()
+    has_camera = parking.cameras.filter(area=area).exists()
+    return parking.pk if zone and has_camera else None
+
+
+def still_member(user_id, parking_id):
+    return ParkingMembership.objects.filter(user_id=user_id, parking_id=parking_id, user__is_active=True).exists()
