@@ -1,0 +1,159 @@
+.auth {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(320px, 5fr) 7fr;
+}
+
+.auth__brand {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 48px;
+}
+
+.auth__logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.auth__line {
+  display: flex;
+  align-items: flex-start;
+  position: relative;
+}
+
+.auth__line::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 13px;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--line-1) 0 25%, var(--line-2) 25% 50%, var(--line-3) 50% 75%, var(--line-4) 75%);
+}
+
+.auth__stop {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+.auth__stop i {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 6px solid var(--zone);
+  background: var(--ink);
+}
+
+.auth__stop b {
+  font-size: 0.875rem;
+  color: var(--ink-muted);
+}
+
+.auth__pitch {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.25;
+  max-width: 22ch;
+}
+
+.auth__main {
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding: 48px 24px;
+}
+
+.auth__lang {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+}
+
+.auth__lang select {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-sm);
+  padding: 8px 10px;
+}
+
+.auth__card {
+  width: min(400px, 100%);
+}
+
+.stack-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.stack-form .page__title {
+  margin-bottom: 8px;
+}
+
+.btn--block {
+  width: 100%;
+  height: 44px;
+  text-decoration: none;
+}
+
+.form-error {
+  padding: 12px 14px;
+  border-radius: var(--r-md);
+  background: #fdecea;
+  color: var(--danger);
+  font-size: 0.9375rem;
+}
+
+.switch {
+  font-size: 0.9375rem;
+}
+
+.link {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--ink);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+@media (max-width: 959px) {
+  .auth {
+    grid-template-columns: 1fr;
+  }
+
+  .auth__brand {
+    padding: 24px;
+    gap: 24px;
+  }
+
+  .auth__pitch {
+    font-size: 1.25rem;
+  }
+
+  .auth__lang {
+    position: static;
+    justify-self: end;
+    margin-bottom: 16px;
+  }
+
+  .auth__main {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

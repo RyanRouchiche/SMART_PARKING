@@ -1,54 +1,118 @@
-body {
-  font-family: Arial, sans-serif;
-  background-color: #f4f4f4;
-  color: #333;
-  margin: 0;
-  padding: 20px;
+.lcd {
+  min-height: 100vh;
+  background: var(--lcd-ground);
+  color: var(--lcd-text);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  padding: 4vh 5vw;
 }
 
-.container {
-  max-width: 600px;
-  margin: auto;
-  background: white;
-  padding: 30px;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+.lcd__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
 }
 
-h1, h2 {
-  color: #2c3e50;
+.lcd__head h1 {
+  display: flex;
+  align-items: center;
+  gap: 2vh;
+  font-size: clamp(2rem, 6vh, 4.5rem);
+  font-weight: 800;
+  letter-spacing: -0.01em;
 }
 
-label {
-  font-weight: bold;
+.lcd__dot {
+  width: 5vh;
+  height: 5vh;
+  border-radius: 50%;
+  border: 1.2vh solid var(--zone);
+  filter: brightness(1.6);
 }
 
-select {
-  width: 100%;
-  padding: 10px;
-  margin: 15px 0;
-  border-radius: 5px;
-  border: 1px solid #ccc;
+.lcd__controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  opacity: 0;
+  transition: opacity 200ms;
 }
 
-.status {
-  margin-top: 20px;
+.lcd__head:hover .lcd__controls,
+.lcd__controls:focus-within {
+  opacity: 1;
 }
 
-ul {
-  list-style-type: none;
-  padding-left: 0;
+.lcd__controls select,
+.lcd__controls a {
+  background: transparent;
+  color: var(--lcd-text);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--r-sm);
+  padding: 8px 12px;
+  text-decoration: none;
+  font-size: 1rem;
 }
 
-li {
-  background: #e8f5e9;
-  padding: 10px;
-  margin-bottom: 5px;
-  border-left: 5px solid limegreen;
-  font-size: 16px;
+.lcd__controls option {
+  color: var(--ink);
 }
 
-.arrow {
-  font-weight: bold;
-  color: limegreen;
+.lcd__main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.lcd__count {
+  font-size: clamp(8rem, 38vh, 26rem);
+  font-weight: 800;
+  line-height: 0.9;
+  letter-spacing: -0.03em;
+  color: var(--lcd-free);
+  animation: lcd-swap 300ms ease-out;
+}
+
+.lcd__unit {
+  font-size: clamp(1.5rem, 5vh, 3.5rem);
+  font-weight: 700;
+  margin-top: 2vh;
+}
+
+.lcd__word {
+  font-size: clamp(4rem, 18vh, 12rem);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.lcd__word--alert {
+  color: var(--lcd-alert);
+}
+
+.lcd__spots {
+  display: flex;
+  justify-content: space-between;
+  gap: 5vw;
+  font-size: clamp(1.75rem, 6vh, 4rem);
+  font-weight: 800;
+}
+
+.lcd__spots p {
+  display: flex;
+  align-items: center;
+  gap: 2vw;
+  white-space: pre;
+}
+
+.lcd__spots p:last-child:not(:first-child) {
+  margin-left: auto;
+}
+
+@keyframes lcd-swap {
+  from {
+    opacity: 0;
+  }
 }

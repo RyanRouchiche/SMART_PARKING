@@ -85,5 +85,13 @@ services:
       - django
     restart: unless-stopped
 
+  website:
+    profiles: [website]
+    build:
+      context: ../../SMART_PARKING_WEBSITE
+    ports:
+      - "${WEBSITE_PORT:-8081}:80"
+    restart: unless-stopped
+
 volumes:
   db-data:

@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { api, openSocket } from "./api.js";
+import { ZonesProvider } from "./zones.jsx";
 
 const AuthContext = createContext(null);
 
@@ -60,5 +61,17 @@ export function RequireAuth() {
   if (user === undefined) {
     return null;
   }
-  return user ? <Outlet /> : <Navigate to="/login" replace />;
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+  return (
+    <ZonesProvider>
+      <Outlet />
+    </ZonesProvider>
+  );
+}
+
+export function RequireAdmin() {
+  const { user } = useAuth();
+  return user.role === "admin" ? <Outlet /> : <Navigate to="/" replace />;
 }
