@@ -1,10 +1,35 @@
+import logging
 from datetime import datetime, timezone
+
+from django.conf import settings
+from django.core.mail import send_mail
 
 from detection.interface import parking_availability
 from parking.interface import published_parking, published_parkings_in_box
 from shared.geo import bounding_box, distance_m
 
 MAX_RESULTS = 20
+
+logger = logging.getLogger(__name__)
+
+
+def mail_team(subject, fields):
+    body = "\n".join(f"{label} : {value}" for label, value in fields if value not in (None, ''))
+    send_mail(subject, body, settings.EMAIL_HOST_USER, [settings.TEAM_EMAIL], fail_silently=False)
+
+
+def submit_owner_request(serializer):
+    request = serializer.save()
+    fields = [(f.verbose_name, getattr(request, f.name)) for f in request._meta.fields if f.name not in ('id', 'status')]
+    try:
+        mail_team(f"Inscription d'un parking : {request.parking_name}", fields)
+    except Exception:
+        logger.exception("Owner request %s saved but the team e-mail failed", request.pk)
+    return request
+
+
+def send_contact(data):
+    mail_team("Message du site", [('Nom', data['name']), ('E-mail', data['email']), ('Message', data['message'])])
 
 
 def iso(timestamp):

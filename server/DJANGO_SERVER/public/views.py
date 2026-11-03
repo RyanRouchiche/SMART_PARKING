@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.throttling import AnonRateThrottle, ScopedRateThrottle, UserRateThrottle
+from rest_framework.throttling import AnonRateThrottle, ScopedRateThrottle, SimpleRateThrottle, UserRateThrottle
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
@@ -19,6 +19,7 @@ from users.interface import (
     rotate_tokens,
 )
 from . import services
+from .serializers import ContactSerializer, OwnerRequestSerializer
 
 DRIVER = 'driver'
 DEFAULT_RADIUS = 3000
@@ -60,6 +61,16 @@ def body(request):
     return request.data if isinstance(request.data, dict) else {}
 
 
+class UsernameRateThrottle(SimpleRateThrottle):
+    scope = 'login_user'
+
+    def get_cache_key(self, request, view):
+        username = body(request).get('username')
+        if not isinstance(username, str) or not username:
+            return None
+        return self.cache_format % {'scope': self.scope, 'ident': username.strip().lower()}
+
+
 class NearbyView(PublicAPIView):
     def get(self, request):
         lat = number(request.query_params, 'lat', -90, 90)
@@ -92,6 +103,8 @@ class RegisterView(AuthAPIView):
 
 
 class LoginView(AuthAPIView):
+    throttle_classes = [ScopedRateThrottle, UsernameRateThrottle]
+
     def post(self, request):
         data = body(request)
         username, password = data.get('username'), data.get('password')
@@ -127,6 +140,35 @@ class LogoutView(AuthAPIView):
         if refresh:
             revoke(refresh)
         return Response({'logged_out': True})
+
+
+class SiteFormView(AuthAPIView):
+    throttle_scope = 'register'
+
+    def post(self, request):
+        data = body(request)
+        if data.get('website'):
+            return Response({'received': True}, status=status.HTTP_201_CREATED)
+        return self.handle(data)
+
+
+class OwnerSignupView(SiteFormView):
+    def handle(self, data):
+        serializer = OwnerRequestSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        services.submit_owner_request(serializer)
+        return Response({'received': True}, status=status.HTTP_201_CREATED)
+
+
+class ContactView(SiteFormView):
+    def handle(self, data):
+        serializer = ContactSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            services.send_contact(serializer.validated_data)
+        except Exception:
+            return Response({'error': 'The message could not be sent'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        return Response({'received': True}, status=status.HTTP_201_CREATED)
 
 
 class AccountView(APIView):

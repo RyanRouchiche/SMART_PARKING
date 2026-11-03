@@ -11,4 +11,6 @@ urlpatterns = [
     path('parkings/nearby/', views.NearbyView.as_view(), name='public_nearby'),
     path('parkings/<uuid:parking_id>/', views.ParkingDetailView.as_view(), name='public_parking'),
     path('eta/', views.EtaView.as_view(), name='public_eta'),
+    path('owner-signup/', views.OwnerSignupView.as_view(), name='public_owner_signup'),
+    path('contact/', views.ContactView.as_view(), name='public_contact'),
 ]
