@@ -1,11 +1,13 @@
 import cv2
 
+from .sources import open_source
+
 
 class Camera:
     def __init__(self, video_path, area=None):
         self.video_path = video_path
         self.area = area
-        self.cap = cv2.VideoCapture(video_path)
+        self.cap = open_source(video_path)
         if not self.cap.isOpened():
             print(f"Error: Unable to open video source for area {area}")
 

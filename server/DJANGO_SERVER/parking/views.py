@@ -14,7 +14,7 @@ from camera.models import Camera
 from camera.utils import calculate_width_height, sort_parking_spot_points, open_cameras, convert_ndarray_to_list
 from .access import get_parking
 from .models import Zone
-from .serializers import AreaSerializer
+from .serializers import AreaSerializer, MAX_AREAS
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +42,7 @@ def coordinates(request):
         return Response({'data': [{'area': str(z.number), 'coordinates': z.spots} for z in parking.zones.all()]})
 
     parking = get_parking(request, owner=True)
-    serializer = AreaSerializer(data=request.data, many=True)
+    serializer = AreaSerializer(data=request.data, many=True, max_length=MAX_AREAS)
     serializer.is_valid(raise_exception=True)
 
     validated_data = serializer.validated_data
@@ -75,6 +75,7 @@ def coordinates(request):
         os.makedirs(output_dir, exist_ok=True)
         for spot_name, rect in area_data["coordinates"].items():
             w, h = calculate_width_height(rect)
+            w, h = min(max(w, 1), frame.shape[1]), min(max(h, 1), frame.shape[0])
             matrix = cv2.getPerspectiveTransform(rect, np.float32([[0, 0], [w, 0], [w, h], [0, h]]))
             cv2.imwrite(os.path.join(output_dir, f'{spot_name}.jpg'), cv2.warpPerspective(frame, matrix, (w, h)))
 
