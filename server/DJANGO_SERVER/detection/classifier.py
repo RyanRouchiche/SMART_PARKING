@@ -6,7 +6,7 @@ import numpy as np
 from django.conf import settings
 
 
-def predict_spots(crops):
+def classify(crops):
     buffer = io.BytesIO()
     np.save(buffer, np.stack(crops))
     request = urllib.request.Request(

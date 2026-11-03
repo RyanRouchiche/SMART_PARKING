@@ -42,19 +42,26 @@ L'interface est disponible en **français** et en **anglais** (sélecteur dans l
               │ /api /ws /admin   │──────────────┐
               └───────────────────┘              │ proxy
                                                  ▼
-┌──────────────┐   HTTP POST /predict   ┌───────────────────┐   ┌──────────────┐
-│ MODEL_SERVER │◀───────────────────────│ DJANGO_SERVER     │──▶│ PostgreSQL   │
-│ Keras :8001  │   lot de crops (.npy)  │ API + WebSockets  │   └──────────────┘
-└──────────────┘                        │ :8000             │   ┌──────────────┐
-                                        │                   │──▶│ Redis        │
-                                        └─────────┬─────────┘   └──────────────┘
-                                                  │ OpenCV
-                                                  ▼
-                                        caméras (RTSP / HTTP / fichier vidéo)
+                                        ┌───────────────────┐   ┌──────────────┐
+                                        │ django            │──▶│ PostgreSQL   │
+                                        │ API + WebSockets  │   └──────────────┘
+                                        └─────────┬─────────┘           ▲
+                                     abonnement   │                     │ zones
+                                     zone_<p>_<n> ▼                     │
+                                        ┌───────────────────┐   ┌──────────────┐
+                                        │ Redis (Channels)  │◀──│ detection    │
+                                        └───────────────────┘   │ 1 capture par│
+                                                                │ zone         │
+┌──────────────┐   HTTP POST /predict                           └──────┬───────┘
+│ MODEL_SERVER │◀──────────────────────────────────────────────────────┤ OpenCV
+│ Keras :8001  │   lot de crops (.npy)                                  ▼
+└──────────────┘                                   caméras (RTSP / HTTP / fichier vidéo)
 ```
 
 - **`client/`** : application React (Vite). Elle ne parle qu'à Django, via `/api` (HTTP) et `/ws` (WebSockets).
-- **`server/DJANGO_SERVER/`** : API REST (Django REST Framework), WebSockets (Django Channels), authentification JWT, lecture des caméras avec OpenCV.
+- **`server/DJANGO_SERVER/`** : API REST (Django REST Framework), WebSockets (Django Channels), authentification JWT. Le même code tourne en deux services :
+  - `django` : API et WebSockets. Les WebSockets vidéo ne font que s'abonner aux résultats d'une zone.
+  - `detection` (`python manage.py run_detection`) : capture chaque zone une seule fois, quel que soit le nombre de spectateurs, et publie l'occupation dans Redis. Il se répartit sur plusieurs instances avec `--shard` et `--shards`.
 - **`server/MODEL_SERVER/`** : petit serveur HTTP (bibliothèque standard Python) qui charge le modèle Keras une seule fois et classe un lot d'images de places.
 - **PostgreSQL** stocke les utilisateurs, les caméras et les tokens ; **Redis** sert de couche de messages à Channels.
 
@@ -74,11 +81,12 @@ SMART_PARKING/
 │   └── vite.config.js           Proxy de développement vers Django
 ├── server/
 │   ├── DJANGO_SERVER/
-│   │   ├── smart_parking/       Settings, URLs, ASGI
-│   │   ├── users/               Utilisateurs, auth JWT, guests, statut en ligne (WebSocket)
-│   │   ├── camera/              Modèle Camera, CRUD, lecture OpenCV
-│   │   ├── parking/             Zones, coordonnées des places, captures, WebSocket vidéo
-│   │   │   └── Spots/coordinates.json   Places dessinées pour chaque zone
+│   │   ├── smart_parking/       Settings, URLs, ASGI (assemblage des apps)
+│   │   ├── users/               Comptes, sessions JWT, opérateurs, présence (WebSocket)
+│   │   ├── camera/              Caméras, politique des sources (sources.py), captures
+│   │   ├── parking/             Parkings, membres, zones, accès par parking, WebSocket vidéo
+│   │   │   └── Spots/coordinates.json   Places du parking pilote (migration initiale)
+│   │   ├── detection/           Géométrie des places, capture vidéo, client du modèle, worker
 │   │   └── manage.py
 │   └── MODEL_SERVER/
 │       ├── server.py            Serveur HTTP (/health, /predict)
@@ -248,18 +256,18 @@ MODEL_SERVER :
    ```json
    [{ "area": "1", "coordinates": { "Spot 1": [[x, y], [x, y], [x, y], [x, y]] } }]
    ```
-2. Quand un client ouvre `/ws/video/<zone>/`, Django ouvre le flux de la caméra de cette zone avec OpenCV.
+2. Le service `detection` relit les zones toutes les 10 secondes et garde une capture ouverte par zone qui a des places et une caméra.
    - Une boucle lit le flux à sa cadence native, sans décoder ni encoder d'image inutilement, pour qu'une vidéo enregistrée avance en temps réel.
    - Toutes les 5 secondes, l'image courante est découpée : chaque place est redressée en 180×180 par une transformation de perspective.
 3. Les crops sont envoyés en un seul lot au MODEL_SERVER, qui renvoie un statut par place (sortie sigmoïde > 0,5 → `occupied`).
-4. Le résultat est poussé au navigateur, qui met à jour le plan et l'écran LCD.
+4. Le résultat est publié dans le groupe Redis `zone_<parking>_<zone>`. Chaque `/ws/video/<zone>/` abonné le reçoit, après vérification que l'utilisateur est toujours membre du parking.
 
 À l'enregistrement des places, un crop de chaque place est aussi sauvegardé dans `server/DJANGO_SERVER/cropped_spots/area_<zone>/`, ce qui peut servir de jeu de données. Le notebook `server/MODEL_SERVER/model_testing.ipynb` sert à tester le modèle.
 
 ## Authentification et rôles
 
 - **Tokens JWT** (SimpleJWT) stockés en cookies `HttpOnly` et `SameSite=Strict` : le token d'accès dure 1 minute, le refresh 1 heure, avec rotation et blacklist. Le frontend renouvelle automatiquement le token sur une réponse 401.
-- Un seul refresh token valide par utilisateur (table `users.auth`) : se reconnecter révoque la session précédente.
+- Un seul refresh token valide par utilisateur (table `users_refreshsession`, stocké haché) : se reconnecter révoque la session précédente.
 - La connexion ouvre aussi une **session Django**, utilisée pour authentifier le WebSocket de statut en ligne.
 - **Rôles** :
   - `admin` : propriétaire de parking. Créé par l'inscription publique (après activation par email), sans accès à l'admin Django. Seul `createsuperuser` crée un compte d'administration Django.

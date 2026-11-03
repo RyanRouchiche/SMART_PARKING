@@ -1,9 +1,8 @@
 import hashlib
-
-from django.db import models
-from django.contrib.auth.models import AbstractUser
 import uuid
-from django.utils import timezone
+
+from django.contrib.auth.models import AbstractUser
+from django.db import models
 
 
 class User(AbstractUser):
@@ -22,21 +21,18 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
-    
+
+
 def hash_token(token):
     return hashlib.sha256(token.encode()).hexdigest()
 
 
-class auth(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='auth')
+class RefreshSession(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='refresh_session')
     token_hash = models.CharField(max_length=64, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
     is_revoked = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"Auth token for {self.user.username}"
-    
-    def is_valid(self):
-
-        return not self.is_revoked and self.expires_at > timezone.now()
+        return f"Refresh session for {self.user.username}"

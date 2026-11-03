@@ -1,21 +1,9 @@
-from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMessage, send_mail
 from django.utils.encoding import force_bytes
 from django.utils.html import escape
 from django.utils.http import urlsafe_base64_encode
-
-
-def SETupCOOKIE(response, key, value):
-    response.set_cookie(
-        key=key,
-        value=value,
-        httponly=True,
-        secure=settings.SESSION_COOKIE_SECURE,
-        samesite='Strict',
-        path='/',
-    )
 
 
 def send_verif_email(request, user):

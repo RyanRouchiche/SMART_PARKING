@@ -4,6 +4,34 @@ x-server-build: &server-build
   context: ..
   dockerfile: docker/server.Dockerfile
 
+x-django-service: &django-service
+  build: *server-build
+  image: smart-parking-server
+  working_dir: /app/DJANGO_SERVER
+  env_file:
+    - path: ../.env
+      format: raw
+  environment:
+    REDIS_HOST: redis
+    REDIS_PASSWORD: ${REDIS_PASSWORD_DOCKER:-smart_parking}
+    MODEL_SERVER_URL: http://model:8001
+    DB_HOST: db
+    DB_PORT: "5432"
+    DB_NAME: smart_parking
+    DB_USER: smart_parking
+    DB_PASSWORD: ${DB_PASSWORD_DOCKER:-smart_parking}
+    DB_SSLMODE: disable
+    ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1}
+    WS_ALLOWED_ORIGINS: ${WS_ALLOWED_ORIGINS:-http://localhost:${CLIENT_PORT:-8080},http://127.0.0.1:${CLIENT_PORT:-8080}}
+  depends_on:
+    db:
+      condition: service_healthy
+    redis:
+      condition: service_started
+    model:
+      condition: service_started
+  restart: unless-stopped
+
 services:
   db:
     image: postgres:16-alpine@sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab
@@ -35,35 +63,17 @@ services:
     restart: unless-stopped
 
   django:
-    build: *server-build
-    image: smart-parking-server
-    working_dir: /app/DJANGO_SERVER
+    <<: *django-service
     command: sh -c "python manage.py migrate --noinput && uvicorn smart_parking.asgi:application --host 0.0.0.0 --port 8000"
-    env_file:
-      - path: ../.env
-        format: raw
-    environment:
-      REDIS_HOST: redis
-      REDIS_PASSWORD: ${REDIS_PASSWORD_DOCKER:-smart_parking}
-      MODEL_SERVER_URL: http://model:8001
-      DB_HOST: db
-      DB_PORT: "5432"
-      DB_NAME: smart_parking
-      DB_USER: smart_parking
-      DB_PASSWORD: ${DB_PASSWORD_DOCKER:-smart_parking}
-      DB_SSLMODE: disable
-      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1}
-      WS_ALLOWED_ORIGINS: ${WS_ALLOWED_ORIGINS:-http://localhost:${CLIENT_PORT:-8080},http://127.0.0.1:${CLIENT_PORT:-8080}}
     volumes:
       - ../server/DJANGO_SERVER/cropped_spots:/app/DJANGO_SERVER/cropped_spots
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_started
-      model:
-        condition: service_started
-    restart: unless-stopped
+      - ../server/DJANGO_SERVER/parking/Data:/app/DJANGO_SERVER/parking/Data:ro
+
+  detection:
+    <<: *django-service
+    command: python manage.py run_detection
+    volumes:
+      - ../server/DJANGO_SERVER/parking/Data:/app/DJANGO_SERVER/parking/Data:ro
 
   client:
     build:

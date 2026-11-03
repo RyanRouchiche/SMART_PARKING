@@ -5,7 +5,7 @@ from rest_framework.test import APITestCase
 
 from camera.models import Camera
 from users.models import User
-from .consumers import still_member, zone_for
+from .access import still_member, zone_stream
 from .models import Parking, ParkingMembership, Zone
 
 pilot = importlib.import_module("parking.migrations.0002_pilot_parking")
@@ -118,10 +118,10 @@ class ParkingAccessTests(APITestCase):
         self.assertTrue(User.objects.filter(id=self.operator_b.id).exists())
 
     def test_websocket_zone_lookup_checks_membership(self):
-        self.assertEqual(zone_for(self.operator_a, 1, None), ({"Spot 1": SQUARE}, "missing-a.mp4", self.a.pk))
-        self.assertEqual(zone_for(self.operator_b, 1, None), (None, None, self.b.pk))
-        self.assertEqual(zone_for(self.operator_a, 1, str(self.b.id)), (None, None, None))
-        self.assertEqual(zone_for(AnonymousUser(), 1, None), (None, None, None))
+        self.assertEqual(zone_stream(self.operator_a, 1, None), self.a.pk)
+        self.assertIsNone(zone_stream(self.operator_b, 1, None))
+        self.assertIsNone(zone_stream(self.operator_a, 1, str(self.b.id)))
+        self.assertIsNone(zone_stream(AnonymousUser(), 1, None))
 
     def test_video_stream_stops_once_membership_is_gone(self):
         self.assertTrue(still_member(self.operator_a.pk, self.a.pk))
