@@ -10,7 +10,7 @@ export default function Activate() {
   const [ok, setOk] = useState(null);
 
   useEffect(() => {
-    api(`/auth/activate/${uid}/${token}/`).then((res) => setOk(res.ok));
+    api(`/auth/activate/${encodeURIComponent(uid)}/${encodeURIComponent(token)}/`).then((res) => setOk(res.ok));
   }, [uid, token]);
 
   return (

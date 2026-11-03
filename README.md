@@ -42,21 +42,35 @@ L'interface est disponible en **français** et en **anglais** (sélecteur dans l
               │ /api /ws /admin   │──────────────┐
               └───────────────────┘              │ proxy
                                                  ▼
-┌──────────────┐   HTTP POST /predict   ┌───────────────────┐   ┌──────────────┐
-│ MODEL_SERVER │◀───────────────────────│ DJANGO_SERVER     │──▶│ PostgreSQL   │
-│ Keras :8001  │   lot de crops (.npy)  │ API + WebSockets  │   └──────────────┘
-└──────────────┘                        │ :8000             │   ┌──────────────┐
-                                        │                   │──▶│ Redis        │
-                                        └─────────┬─────────┘   └──────────────┘
-                                                  │ OpenCV
-                                                  ▼
-                                        caméras (RTSP / HTTP / fichier vidéo)
+                                        ┌───────────────────┐   ┌──────────────┐
+                                        │ django            │──▶│ PostgreSQL   │
+                                        │ API + WebSockets  │   └──────────────┘
+                                        └─────────┬─────────┘           ▲
+                                     abonnement   │                     │ zones
+                                     zone_<p>_<n> ▼                     │
+                                        ┌───────────────────┐   ┌──────────────┐
+                                        │ Redis (Channels)  │◀──│ detection    │
+                                        └───────────────────┘   │ 1 capture par│
+                                                                │ zone         │
+┌──────────────┐   HTTP POST /predict                           └──────┬───────┘
+│ MODEL_SERVER │◀──────────────────────────────────────────────────────┤ OpenCV
+│ Keras :8001  │   lot de crops (.npy)                                  ▼
+└──────────────┘                                   caméras (RTSP / HTTP / fichier vidéo)
 ```
 
 - **`client/`** : application React (Vite). Elle ne parle qu'à Django, via `/api` (HTTP) et `/ws` (WebSockets).
-- **`server/DJANGO_SERVER/`** : API REST (Django REST Framework), WebSockets (Django Channels), authentification JWT, lecture des caméras avec OpenCV.
+- **`server/DJANGO_SERVER/`** : API REST (Django REST Framework), WebSockets (Django Channels), authentification JWT. Le même code tourne en deux services :
+  - `django` : API et WebSockets. Les WebSockets vidéo ne font que s'abonner aux résultats d'une zone.
+  - `detection` (`python manage.py run_detection`) : capture chaque zone une seule fois, quel que soit le nombre de spectateurs, et publie l'occupation dans Redis. Il se répartit sur plusieurs instances avec `--shard` et `--shards`.
 - **`server/MODEL_SERVER/`** : petit serveur HTTP (bibliothèque standard Python) qui charge le modèle Keras une seule fois et classe un lot d'images de places.
 - **PostgreSQL** stocke les utilisateurs, les caméras et les tokens ; **Redis** sert de couche de messages à Channels.
+
+Le backend est un **monolithe modulaire strict** :
+- **Modules** : `users` → `parking` → `camera` → `detection`, plus le noyau partagé `shared`.
+- **Sens des dépendances** : un module ne dépend que des modules situés avant lui dans cette liste.
+- **Point d'entrée unique** : un module ne doit importer d'un autre module que son fichier `interface.py`. Les modèles, services et vues restent privés.
+- **Vérification** : le test `smart_parking/tests.py` vérifie ces deux règles.
+- **Seul couplage restant** : les clés étrangères en base (base partagée), qui sont déclarées par nom et sans import Python.
 
 ## Structure du dépôt
 
@@ -74,11 +88,13 @@ SMART_PARKING/
 │   └── vite.config.js           Proxy de développement vers Django
 ├── server/
 │   ├── DJANGO_SERVER/
-│   │   ├── smart_parking/       Settings, URLs, ASGI
-│   │   ├── users/               Utilisateurs, auth JWT, guests, statut en ligne (WebSocket)
-│   │   ├── camera/              Modèle Camera, CRUD, lecture OpenCV
-│   │   ├── parking/             Zones, coordonnées des places, captures, WebSocket vidéo
-│   │   │   └── Spots/coordinates.json   Places dessinées pour chaque zone
+│   │   ├── smart_parking/       Settings, URLs, ASGI : assemble les modules, test d'architecture
+│   │   ├── users/               Identité : comptes, sessions JWT, inscription, activation
+│   │   ├── parking/             Parkings, membres, accès, zones, opérateurs, présence (WebSocket)
+│   │   │   └── Spots/coordinates.json   Places du parking pilote (migration initiale)
+│   │   ├── camera/              Caméras, politique des sources, capture, tracé des places
+│   │   ├── detection/           Worker de détection, client du modèle, flux d'occupation (WebSocket)
+│   │   ├── shared/              Noyau partagé sans état : géométrie des places
 │   │   └── manage.py
 │   └── MODEL_SERVER/
 │       ├── server.py            Serveur HTTP (/health, /predict)
@@ -113,13 +129,11 @@ Services lancés :
 ### Créer un compte administrateur
 
 ```sh
-docker compose exec django python manage.py shell -c "
-from users.models import User
-u = User(username='admin', email='admin@example.com', user_type='admin', is_superuser=True, is_staff=True, is_active=True)
-u.set_password('mot-de-passe')
-u.save()
-"
+docker compose exec django python manage.py createsuperuser
+docker compose exec django python manage.py shell -c "from users.models import User; User.objects.filter(username='admin').update(user_type='admin')"
 ```
+
+`createsuperuser` demande le nom (ici `admin`) et le mot de passe, la seconde commande lui donne le rôle `admin` de l'application.
 
 L'interface d'administration Django est aussi accessible sur http://localhost:8080/admin/.
 
@@ -139,6 +153,9 @@ Variables optionnelles (dans le shell ou un fichier `docker/.env`) :
 | `CLIENT_PORT` | `8080` | Port exposé sur la machine |
 | `ALLOWED_HOSTS` | `localhost,127.0.0.1` | À compléter pour ouvrir l'application depuis une autre IP |
 | `DB_PASSWORD_DOCKER` | `smart_parking` | Mot de passe de la base du conteneur |
+| `REDIS_PASSWORD_DOCKER` | `smart_parking` | Mot de passe du Redis du conteneur |
+| `WEB_CONCURRENCY` | `2` | Nombre de processus uvicorn du service `django` |
+| `WS_ALLOWED_ORIGINS` | `http://localhost:8080,http://127.0.0.1:8080` | Origines exactes autorisées pour les WebSockets (à compléter avec `ALLOWED_HOSTS`) |
 
 ## Développement sans Docker
 
@@ -168,6 +185,7 @@ Vérifications :
 
 ```sh
 cd server/DJANGO_SERVER && python manage.py check
+cd server/DJANGO_SERVER && python manage.py test users camera parking detection smart_parking
 cd client && npm run build
 ```
 
@@ -182,18 +200,24 @@ Fichier `.env` à la racine du dépôt :
 | `DB_SSL_ROOT_CERT` | non | Certificat CA pour la connexion PostgreSQL |
 | `DB_SSLMODE` | non | `require` par défaut, `disable` dans Docker |
 | `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD` | oui pour l'inscription | Compte Gmail SMTP pour les emails d'activation |
-| `REDIS_HOST`, `REDIS_PORT` | non | Redis de Channels |
+| `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD` | non | Redis : couche Channels (base 0), cache, sessions et throttling (base 1) |
+| `DB_POOL_SIZE` | non | Taille maximale du pool de connexions PostgreSQL par processus (`10` par défaut) |
+| `WS_ALLOWED_ORIGINS` | non | Origines exactes (`schéma://hôte:port`) acceptées par les WebSockets. Vide : seul le nom d'hôte est comparé à `ALLOWED_HOSTS` |
 | `MODEL_SERVER_URL` | non | `http://127.0.0.1:8001` par défaut |
-| `ALLOWED_HOSTS` | non | Liste séparée par des virgules |
+| `ALLOWED_HOSTS` | non | Liste séparée par des virgules. Sert aussi à vérifier l'`Origin` des WebSockets |
+| `DEBUG` | non | `false` par défaut. `true` uniquement en développement local |
+| `SECURE_COOKIES` | non | `false` par défaut. `true` dès que l'application est servie en HTTPS |
+| `CAMERA_MEDIA_ROOT` | non | Dossier des vidéos locales, `server/DJANGO_SERVER/parking/Data` par défaut |
+| `CAMERA_NETWORKS` | recommandé en production | Réseaux autorisés pour les URL de caméras, séparés par des virgules (ex. `192.168.10.0/24`). Vide : tout sauf loopback, link-local, multicast et réservé |
 
-Côté MODEL_SERVER : `MODEL_SERVER_HOST` (défaut `127.0.0.1`) et `MODEL_SERVER_PORT` (défaut `8001`).
+Côté MODEL_SERVER : `MODEL_SERVER_HOST` (défaut `127.0.0.1`), `MODEL_SERVER_PORT` (défaut `8001`), `MODEL_SERVER_CONCURRENCY` (inférences simultanées, défaut `2`) et `MODEL_SERVER_MAX_BODY` (taille maximale d'un lot, défaut 64 Mo).
 
 > Le fichier `.env` est lu sans interprétation par Docker : pas d'espace autour du `=`, et les caractères `$` sont conservés tels quels.
 
 ## Utilisation de l'application
 
 1. **Se connecter** avec un compte admin.
-2. **Setup** (`/setup`) : ajouter les caméras. Une caméra = un numéro de zone, une référence et une URL (`rtsp://…`, `http://…` ou un chemin de fichier vidéo).
+2. **Setup** (`/setup`) : ajouter les caméras. Une caméra = un numéro de zone, une référence et une URL (`rtsp://…`, `rtsps://…`, `http(s)://…`) ou un fichier vidéo. Les URL vers `localhost`, le loopback ou les adresses link-local sont refusées. Un fichier vidéo doit se trouver dans `CAMERA_MEDIA_ROOT/<id du parking>/` et s'indique par son nom relatif (ex. `parking.mp4`).
 3. **Initialisation** (`/spots`) : une capture de chaque caméra active s'affiche.
    - Deux clics gauches = un rectangle (deux coins opposés), puis on nomme la place (par défaut `Spot N`).
    - Clic droit sur un rectangle = suppression.
@@ -242,28 +266,26 @@ MODEL_SERVER :
    ```json
    [{ "area": "1", "coordinates": { "Spot 1": [[x, y], [x, y], [x, y], [x, y]] } }]
    ```
-2. Quand un client ouvre `/ws/video/<zone>/`, Django ouvre le flux de la caméra de cette zone avec OpenCV.
+2. Le service `detection` relit les zones toutes les 10 secondes et garde une capture ouverte par zone qui a des places et une caméra.
    - Une boucle lit le flux à sa cadence native, sans décoder ni encoder d'image inutilement, pour qu'une vidéo enregistrée avance en temps réel.
    - Toutes les 5 secondes, l'image courante est découpée : chaque place est redressée en 180×180 par une transformation de perspective.
 3. Les crops sont envoyés en un seul lot au MODEL_SERVER, qui renvoie un statut par place (sortie sigmoïde > 0,5 → `occupied`).
-4. Le résultat est poussé au navigateur, qui met à jour le plan et l'écran LCD.
+4. Le résultat est publié dans le groupe Redis `zone_<parking>_<zone>`. Chaque `/ws/video/<zone>/` abonné le reçoit, après vérification que l'utilisateur est toujours membre du parking.
 
 À l'enregistrement des places, un crop de chaque place est aussi sauvegardé dans `server/DJANGO_SERVER/cropped_spots/area_<zone>/`, ce qui peut servir de jeu de données. Le notebook `server/MODEL_SERVER/model_testing.ipynb` sert à tester le modèle.
 
 ## Authentification et rôles
 
 - **Tokens JWT** (SimpleJWT) stockés en cookies `HttpOnly` et `SameSite=Strict` : le token d'accès dure 1 minute, le refresh 1 heure, avec rotation et blacklist. Le frontend renouvelle automatiquement le token sur une réponse 401.
-- Un seul refresh token valide par utilisateur (table `users.auth`) : se reconnecter révoque la session précédente.
+- Un seul refresh token valide par utilisateur (table `users_refreshsession`, stocké haché) : se reconnecter révoque la session précédente.
 - La connexion ouvre aussi une **session Django**, utilisée pour authentifier le WebSocket de statut en ligne.
 - **Rôles** :
-  - `admin` : accès complet. Créé par l'inscription publique (après activation par email) ou par la commande ci-dessus.
+  - `admin` : propriétaire de parking. Créé par l'inscription publique (après activation par email), sans accès à l'admin Django. Seul `createsuperuser` crée un compte d'administration Django.
   - `guest` : créé par un admin, accès en lecture (accueil, statut, LCD).
 
 ## Limites connues
 
-- **Inscription publique** : un compte créé via `/login` devient administrateur (et superuser Django) une fois son email validé. Il faut restreindre ce comportement si l'application est exposée publiquement.
 - **Gestion des guests** : chaque admin voit et peut supprimer tous les guests, pas seulement ceux qu'il a créés.
 - **Versions figées** : le modèle Keras ne se charge pas avec les versions récentes de TensorFlow/Keras, d'où `tensorflow==2.19.0` et `keras==3.5.0` dans `requirements.txt`. L'image Docker utilise en plus `docker/constraints.txt` pour figer les autres dépendances.
-- **Tests** : il n'y a pas encore de tests automatisés (les fichiers `tests.py` sont vides).
-- **Liste des caméras lente** : afficher la liste ouvre chaque flux avec OpenCV pour vérifier qu'il est actif.
-- **Mode debug** : `DEBUG = True` et les cookies ne sont pas `Secure`. À adapter avant une mise en production en HTTPS.
+- **Statut des caméras** : la liste des caméras vérifie chaque flux en parallèle et garde le résultat 30 secondes en cache, donc un changement d'état peut mettre jusqu'à 30 secondes à apparaître.
+- **HTTPS** : la stack Docker sert l'application en HTTP. En production, placer un proxy TLS devant nginx et mettre `SECURE_COOKIES=true`.

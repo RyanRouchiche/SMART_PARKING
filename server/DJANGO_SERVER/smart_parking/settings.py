@@ -1,7 +1,9 @@
+import ipaddress
 from pathlib import Path
 import os
 from dotenv import load_dotenv
 from datetime import timedelta
+from urllib.parse import quote
 
 load_dotenv()
 
@@ -14,12 +16,24 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+EMAIL_TIMEOUT = 10
 
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
+
+SECURE_COOKIES = os.getenv('SECURE_COOKIES', 'False').lower() == 'true'
+SESSION_COOKIE_SECURE = SECURE_COOKIES
+CSRF_COOKIE_SECURE = SECURE_COOKIES
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_CONTENT_TYPE_NOSNIFF = True
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost,172.25.90.121,172.27.72.167,172.29.57.63').split(',')
+WS_ALLOWED_ORIGINS = [o for o in os.getenv('WS_ALLOWED_ORIGINS', '').split(',') if o]
 
 MODEL_SERVER_URL = os.getenv('MODEL_SERVER_URL', 'http://127.0.0.1:8001')
+
+CAMERA_MEDIA_ROOT = Path(os.getenv('CAMERA_MEDIA_ROOT', BASE_DIR / 'parking' / 'Data'))
+CAMERA_NETWORKS = [ipaddress.ip_network(n.strip()) for n in os.getenv('CAMERA_NETWORKS', '').split(',') if n.strip()]
+os.environ.setdefault('OPENCV_FFMPEG_CAPTURE_OPTIONS', 'protocol_whitelist;file,crypto,tcp,tls,udp,rtp,rtsp,http,https')
 
 INSTALLED_APPS = [
     'camera',
@@ -32,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'parking',
+    'detection',
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
@@ -43,16 +58,26 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': True,
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=1),
     'REFRESH_TOKEN_LIFETIME': timedelta(hours=1),
+    'CHECK_REVOKE_TOKEN': True,
 }
+
+REDIS_URL = f"redis://:{quote(os.getenv('REDIS_PASSWORD', ''), safe='')}@{os.getenv('REDIS_HOST', '172.27.72.167')}:{os.getenv('REDIS_PORT', '6379')}"
 
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [(os.getenv('REDIS_HOST', '172.27.72.167'), int(os.getenv('REDIS_PORT', '6379')))],
-        },
+        "CONFIG": {"hosts": [REDIS_URL]},
     },
 }
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": f"{REDIS_URL}/1",
+    },
+}
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -96,6 +121,7 @@ DATABASES = {
             'sslmode': os.getenv('DB_SSLMODE', 'require'),
             'connect_timeout': 5,
             'sslrootcert': os.getenv('DB_SSL_ROOT_CERT'),
+            'pool': {'min_size': 1, 'max_size': int(os.getenv('DB_POOL_SIZE', '10')), 'timeout': 10},
         }
     }
 }
@@ -119,7 +145,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'users.authentification.CookieJWTAuthentification',
+        'users.authentication.CookieJWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
@@ -127,6 +153,13 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
     ),
+    'DEFAULT_PARSER_CLASSES': (
+        'rest_framework.parsers.JSONParser',
+    ),
+    'DEFAULT_THROTTLE_RATES': {
+        'auth': '10/min',
+        'register': '5/hour',
+    },
 }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
