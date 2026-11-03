@@ -1,3 +1,4 @@
+import re
 from datetime import timedelta
 from unittest import mock
 
@@ -12,7 +13,7 @@ from rest_framework.test import APITestCase
 from parking.models import Parking, ParkingMembership
 from smart_parking.asgi import application
 from .consumer import UserStatusConsumer
-from .models import User, auth
+from .models import User, auth, hash_token
 
 STRONG = "Gr33n-Parking-Lot!"
 
@@ -48,6 +49,14 @@ class RegistrationTests(APITestCase):
         self.assertIn("already taken", mail.outbox[0].body)
         self.assertIn("Verify Email", mail.outbox[1].body)
 
+    def test_activation_link_works_once(self):
+        register(self.client)
+        link = re.search(r"/activate/([^/]+)/([^\"]+)", mail.outbox[-1].body)
+        url = f"/api/auth/activate/{link.group(1)}/{link.group(2)}/"
+        self.assertEqual(self.client.get(url).status_code, 200)
+        User.objects.filter(username="newowner").update(is_active=False)
+        self.assertEqual(self.client.get(url).status_code, 400)
+
     def test_weak_password_is_refused(self):
         self.assertEqual(register(self.client, password="123").status_code, 400)
 
@@ -67,6 +76,22 @@ class SessionTests(APITestCase):
         with mock.patch("rest_framework_simplejwt.tokens.aware_utcnow", return_value=later):
             self.assertEqual(self.client.post("/api/auth/logout/").status_code, 200)
         self.assertTrue(auth.objects.get(user=self.user).is_revoked)
+        self.assertEqual(self.client.post("/api/auth/refresh/").status_code, 401)
+
+    def login(self):
+        return self.client.post("/api/auth/login/", {"username": "owner", "password": STRONG}, format="json")
+
+    def test_refresh_token_is_stored_hashed(self):
+        self.login()
+        cookie = self.client.cookies["refresh_token"].value
+        self.assertEqual(auth.objects.get(user=self.user).token_hash, hash_token(cookie))
+        self.assertEqual(self.client.post("/api/auth/refresh/").status_code, 200)
+        self.assertEqual(auth.objects.get(user=self.user).token_hash, hash_token(self.client.cookies["refresh_token"].value))
+
+    def test_password_change_ends_the_refresh_chain(self):
+        self.login()
+        self.user.set_password("An0ther-Parking-Lot!")
+        self.user.save()
         self.assertEqual(self.client.post("/api/auth/refresh/").status_code, 401)
 
     def test_cross_site_form_posts_are_refused(self):

@@ -1,3 +1,5 @@
+import hashlib
+
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 import uuid
@@ -21,9 +23,13 @@ class User(AbstractUser):
     def __str__(self):
         return self.username
     
+def hash_token(token):
+    return hashlib.sha256(token.encode()).hexdigest()
+
+
 class auth(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='auth')
-    refresh_token = models.TextField(unique=True)
+    token_hash = models.CharField(max_length=64, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
     is_revoked = models.BooleanField(default=False)
