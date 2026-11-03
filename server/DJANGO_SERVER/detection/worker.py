@@ -3,13 +3,17 @@ import threading
 import time
 import zlib
 from dataclasses import dataclass
+from zoneinfo import ZoneInfo
 
+from django.conf import settings
 from django.db import close_old_connections
+from django.utils import timezone
 
 from camera.interface import VideoSource, all_camera_paths
 from parking.interface import all_zone_layouts
 from shared.geometry import normalized_crops, spot_transforms
-from . import events
+from shared.hours import is_open
+from . import events, history
 from .classifier import classify
 
 logger = logging.getLogger(__name__)
@@ -83,12 +87,17 @@ def in_shard(config, shard, shards):
     return zlib.crc32(f"{config.parking_id}:{config.area}".encode()) % shards == shard
 
 
-def load_zones(shard=0, shards=1):
+def parking_time(now=None):
+    return (now or timezone.now()).astimezone(ZoneInfo(settings.PARKING_TIME_ZONE))
+
+
+def load_zones(shard=0, shards=1, now=None):
     paths = {(str(p), a): path for (p, a), path in all_camera_paths().items()}
+    moment = parking_time(now)
     configs = []
-    for parking_id, number, spots in all_zone_layouts():
+    for parking_id, number, spots, hours in all_zone_layouts():
         path = paths.get((str(parking_id), number))
-        if path:
+        if path and is_open(hours, moment):
             config = ZoneConfig(str(parking_id), number, path, tuple((n, tuple(map(tuple, p))) for n, p in spots.items()))
             if in_shard(config, shard, shards):
                 configs.append(config)
@@ -102,6 +111,17 @@ class Supervisor:
         self.worker_class = worker_class
         self.publish = publish or events.Publisher()
         self.workers = {}
+        self.recorded_at = None
+        self.purged_at = None
+
+    def maintain(self, now=None):
+        now = now or timezone.now()
+        if self.recorded_at is None or (now - self.recorded_at).total_seconds() >= history.RECORD_INTERVAL:
+            history.record(self.publish.snapshot(), now)
+            self.recorded_at = now
+        if self.purged_at is None or (now - self.purged_at).total_seconds() >= history.PURGE_INTERVAL:
+            history.purge(now)
+            self.purged_at = now
 
     def sync(self):
         close_old_connections()

@@ -1,6 +1,7 @@
 import os
 import tempfile
 import threading
+from datetime import datetime, timedelta, timezone as dt_timezone
 from unittest import mock
 
 import cv2
@@ -13,10 +14,15 @@ from django.test import SimpleTestCase, TestCase, TransactionTestCase
 from camera.models import Camera
 from .consumers import VideoFeedConsumer
 from parking.models import Parking, ParkingMembership, Zone
+from django.core.cache import cache
+
 from users.models import User
-from . import events
+from . import events, history, state
+from .models import AvailabilitySnapshot
 from shared.geometry import crop_size, order_corners
-from .worker import ZoneConfig, ZoneWorker, detect, load_zones, spot_transforms
+from shared.hours import is_open
+from shared.naming import natural_key
+from .worker import Supervisor, ZoneConfig, ZoneWorker, detect, load_zones, spot_transforms
 
 SQUARE = [[10, 10], [60, 10], [60, 60], [10, 60]]
 
@@ -57,7 +63,7 @@ class GeometryTests(SimpleTestCase):
 class ZoneLoadingTests(TestCase):
     def test_only_zones_with_spots_and_a_camera_are_watched(self):
         parking = Parking.objects.create(name="A")
-        Zone.objects.create(parking=parking, number=1, spots={"P2": SQUARE, "P1": SQUARE})
+        Zone.objects.create(parking=parking, number=1, spots={"P10": SQUARE, "P2": SQUARE, "P1": SQUARE})
         Zone.objects.create(parking=parking, number=2, spots={"P1": SQUARE})
         Zone.objects.create(parking=parking, number=3, spots={})
         Camera.objects.create(parking=parking, area=1, path="cam-1.mp4", ref="C1")
@@ -65,7 +71,20 @@ class ZoneLoadingTests(TestCase):
 
         configs = load_zones()
 
-        self.assertEqual([(c.area, c.path, [n for n, _ in c.spots]) for c in configs], [(1, "cam-1.mp4", ["P2", "P1"])])
+        self.assertEqual([(c.area, c.path, [n for n, _ in c.spots]) for c in configs], [(1, "cam-1.mp4", ["P1", "P2", "P10"])])
+
+    def test_closed_parkings_are_not_watched(self):
+        hours = {"mon": [["08:00", "18:00"]]}
+        open_lot = Parking.objects.create(name="Open", opening_hours=hours)
+        always_lot = Parking.objects.create(name="Always", opening_hours={})
+        for parking in (open_lot, always_lot):
+            Zone.objects.create(parking=parking, number=1, spots={"P1": SQUARE})
+            Camera.objects.create(parking=parking, area=1, path=f"{parking.name}.mp4", ref="C")
+        monday_noon = datetime(2026, 11, 2, 11, 0, tzinfo=dt_timezone.utc)
+        monday_night = datetime(2026, 11, 2, 21, 0, tzinfo=dt_timezone.utc)
+
+        self.assertEqual({c.path for c in load_zones(now=monday_noon)}, {"Open.mp4", "Always.mp4"})
+        self.assertEqual({c.path for c in load_zones(now=monday_night)}, {"Always.mp4"})
 
     def test_shards_split_the_zones(self):
         parking = Parking.objects.create(name="A")
@@ -170,3 +189,132 @@ class VideoFeedConsumerTests(TransactionTestCase):
             return output["type"]
 
         self.assertEqual(async_to_sync(scenario)(), "websocket.close")
+
+    def test_the_latest_fresh_state_is_sent_on_connect(self):
+        message = {"area": 1, "available_spots": 1, "spot_details": [{"spot": "P1", "status": "empty"}]}
+        state.store(self.parking.pk, 1, message)
+
+        async def scenario():
+            communicator = self.connect(self.operator)
+            await communicator.connect()
+            received = await communicator.receive_json_from()
+            await communicator.disconnect()
+            return received
+
+        self.assertEqual(async_to_sync(scenario)(), message)
+        cache.clear()
+
+    def test_a_stale_state_is_not_sent_on_connect(self):
+        message = {"area": 1, "available_spots": 1, "spot_details": [{"spot": "P1", "status": "empty"}]}
+        state.store(self.parking.pk, 1, message, now=0)
+
+        async def scenario():
+            communicator = self.connect(self.operator)
+            await communicator.connect()
+            nothing = await communicator.receive_nothing(0.3)
+            await communicator.disconnect()
+            return nothing
+
+        self.assertTrue(async_to_sync(scenario)())
+        cache.clear()
+
+
+class OpeningHoursTests(SimpleTestCase):
+    HOURS = {"mon": [["08:00", "12:00"], ["14:00", "18:00"]], "fri": [["22:00", "02:00"]]}
+
+    def at(self, day, hour, minute=0):
+        return datetime(2026, 11, 2 + day, hour, minute)
+
+    def test_no_hours_means_always_open(self):
+        self.assertTrue(is_open({}, self.at(0, 3)))
+
+    def test_ranges_and_lunch_break(self):
+        self.assertTrue(is_open(self.HOURS, self.at(0, 8)))
+        self.assertFalse(is_open(self.HOURS, self.at(0, 12)))
+        self.assertTrue(is_open(self.HOURS, self.at(0, 17, 59)))
+        self.assertFalse(is_open(self.HOURS, self.at(1, 10)))
+
+    def test_overnight_range_spills_into_the_next_day(self):
+        self.assertTrue(is_open(self.HOURS, self.at(4, 23)))
+        self.assertTrue(is_open(self.HOURS, self.at(5, 1, 30)))
+        self.assertFalse(is_open(self.HOURS, self.at(5, 2)))
+        self.assertFalse(is_open(self.HOURS, self.at(4, 1)))
+
+
+class SpotOrderTests(TestCase):
+    def test_natural_order_puts_p2_before_p10(self):
+        self.assertEqual(sorted(["P10", "P2", "p1"], key=natural_key), ["p1", "P2", "P10"])
+
+    def test_layouts_come_back_in_natural_order_from_jsonb(self):
+        parking = Parking.objects.create(name="A")
+        Zone.objects.create(parking=parking, number=1, spots={"Spot 10": SQUARE, "Spot 9": SQUARE, "Spot 1": SQUARE})
+        zone = Zone.objects.get(parking=parking, number=1)
+        self.assertEqual(list(zone.ordered_spots), ["Spot 1", "Spot 9", "Spot 10"])
+
+
+class StateTests(SimpleTestCase):
+    MESSAGE = {"area": 2, "available_spots": 1, "spot_details": [{"spot": "P1", "status": "empty"}, {"spot": "P2", "status": "occupied"}]}
+
+    def tearDown(self):
+        cache.clear()
+
+    def test_store_keeps_the_message_with_a_timestamp(self):
+        state.store("lot", 2, self.MESSAGE, now=100)
+        saved = state.latest("lot", 2)
+        self.assertEqual((saved["total"], saved["errors"], saved["ts"]), (2, 0, 100))
+        self.assertEqual(state.public_message(saved), self.MESSAGE)
+
+    def test_state_turns_stale_after_fifteen_seconds(self):
+        saved = state.build(self.MESSAGE, now=100)
+        self.assertFalse(state.is_stale(saved, now=115))
+        self.assertTrue(state.is_stale(saved, now=116))
+        self.assertTrue(state.is_stale(None))
+
+    def test_a_zone_where_every_spot_failed_is_stale(self):
+        failed = {"area": 2, "available_spots": 0, "spot_details": [{"spot": "P1", "status": "error"}]}
+        self.assertTrue(state.is_stale(state.build(failed, now=100), now=100))
+
+    def test_parking_availability_sums_fresh_zones_only(self):
+        state.store("lot", 1, self.MESSAGE, now=100)
+        state.store("lot", 2, {"area": 2, "available_spots": 3, "spot_details": [{"spot": "P1", "status": "empty"}] * 3}, now=50)
+        result = state.parking_availability("lot", [1, 2, 3], now=110)
+        self.assertEqual((result["free"], result["total"], result["stale"]), (1, 2, False))
+        self.assertEqual([z["stale"] for z in result["zones"]], [False, True, True])
+        self.assertTrue(state.parking_availability("empty-lot", [1], now=110)["stale"])
+
+
+class HistoryTests(TestCase):
+    NOW = datetime(2026, 11, 3, 10, 0, tzinfo=dt_timezone.utc)
+
+    def test_only_fresh_states_are_recorded(self):
+        fresh = state.build({"area": 1, "available_spots": 4, "spot_details": [{"spot": "P", "status": "empty"}] * 6}, now=self.NOW.timestamp())
+        old = state.build({"area": 2, "available_spots": 1, "spot_details": [{"spot": "P", "status": "empty"}]}, now=self.NOW.timestamp() - 60)
+        parking_id = "11111111-1111-1111-1111-111111111111"
+
+        self.assertEqual(history.record({(parking_id, 1): fresh, (parking_id, 2): old}, self.NOW), 1)
+        row = AvailabilitySnapshot.objects.get()
+        self.assertEqual((str(row.parking_id), row.area, row.free, row.total), (parking_id, 1, 4, 6))
+
+    def test_purge_keeps_ninety_days(self):
+        for days in (89, 91):
+            AvailabilitySnapshot.objects.create(parking_id="11111111-1111-1111-1111-111111111111", area=1, taken_at=self.NOW - timedelta(days=days), free=1, total=2)
+        self.assertEqual(history.purge(self.NOW), 1)
+        self.assertEqual(AvailabilitySnapshot.objects.count(), 1)
+
+    def test_supervisor_records_once_a_minute(self):
+        class Publish:
+            states = {}
+
+            def __call__(self, *args):
+                pass
+
+            def snapshot(self):
+                return self.states
+
+        supervisor = Supervisor(publish=Publish())
+        with mock.patch.object(history, "record") as record, mock.patch.object(history, "purge") as purge:
+            supervisor.maintain(self.NOW)
+            supervisor.maintain(self.NOW + timedelta(seconds=30))
+            supervisor.maintain(self.NOW + timedelta(seconds=60))
+        self.assertEqual(record.call_count, 2)
+        self.assertEqual(purge.call_count, 1)

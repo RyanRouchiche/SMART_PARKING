@@ -5,7 +5,7 @@ from .models import ParkingMembership, Zone
 
 
 def zone_layouts(parking):
-    return [{'area': str(z.number), 'coordinates': z.spots} for z in parking.zones.all()]
+    return [{'area': str(z.number), 'coordinates': z.ordered_spots} for z in parking.zones.all()]
 
 
 def zone_numbers(parking):
@@ -21,7 +21,8 @@ def save_zone_spots(parking, number, spots, camera_id):
 
 
 def all_zone_layouts():
-    return [(z.parking_id, z.number, z.spots) for z in Zone.objects.exclude(spots={})]
+    zones = Zone.objects.exclude(spots={}).select_related('parking')
+    return [(z.parking_id, z.number, z.ordered_spots, z.parking.opening_hours) for z in zones]
 
 
 def operator_ids(parking):

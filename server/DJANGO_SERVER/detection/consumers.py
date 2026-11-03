@@ -2,11 +2,13 @@ import json
 import time
 from urllib.parse import parse_qs
 
+from asgiref.sync import sync_to_async
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 
 from camera.interface import has_camera
 from parking.interface import access_group, is_member, stream_parking
+from . import state
 from .events import zone_group
 
 RECHECK_INTERVAL = 60
@@ -34,6 +36,9 @@ class VideoFeedConsumer(AsyncWebsocketConsumer):
         self.checked_at = time.monotonic()
         await self.join(zone_group(self.parking_pk, area))
         await self.accept()
+        current = await sync_to_async(state.latest)(self.parking_pk, area)
+        if not state.is_stale(current):
+            await self.send(text_data=json.dumps(state.public_message(current)))
 
     async def join(self, group):
         await self.channel_layer.group_add(group, self.channel_name)
