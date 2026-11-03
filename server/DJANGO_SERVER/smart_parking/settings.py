@@ -137,6 +137,7 @@ AUTH_USER_MODEL = 'users.User'
 
 LANGUAGE_CODE = 'en'
 TIME_ZONE = 'UTC'
+PARKING_TIME_ZONE = os.getenv('PARKING_TIME_ZONE', 'Africa/Algiers')
 USE_I18N = True
 USE_TZ = True
 

@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    help = "Capture every zone once and publish its occupancy to the WebSocket groups"
+    help = "Watch every open zone, publish its occupancy with a timestamp and keep a per-minute history"
 
     def add_arguments(self, parser):
         parser.add_argument('--shard', type=int, default=0)
@@ -25,6 +25,10 @@ class Command(BaseCommand):
                     supervisor.sync()
                 except Exception:
                     logger.exception("Zone sync failed, retrying")
+                try:
+                    supervisor.maintain()
+                except Exception:
+                    logger.exception("History maintenance failed, retrying")
                 time.sleep(sync_interval)
         except KeyboardInterrupt:
             supervisor.stop()

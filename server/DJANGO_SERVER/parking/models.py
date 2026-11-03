@@ -3,6 +3,8 @@ import uuid
 from django.conf import settings
 from django.db import models
 
+from shared.naming import natural_key
+
 
 class Parking(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -50,3 +52,7 @@ class Zone(models.Model):
 
     def __str__(self):
         return f"{self.parking} · Z{self.number}"
+
+    @property
+    def ordered_spots(self):
+        return dict(sorted(self.spots.items(), key=lambda item: natural_key(item[0])))
