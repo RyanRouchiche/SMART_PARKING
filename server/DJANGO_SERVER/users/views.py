@@ -3,15 +3,13 @@ import logging
 from django.conf import settings
 from django.contrib.auth import login, logout
 from rest_framework import status
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
-from parking.access import get_parking, member_parkings
-from parking.models import ParkingMembership
 from . import services
-from .serializers import AdminSerializer, GuestSerializer, ListUserSerializer
+from .serializers import AdminSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -113,27 +111,3 @@ class ActivateView(PublicView):
         if not services.activate_account(uidb64, token):
             return Response({'error': 'Invalid activation link.'}, status=400)
         return Response({'message': 'Account activated successfully!'})
-
-
-class UserListView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        parking = get_parking(request, owner=True)
-        return Response({'users': ListUserSerializer(services.parking_operators(parking), many=True).data})
-
-    def post(self, request):
-        parking = get_parking(request, owner=True)
-        serializer = GuestSerializer(data=request.data, context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        services.add_operator(serializer, parking, request)
-        return Response({'message': 'Guest created, activation email sent'}, status=status.HTTP_201_CREATED)
-
-
-class UserDetailView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def delete(self, request, user_id):
-        if not services.remove_operator(user_id, member_parkings(request.user, ParkingMembership.OWNER)):
-            return Response({'error': 'User not found'}, status=404)
-        return Response(status=status.HTTP_204_NO_CONTENT)

@@ -1,12 +1,12 @@
 from rest_framework import status
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from parking.access import get_parking, member_parkings
-from parking.models import ParkingMembership
+from parking.interface import get_parking, owned_parkings, zone_layouts
 from . import services
 from .models import Camera
-from .serializers import CameraSerializer
+from .serializers import MAX_AREAS, AreaSerializer, CameraSerializer
 
 
 def camera_list(cameras):
@@ -30,6 +30,24 @@ class CameraListView(APIView):
 
 class CameraDetailView(APIView):
     def delete(self, request, camera_id):
-        if not services.delete_camera(camera_id, member_parkings(request.user, ParkingMembership.OWNER)):
+        if not services.delete_camera(camera_id, owned_parkings(request.user)):
             return Response({'error': 'Camera not found'}, status=404)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(['GET'])
+def snapshots(request):
+    parking = get_parking(request, owner=True)
+    return Response({'images': services.snapshots(parking.id)})
+
+
+@api_view(['GET', 'POST'])
+def coordinates(request):
+    if request.method == 'GET':
+        return Response({'data': zone_layouts(get_parking(request))})
+
+    parking = get_parking(request, owner=True)
+    serializer = AreaSerializer(data=request.data, many=True, max_length=MAX_AREAS)
+    serializer.is_valid(raise_exception=True)
+    services.save_layout(parking, serializer.validated_data)
+    return Response({'message': 'Coordinates saved'}, status=status.HTTP_201_CREATED)

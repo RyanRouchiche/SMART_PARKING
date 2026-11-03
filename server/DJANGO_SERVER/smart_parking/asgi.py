@@ -11,8 +11,8 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'smart_parking.settings')
 
 django_asgi_app = get_asgi_application()
 
-from users.routing import websocket_urlpatterns  as user_websocket_urlpatterns
-from parking.routing import websocket_urlpatterns as parking_websocket_urlpatterns
+from parking.routing import websocket_urlpatterns as presence_websocket_urlpatterns
+from detection.routing import websocket_urlpatterns as video_websocket_urlpatterns
 
 
 def origin_check(app):
@@ -26,7 +26,7 @@ application = ProtocolTypeRouter({
     "websocket": origin_check(
         AuthMiddlewareStack(
             URLRouter(
-                user_websocket_urlpatterns + parking_websocket_urlpatterns
+                presence_websocket_urlpatterns + video_websocket_urlpatterns
             )
         )
     ),

@@ -1,15 +1,7 @@
-import os
-
-import cv2
-from django.conf import settings
 from django.db import transaction
 
-from camera.models import Camera
-from camera.services import current_frames
-from detection.geometry import crop_spot, order_corners
-from .models import Zone
-
-CROPPED_SPOTS_DIR = os.path.join(settings.BASE_DIR, "cropped_spots")
+from users.interface import delete_account, send_activation_email
+from .models import ParkingMembership, Zone
 
 
 def zone_layouts(parking):
@@ -20,31 +12,36 @@ def zone_numbers(parking):
     return list(parking.zones.values_list('number', flat=True))
 
 
-def save_zones(parking, areas):
-    layouts = {
-        int(a['area']): {name: order_corners(points) for name, points in a['coordinates'].items()}
-        for a in areas
-    }
+def save_zone_spots(parking, number, spots, camera_id):
+    Zone.objects.update_or_create(
+        parking=parking,
+        number=number,
+        defaults={'spots': spots, 'camera_id': camera_id},
+    )
+
+
+def all_zone_layouts():
+    return [(z.parking_id, z.number, z.spots) for z in Zone.objects.exclude(spots={})]
+
+
+def operator_ids(parking):
+    return ParkingMembership.objects.filter(parking=parking, role=ParkingMembership.OPERATOR).values_list('user_id', flat=True)
+
+
+def add_operator(serializer, parking, request):
     with transaction.atomic():
-        for number, spots in layouts.items():
-            Zone.objects.update_or_create(
-                parking=parking,
-                number=number,
-                defaults={
-                    'spots': {name: rect.tolist() for name, rect in spots.items()},
-                    'camera': Camera.objects.filter(parking=parking, area=number).first(),
-                },
-            )
-    export_spot_crops(parking, layouts)
+        operator = serializer.save()
+        ParkingMembership.objects.create(user=operator, parking=parking, role=ParkingMembership.OPERATOR)
+    send_activation_email(request, operator)
 
 
-def export_spot_crops(parking, layouts):
-    frames = current_frames(parking.id, set(layouts))
-    for number, spots in layouts.items():
-        frame = frames.get(number)
-        if frame is None:
-            continue
-        output_dir = os.path.join(CROPPED_SPOTS_DIR, str(parking.id), f'area_{number}')
-        os.makedirs(output_dir, exist_ok=True)
-        for name, rect in spots.items():
-            cv2.imwrite(os.path.join(output_dir, f'{name}.jpg'), crop_spot(frame, rect))
+def remove_operator(user_id, owned):
+    memberships = ParkingMembership.objects.filter(user_id=user_id)
+    removable = memberships.filter(parking__in=owned, role=ParkingMembership.OPERATOR)
+    if not removable.exists() or memberships.filter(role=ParkingMembership.OWNER).exists():
+        return False
+    with transaction.atomic():
+        removable.delete()
+        if not memberships.exists():
+            delete_account(user_id)
+    return True

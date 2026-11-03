@@ -1,6 +1,6 @@
 from django.urls import re_path
-from . import consumers
+from .consumers import UserStatusConsumer
 
 websocket_urlpatterns = [
-    re_path(r'ws/video/(?P<area>\d+)/$', consumers.VideoFeedConsumer.as_asgi()),
+    re_path("ws/user-status/", UserStatusConsumer.as_asgi()),
 ]

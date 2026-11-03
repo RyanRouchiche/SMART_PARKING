@@ -12,7 +12,7 @@ from rest_framework.test import APITestCase
 
 from parking.models import Parking, ParkingMembership
 from smart_parking.asgi import application
-from .consumers import UserStatusConsumer
+from parking.consumers import UserStatusConsumer
 from .models import RefreshSession, User, hash_token
 
 STRONG = "Gr33n-Parking-Lot!"

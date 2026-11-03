@@ -15,7 +15,6 @@ from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, Ou
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.utils import get_md5_hash_password
 
-from parking.models import ParkingMembership
 from .emails import send_username_taken_email, send_verif_email
 from .models import RefreshSession, User, hash_token
 
@@ -116,35 +115,15 @@ def activate_account(uidb64, token):
     return True
 
 
-def parking_operators(parking):
-    return User.objects.filter(
-        memberships__parking=parking, memberships__role=ParkingMembership.OPERATOR
-    ).annotate(
+def accounts_with_status(user_ids):
+    return User.objects.filter(id__in=list(user_ids)).annotate(
         is_online=Exists(RefreshSession.objects.filter(user=OuterRef('pk'), is_revoked=False))
     )
 
 
-def add_operator(serializer, parking, request):
-    with transaction.atomic():
-        operator = serializer.save()
-        ParkingMembership.objects.create(user=operator, parking=parking, role=ParkingMembership.OPERATOR)
-    send_verif_email(request, operator)
-
-
-def remove_operator(user_id, owned_parkings):
-    user = User.objects.filter(
-        id=user_id, memberships__parking__in=owned_parkings, memberships__role=ParkingMembership.OPERATOR
-    ).exclude(memberships__role=ParkingMembership.OWNER).first()
-    if user is None:
-        return False
-    with transaction.atomic():
-        ParkingMembership.objects.filter(
-            user=user, parking__in=owned_parkings, role=ParkingMembership.OPERATOR
-        ).delete()
-        if not user.memberships.exists():
-            BlacklistedToken.objects.bulk_create(
-                [BlacklistedToken(token=t) for t in OutstandingToken.objects.filter(user=user)],
-                ignore_conflicts=True,
-            )
-            user.delete()
-    return True
+def delete_account(user_id):
+    BlacklistedToken.objects.bulk_create(
+        [BlacklistedToken(token=t) for t in OutstandingToken.objects.filter(user_id=user_id)],
+        ignore_conflicts=True,
+    )
+    User.objects.filter(id=user_id).delete()

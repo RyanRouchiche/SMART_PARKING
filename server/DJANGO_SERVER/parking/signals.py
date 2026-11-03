@@ -1,15 +1,12 @@
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.db import transaction
-from django.db.models.signals import post_delete, post_save
+from django.db.models.signals import post_delete
 from django.dispatch import receiver
 
-from users.models import User
+from users.interface import user_deactivated
+from .access import access_group
 from .models import ParkingMembership
-
-
-def access_group(user_id, parking_id):
-    return f"access_{user_id}_{parking_id}"
 
 
 def revoke_access(user_id, parking_ids):
@@ -28,7 +25,6 @@ def membership_removed(sender, instance, **kwargs):
     revoke_access(instance.user_id, [instance.parking_id])
 
 
-@receiver(post_save, sender=User)
-def user_deactivated(sender, instance, created, **kwargs):
-    if not created and not instance.is_active:
-        revoke_access(instance.pk, list(instance.memberships.values_list('parking_id', flat=True)))
+@receiver(user_deactivated)
+def account_deactivated(sender, user_id, **kwargs):
+    revoke_access(user_id, list(ParkingMembership.objects.filter(user_id=user_id).values_list('parking_id', flat=True)))
