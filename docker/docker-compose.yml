@@ -64,7 +64,7 @@ services:
 
   django:
     <<: *django-service
-    command: sh -c "python manage.py migrate --noinput && uvicorn smart_parking.asgi:application --host 0.0.0.0 --port 8000"
+    command: sh -c "python manage.py migrate --noinput && uvicorn smart_parking.asgi:application --host 0.0.0.0 --port 8000 --workers $${WEB_CONCURRENCY:-2}"
     volumes:
       - ../server/DJANGO_SERVER/cropped_spots:/app/DJANGO_SERVER/cropped_spots
       - ../server/DJANGO_SERVER/parking/Data:/app/DJANGO_SERVER/parking/Data:ro

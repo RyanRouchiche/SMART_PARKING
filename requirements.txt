@@ -4,9 +4,9 @@ djangorestframework-simplejwt
 channels
 channels-redis
 daphne
-uvicorn
+uvicorn[standard]
 websockets
-psycopg2-binary
+psycopg[binary,pool]
 python-dotenv
 numpy
 opencv-python

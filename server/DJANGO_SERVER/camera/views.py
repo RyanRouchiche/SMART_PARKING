@@ -9,17 +9,23 @@ from .models import Camera
 from .serializers import CameraSerializer
 
 
+def camera_list(cameras):
+    cameras = list(cameras)
+    health = services.camera_health(c.path for c in cameras)
+    return CameraSerializer(cameras, many=True, context={'health': health}).data
+
+
 class CameraListView(APIView):
     def get(self, request):
         parking = get_parking(request, owner=True)
-        return Response({'cameras': CameraSerializer(Camera.objects.filter(parking=parking), many=True).data})
+        return Response({'cameras': camera_list(Camera.objects.filter(parking=parking))})
 
     def post(self, request):
         parking = get_parking(request, owner=True)
         serializer = CameraSerializer(data=request.data, many=True, context={'parking': parking})
         serializer.is_valid(raise_exception=True)
         cameras = services.add_cameras(parking, serializer.validated_data)
-        return Response({'cameras': CameraSerializer(cameras, many=True).data}, status=status.HTTP_201_CREATED)
+        return Response({'cameras': camera_list(cameras)}, status=status.HTTP_201_CREATED)
 
 
 class CameraDetailView(APIView):

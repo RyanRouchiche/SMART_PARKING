@@ -4,7 +4,7 @@ from django.conf import settings
 from rest_framework import serializers
 
 from camera.models import Camera
-from camera.sources import UnsafeSource, check_camera_url, is_url, open_source
+from camera.sources import UnsafeSource, check_camera_url, is_url
 
 
 def camera_file(parking, value):
@@ -32,7 +32,4 @@ class CameraSerializer(serializers.ModelSerializer):
         return value
 
     def get_is_active(self, obj):
-        cap = open_source(obj.path)
-        ret, _ = cap.read()
-        cap.release()
-        return ret
+        return self.context.get('health', {}).get(obj.path, False)

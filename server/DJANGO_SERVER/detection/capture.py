@@ -1,6 +1,6 @@
 import cv2
 
-from camera.sources import open_source
+from camera.sources import is_url, open_source
 
 CAPTURE_TIMEOUTS = [cv2.CAP_PROP_OPEN_TIMEOUT_MSEC, 5000, cv2.CAP_PROP_READ_TIMEOUT_MSEC, 5000]
 
@@ -9,6 +9,8 @@ class VideoSource:
     def __init__(self, path, timeouts=True):
         self.path = path
         self.cap = open_source(path, CAPTURE_TIMEOUTS) if timeouts else open_source(path)
+        if is_url(path):
+            self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
 
     @property
     def is_open(self):

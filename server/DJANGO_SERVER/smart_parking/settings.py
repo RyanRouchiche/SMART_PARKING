@@ -61,14 +61,23 @@ SIMPLE_JWT = {
     'CHECK_REVOKE_TOKEN': True,
 }
 
+REDIS_URL = f"redis://:{quote(os.getenv('REDIS_PASSWORD', ''), safe='')}@{os.getenv('REDIS_HOST', '172.27.72.167')}:{os.getenv('REDIS_PORT', '6379')}"
+
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [f"redis://:{quote(os.getenv('REDIS_PASSWORD', ''), safe='')}@{os.getenv('REDIS_HOST', '172.27.72.167')}:{os.getenv('REDIS_PORT', '6379')}"],
-        },
+        "CONFIG": {"hosts": [REDIS_URL]},
     },
 }
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": f"{REDIS_URL}/1",
+    },
+}
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -112,6 +121,7 @@ DATABASES = {
             'sslmode': os.getenv('DB_SSLMODE', 'require'),
             'connect_timeout': 5,
             'sslrootcert': os.getenv('DB_SSL_ROOT_CERT'),
+            'pool': {'min_size': 1, 'max_size': int(os.getenv('DB_POOL_SIZE', '10')), 'timeout': 10},
         }
     }
 }

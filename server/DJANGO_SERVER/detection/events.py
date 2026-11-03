@@ -1,5 +1,10 @@
-from asgiref.sync import async_to_sync
+import asyncio
+import logging
+import threading
+
 from channels.layers import get_channel_layer
+
+logger = logging.getLogger(__name__)
 
 
 def zone_group(parking_id, area):
@@ -14,7 +19,20 @@ def occupancy_message(area, names, statuses):
     }
 
 
-def publish(parking_id, area, message):
-    async_to_sync(get_channel_layer().group_send)(
-        zone_group(parking_id, area), {'type': 'zone.occupancy', 'message': message}
-    )
+class Publisher:
+    def __init__(self):
+        self.loop = asyncio.new_event_loop()
+        self.layer = get_channel_layer()
+        threading.Thread(target=self.loop.run_forever, daemon=True, name="publisher").start()
+
+    def __call__(self, parking_id, area, message):
+        future = asyncio.run_coroutine_threadsafe(
+            self.layer.group_send(zone_group(parking_id, area), {'type': 'zone.occupancy', 'message': message}),
+            self.loop,
+        )
+        future.add_done_callback(self.report)
+
+    @staticmethod
+    def report(future):
+        if future.exception():
+            logger.error(f"Publish failed: {future.exception()}")

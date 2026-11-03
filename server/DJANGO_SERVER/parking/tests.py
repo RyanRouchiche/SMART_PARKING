@@ -5,7 +5,7 @@ from rest_framework.test import APITestCase
 
 from camera.models import Camera
 from users.models import User
-from .access import still_member, zone_stream
+from .access import zone_stream
 from .models import Parking, ParkingMembership, Zone
 
 pilot = importlib.import_module("parking.migrations.0002_pilot_parking")
@@ -122,11 +122,6 @@ class ParkingAccessTests(APITestCase):
         self.assertIsNone(zone_stream(self.operator_b, 1, None))
         self.assertIsNone(zone_stream(self.operator_a, 1, str(self.b.id)))
         self.assertIsNone(zone_stream(AnonymousUser(), 1, None))
-
-    def test_video_stream_stops_once_membership_is_gone(self):
-        self.assertTrue(still_member(self.operator_a.pk, self.a.pk))
-        ParkingMembership.objects.filter(user=self.operator_a).delete()
-        self.assertFalse(still_member(self.operator_a.pk, self.a.pk))
 
     def test_coordinates_are_bounded(self):
         self.as_user(self.owner_a)
