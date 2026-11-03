@@ -5,7 +5,7 @@ from rest_framework.test import APITestCase
 
 from camera.models import Camera
 from users.models import User
-from .consumers import zone_for
+from .consumers import still_member, zone_for
 from .models import Parking, ParkingMembership, Zone
 
 pilot = importlib.import_module("parking.migrations.0002_pilot_parking")
@@ -118,8 +118,21 @@ class ParkingAccessTests(APITestCase):
         self.assertTrue(User.objects.filter(id=self.operator_b.id).exists())
 
     def test_websocket_zone_lookup_checks_membership(self):
-        spots, path = zone_for(self.operator_a, 1, None)
-        self.assertEqual((spots, path), ({"Spot 1": SQUARE}, "missing-a.mp4"))
-        self.assertEqual(zone_for(self.operator_b, 1, None), (None, None))
-        self.assertEqual(zone_for(self.operator_a, 1, str(self.b.id)), (None, None))
-        self.assertEqual(zone_for(AnonymousUser(), 1, None), (None, None))
+        self.assertEqual(zone_for(self.operator_a, 1, None), ({"Spot 1": SQUARE}, "missing-a.mp4", self.a.pk))
+        self.assertEqual(zone_for(self.operator_b, 1, None), (None, None, self.b.pk))
+        self.assertEqual(zone_for(self.operator_a, 1, str(self.b.id)), (None, None, None))
+        self.assertEqual(zone_for(AnonymousUser(), 1, None), (None, None, None))
+
+    def test_video_stream_stops_once_membership_is_gone(self):
+        self.assertTrue(still_member(self.operator_a.pk, self.a.pk))
+        ParkingMembership.objects.filter(user=self.operator_a).delete()
+        self.assertFalse(still_member(self.operator_a.pk, self.a.pk))
+
+    def test_coordinates_are_bounded(self):
+        self.as_user(self.owner_a)
+        huge = [[0, 0], [30000, 0], [30000, 30000], [0, 30000]]
+        res = self.client.post("/api/parking/coordinates/", [{"area": "1", "coordinates": {"P01": huge}}], format="json")
+        self.assertEqual(res.status_code, 400)
+        many = {f"P{i}": SQUARE for i in range(501)}
+        res = self.client.post("/api/parking/coordinates/", [{"area": "1", "coordinates": many}], format="json")
+        self.assertEqual(res.status_code, 400)

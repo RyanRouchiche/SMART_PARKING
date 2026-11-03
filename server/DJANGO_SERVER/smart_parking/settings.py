@@ -2,6 +2,7 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 from datetime import timedelta
+from urllib.parse import quote
 
 load_dotenv()
 
@@ -14,12 +15,23 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+EMAIL_TIMEOUT = 10
 
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
+
+SECURE_COOKIES = os.getenv('SECURE_COOKIES', 'False').lower() == 'true'
+SESSION_COOKIE_SECURE = SECURE_COOKIES
+CSRF_COOKIE_SECURE = SECURE_COOKIES
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_CONTENT_TYPE_NOSNIFF = True
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost,172.25.90.121,172.27.72.167,172.29.57.63').split(',')
+WS_ALLOWED_ORIGINS = [o for o in os.getenv('WS_ALLOWED_ORIGINS', '').split(',') if o]
 
 MODEL_SERVER_URL = os.getenv('MODEL_SERVER_URL', 'http://127.0.0.1:8001')
+
+CAMERA_MEDIA_ROOT = Path(os.getenv('CAMERA_MEDIA_ROOT', BASE_DIR / 'parking' / 'Data'))
+os.environ.setdefault('OPENCV_FFMPEG_CAPTURE_OPTIONS', 'protocol_whitelist;file,crypto,tcp,tls,udp,rtp,rtsp,http,https')
 
 INSTALLED_APPS = [
     'camera',
@@ -49,7 +61,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [(os.getenv('REDIS_HOST', '172.27.72.167'), int(os.getenv('REDIS_PORT', '6379')))],
+            "hosts": [f"redis://:{quote(os.getenv('REDIS_PASSWORD', ''), safe='')}@{os.getenv('REDIS_HOST', '172.27.72.167')}:{os.getenv('REDIS_PORT', '6379')}"],
         },
     },
 }
@@ -127,6 +139,13 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
     ),
+    'DEFAULT_PARSER_CLASSES': (
+        'rest_framework.parsers.JSONParser',
+    ),
+    'DEFAULT_THROTTLE_RATES': {
+        'auth': '10/min',
+        'register': '5/hour',
+    },
 }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

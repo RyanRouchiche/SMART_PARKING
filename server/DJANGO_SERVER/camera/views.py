@@ -15,7 +15,7 @@ class CameraListView(APIView):
 
     def post(self, request):
         parking = get_parking(request, owner=True)
-        serializer = CameraSerializer(data=request.data, many=True)
+        serializer = CameraSerializer(data=request.data, many=True, context={'parking': parking})
         serializer.is_valid(raise_exception=True)
         cameras = Camera.objects.bulk_create([Camera(parking=parking, **data) for data in serializer.validated_data])
         return Response({'cameras': CameraSerializer(cameras, many=True).data}, status=status.HTTP_201_CREATED)

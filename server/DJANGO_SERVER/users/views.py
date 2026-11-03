@@ -3,6 +3,8 @@ from datetime import timedelta
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.tokens import default_token_generator
+from django.core.exceptions import ValidationError
+from django.db import IntegrityError, transaction
 from django.db.models import Exists, OuterRef
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
@@ -10,19 +12,18 @@ from django.utils.timezone import now
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
 from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 
-from django.db import transaction
-
 from parking.access import get_parking, member_parkings
 from parking.models import ParkingMembership
 from .models import User, auth
 from .serializers import GuestSerializer, AdminSerializer, ListUserSerializer
-from .utils import SETupCOOKIE, send_verif_email
+from .utils import SETupCOOKIE, send_username_taken_email, send_verif_email
 
 logger = logging.getLogger(__name__)
 
@@ -36,10 +37,18 @@ def user_payload(user):
     }
 
 
-class LoginView(APIView):
+class PublicView(APIView):
     permission_classes = [AllowAny]
+    authentication_classes = []
+
+
+class LoginView(PublicView):
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'auth'
 
     def post(self, request):
+        if not isinstance(request.data, dict):
+            return Response({'error': 'Username and password are required'}, status=400)
         username = request.data.get('username')
         password = request.data.get('password')
         if not username or not password:
@@ -75,6 +84,7 @@ class LoginView(APIView):
 
 class RefreshView(TokenRefreshView):
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     def post(self, request, *args, **kwargs):
         refresh_token = request.COOKIES.get('refresh_token')
@@ -105,13 +115,15 @@ class RefreshView(TokenRefreshView):
         return res
 
 
-class LogoutView(APIView):
-    permission_classes = [AllowAny]
-
+class LogoutView(PublicView):
     def post(self, request):
         refresh_token = request.COOKIES.get('refresh_token')
         if refresh_token:
             auth.objects.filter(refresh_token=refresh_token).update(is_revoked=True)
+            try:
+                RefreshToken(refresh_token).blacklist()
+            except TokenError:
+                pass
         logout(request)
 
         res = Response({'logged_out': True})
@@ -125,23 +137,28 @@ class MeView(APIView):
         return Response({'user': user_payload(request.user)})
 
 
-class RegisterView(APIView):
-    permission_classes = [AllowAny]
+class RegisterView(PublicView):
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'register'
 
     def post(self, request):
         serializer = AdminSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        send_verif_email(request, serializer.save())
+        try:
+            with transaction.atomic():
+                user = serializer.save()
+        except IntegrityError:
+            send_username_taken_email(serializer.validated_data['email'])
+        else:
+            send_verif_email(request, user)
         return Response({'message': 'Check your email for account activation'}, status=status.HTTP_201_CREATED)
 
 
-class ActivateView(APIView):
-    permission_classes = [AllowAny]
-
+class ActivateView(PublicView):
     def get(self, request, uidb64, token):
         try:
             user = User.objects.get(pk=force_str(urlsafe_base64_decode(uidb64)))
-        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        except (TypeError, ValueError, OverflowError, ValidationError, User.DoesNotExist):
             user = None
 
         if user is None or not default_token_generator.check_token(user, token):
@@ -186,9 +203,14 @@ class UserDetailView(APIView):
         if user is None:
             return Response({'error': 'User not found'}, status=404)
 
-        BlacklistedToken.objects.bulk_create(
-            [BlacklistedToken(token=t) for t in OutstandingToken.objects.filter(user=user)],
-            ignore_conflicts=True,
-        )
-        user.delete()
+        with transaction.atomic():
+            ParkingMembership.objects.filter(
+                user=user, parking__in=owned, role=ParkingMembership.OPERATOR
+            ).delete()
+            if not user.memberships.exists():
+                BlacklistedToken.objects.bulk_create(
+                    [BlacklistedToken(token=t) for t in OutstandingToken.objects.filter(user=user)],
+                    ignore_conflicts=True,
+                )
+                user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

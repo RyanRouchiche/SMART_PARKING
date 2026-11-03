@@ -113,13 +113,11 @@ Services lancés :
 ### Créer un compte administrateur
 
 ```sh
-docker compose exec django python manage.py shell -c "
-from users.models import User
-u = User(username='admin', email='admin@example.com', user_type='admin', is_superuser=True, is_staff=True, is_active=True)
-u.set_password('mot-de-passe')
-u.save()
-"
+docker compose exec django python manage.py createsuperuser
+docker compose exec django python manage.py shell -c "from users.models import User; User.objects.filter(username='admin').update(user_type='admin')"
 ```
+
+`createsuperuser` demande le nom (ici `admin`) et le mot de passe, la seconde commande lui donne le rôle `admin` de l'application.
 
 L'interface d'administration Django est aussi accessible sur http://localhost:8080/admin/.
 
@@ -139,6 +137,8 @@ Variables optionnelles (dans le shell ou un fichier `docker/.env`) :
 | `CLIENT_PORT` | `8080` | Port exposé sur la machine |
 | `ALLOWED_HOSTS` | `localhost,127.0.0.1` | À compléter pour ouvrir l'application depuis une autre IP |
 | `DB_PASSWORD_DOCKER` | `smart_parking` | Mot de passe de la base du conteneur |
+| `REDIS_PASSWORD_DOCKER` | `smart_parking` | Mot de passe du Redis du conteneur |
+| `WS_ALLOWED_ORIGINS` | `http://localhost:8080,http://127.0.0.1:8080` | Origines exactes autorisées pour les WebSockets (à compléter avec `ALLOWED_HOSTS`) |
 
 ## Développement sans Docker
 
@@ -168,6 +168,7 @@ Vérifications :
 
 ```sh
 cd server/DJANGO_SERVER && python manage.py check
+cd server/DJANGO_SERVER && python manage.py test users camera parking
 cd client && npm run build
 ```
 
@@ -182,9 +183,13 @@ Fichier `.env` à la racine du dépôt :
 | `DB_SSL_ROOT_CERT` | non | Certificat CA pour la connexion PostgreSQL |
 | `DB_SSLMODE` | non | `require` par défaut, `disable` dans Docker |
 | `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD` | oui pour l'inscription | Compte Gmail SMTP pour les emails d'activation |
-| `REDIS_HOST`, `REDIS_PORT` | non | Redis de Channels |
+| `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD` | non | Redis de Channels |
+| `WS_ALLOWED_ORIGINS` | non | Origines exactes (`schéma://hôte:port`) acceptées par les WebSockets. Vide : seul le nom d'hôte est comparé à `ALLOWED_HOSTS` |
 | `MODEL_SERVER_URL` | non | `http://127.0.0.1:8001` par défaut |
-| `ALLOWED_HOSTS` | non | Liste séparée par des virgules |
+| `ALLOWED_HOSTS` | non | Liste séparée par des virgules. Sert aussi à vérifier l'`Origin` des WebSockets |
+| `DEBUG` | non | `false` par défaut. `true` uniquement en développement local |
+| `SECURE_COOKIES` | non | `false` par défaut. `true` dès que l'application est servie en HTTPS |
+| `CAMERA_MEDIA_ROOT` | non | Dossier des vidéos locales, `server/DJANGO_SERVER/parking/Data` par défaut |
 
 Côté MODEL_SERVER : `MODEL_SERVER_HOST` (défaut `127.0.0.1`) et `MODEL_SERVER_PORT` (défaut `8001`).
 
@@ -193,7 +198,7 @@ Côté MODEL_SERVER : `MODEL_SERVER_HOST` (défaut `127.0.0.1`) et `MODEL_SERVER
 ## Utilisation de l'application
 
 1. **Se connecter** avec un compte admin.
-2. **Setup** (`/setup`) : ajouter les caméras. Une caméra = un numéro de zone, une référence et une URL (`rtsp://…`, `http://…` ou un chemin de fichier vidéo).
+2. **Setup** (`/setup`) : ajouter les caméras. Une caméra = un numéro de zone, une référence et une URL (`rtsp://…`, `rtsps://…`, `http(s)://…`) ou un fichier vidéo. Les URL vers `localhost`, le loopback ou les adresses link-local sont refusées. Un fichier vidéo doit se trouver dans `CAMERA_MEDIA_ROOT/<id du parking>/` et s'indique par son nom relatif (ex. `parking.mp4`).
 3. **Initialisation** (`/spots`) : une capture de chaque caméra active s'affiche.
    - Deux clics gauches = un rectangle (deux coins opposés), puis on nomme la place (par défaut `Spot N`).
    - Clic droit sur un rectangle = suppression.
@@ -256,14 +261,12 @@ MODEL_SERVER :
 - Un seul refresh token valide par utilisateur (table `users.auth`) : se reconnecter révoque la session précédente.
 - La connexion ouvre aussi une **session Django**, utilisée pour authentifier le WebSocket de statut en ligne.
 - **Rôles** :
-  - `admin` : accès complet. Créé par l'inscription publique (après activation par email) ou par la commande ci-dessus.
+  - `admin` : propriétaire de parking. Créé par l'inscription publique (après activation par email), sans accès à l'admin Django. Seul `createsuperuser` crée un compte d'administration Django.
   - `guest` : créé par un admin, accès en lecture (accueil, statut, LCD).
 
 ## Limites connues
 
-- **Inscription publique** : un compte créé via `/login` devient administrateur (et superuser Django) une fois son email validé. Il faut restreindre ce comportement si l'application est exposée publiquement.
 - **Gestion des guests** : chaque admin voit et peut supprimer tous les guests, pas seulement ceux qu'il a créés.
 - **Versions figées** : le modèle Keras ne se charge pas avec les versions récentes de TensorFlow/Keras, d'où `tensorflow==2.19.0` et `keras==3.5.0` dans `requirements.txt`. L'image Docker utilise en plus `docker/constraints.txt` pour figer les autres dépendances.
-- **Tests** : il n'y a pas encore de tests automatisés (les fichiers `tests.py` sont vides).
 - **Liste des caméras lente** : afficher la liste ouvre chaque flux avec OpenCV pour vérifier qu'il est actif.
-- **Mode debug** : `DEBUG = True` et les cookies ne sont pas `Secure`. À adapter avant une mise en production en HTTPS.
+- **HTTPS** : la stack Docker sert l'application en HTTP. En production, placer un proxy TLS devant nginx et mettre `SECURE_COOKIES=true`.
