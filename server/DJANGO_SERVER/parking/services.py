@@ -106,3 +106,7 @@ def supervised_parkings():
         }
         for p in parkings
     ]
+
+
+def published_parkings_with_ids(ids):
+    return [public_parking(p) for p in published_parkings().filter(pk__in=ids).prefetch_related('zones')]

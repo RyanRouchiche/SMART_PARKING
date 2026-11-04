@@ -14,7 +14,10 @@ from detection import state
 from parking.models import Parking, ParkingMembership, Subscription, Zone
 from users.models import User
 from . import services
-from .models import OwnerRequest
+from detection.events import announce_if_freed
+from detection.interface import AVAILABILITY_STREAM, stream_client
+from . import notifications
+from .models import DriverDevice, Favorite, OwnerRequest
 
 SQUARE = [[10, 10], [60, 10], [60, 60], [10, 60]]
 ALGIERS = (36.7538, 3.0588)
@@ -317,3 +320,120 @@ class OwnerRequestAcceptanceTests(APITestCase):
         self.assertEqual(parking.subscription.status, Subscription.REQUEST)
         owner_request.refresh_from_db()
         self.assertEqual((owner_request.status, owner_request.parking), ("accepted", parking))
+
+
+class FakeSender:
+    def __init__(self, invalid=()):
+        self.sent = []
+        self.invalid = set(invalid)
+
+    def send(self, token, title, body, data):
+        if token in self.invalid:
+            raise notifications.InvalidToken()
+        self.sent.append((token, title, body, data))
+
+
+class FavoritesAndDevicesTests(APITestCase):
+    def setUp(self):
+        cache.clear()
+        self.parking = make_parking("Near", 300)
+        self.hidden = make_parking("Hidden", 200, published=False)
+        self.driver = User.objects.create_user(username="d1", password="x", user_type="driver", is_active=True)
+        self.other = User.objects.create_user(username="d2", password="x", user_type="driver", is_active=True)
+        self.client.force_authenticate(self.driver)
+
+    def tearDown(self):
+        cache.clear()
+
+    def url(self, parking):
+        return f"/api/public/v1/favorites/{parking.pk}/"
+
+    def test_favorites_are_personal_and_limited_to_published_parkings(self):
+        fresh(self.parking, 1, free=1)
+        response = self.client.put(self.url(self.parking), {"notify": True}, format="json")
+        self.assertEqual(response.json(), {"id": str(self.parking.pk), "notify": True})
+        self.assertEqual(self.client.put(self.url(self.hidden), {}, format="json").status_code, 404)
+
+        results = self.client.get("/api/public/v1/favorites/").json()["results"]
+        self.assertEqual([(r["name"], r["notify"], r["free"]) for r in results], [("Near", True, 1)])
+        self.assertNotIn("Secret spot A", json.dumps(results))
+
+        self.client.force_authenticate(self.other)
+        self.assertEqual(self.client.get("/api/public/v1/favorites/").json()["results"], [])
+        self.assertEqual(self.client.delete(self.url(self.parking)).status_code, 404)
+        self.client.force_authenticate(self.driver)
+        self.assertEqual(self.client.delete(self.url(self.parking)).status_code, 204)
+
+    def test_only_signed_in_drivers_use_favorites_and_devices(self):
+        owner = User.objects.create_user(username="boss", password="x", user_type="admin", is_active=True)
+        self.client.force_authenticate(owner)
+        self.assertEqual(self.client.get("/api/public/v1/favorites/").status_code, 403)
+        self.client.force_authenticate(None)
+        self.assertEqual(self.client.get("/api/public/v1/favorites/").status_code, 401)
+        devices = self.client.post("/api/public/v1/devices/", {"token": "t", "platform": "android"}, format="json")
+        self.assertEqual(devices.status_code, 401)
+
+    def test_a_phone_token_follows_the_driver_who_signs_in(self):
+        devices = "/api/public/v1/devices/"
+        self.assertEqual(self.client.post(devices, {"token": "phone-1"}, format="json").status_code, 400)
+        self.assertEqual(self.client.post(devices, {"token": "phone-1", "platform": "android"}, format="json").status_code, 204)
+        self.client.force_authenticate(self.other)
+        self.client.post(devices, {"token": "phone-1", "platform": "android"}, format="json")
+        self.assertEqual(list(DriverDevice.objects.values_list("user__username", flat=True)), ["d2"])
+
+        self.client.force_authenticate(self.driver)
+        self.client.delete(devices, {"token": "phone-1"}, format="json")
+        self.assertTrue(DriverDevice.objects.filter(token="phone-1").exists())
+        self.client.force_authenticate(self.other)
+        self.client.delete(devices, {"token": "phone-1"}, format="json")
+        self.assertFalse(DriverDevice.objects.exists())
+
+
+class NotificationTests(APITestCase):
+    def setUp(self):
+        cache.clear()
+        self.parking = make_parking("Near", 300)
+        users = [
+            User.objects.create_user(username=name, password="x", user_type="driver", is_active=True, language=lang)
+            for name, lang in (("fr", "fr"), ("ar", "ar"), ("quiet", "fr"))
+        ]
+        for user, notify in zip(users, (True, True, False)):
+            Favorite.objects.create(user=user, parking=self.parking, notify=notify)
+            DriverDevice.objects.create(user=user, token=f"tok-{user.username}", platform="android")
+
+    def tearDown(self):
+        cache.clear()
+
+    def test_drivers_who_asked_are_notified_once_per_30_minutes_in_their_language(self):
+        sender = FakeSender()
+        self.assertEqual(notifications.notify_freed(str(self.parking.pk), 3, sender), 2)
+        self.assertEqual(notifications.notify_freed(str(self.parking.pk), 4, sender), 0)
+        bodies = {token: (title, body) for token, title, body, _ in sender.sent}
+        self.assertEqual(set(bodies), {"tok-fr", "tok-ar"})
+        self.assertEqual(bodies["tok-fr"], ("Des places se libèrent", "Near : 3 place(s) libre(s) maintenant."))
+        self.assertIn("أماكن", bodies["tok-ar"][0])
+        self.assertEqual(sender.sent[0][3], {"parking_id": str(self.parking.pk)})
+
+    def test_invalid_tokens_are_removed(self):
+        notifications.notify_freed(str(self.parking.pk), 1, FakeSender(invalid={"tok-fr"}))
+        self.assertFalse(DriverDevice.objects.filter(token="tok-fr").exists())
+        self.assertTrue(DriverDevice.objects.filter(token="tok-ar").exists())
+
+    def test_hidden_parkings_send_nothing(self):
+        Subscription.objects.filter(parking=self.parking).update(status=Subscription.CANCELLED)
+        self.assertEqual(notifications.notify_freed(str(self.parking.pk), 1, FakeSender()), 0)
+
+    def test_worker_reads_freed_events_from_the_stream(self):
+        client = stream_client()
+        client.delete(AVAILABILITY_STREAM)
+        notifications.ensure_group(client)
+        notifications.ensure_group(client)
+        fresh(self.parking, 1, free=0)
+        self.assertFalse(announce_if_freed(str(self.parking.pk), [1], client))
+        fresh(self.parking, 1, free=2)
+        self.assertTrue(announce_if_freed(str(self.parking.pk), [1], client))
+        sender = FakeSender()
+        self.assertEqual(notifications.process(client, sender, "test", block_ms=100), 1)
+        self.assertEqual(len(sender.sent), 2)
+        self.assertEqual(notifications.process(client, sender, "test", block_ms=100), 0)
+        client.delete(AVAILABILITY_STREAM)

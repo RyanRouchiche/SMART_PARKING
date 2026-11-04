@@ -87,6 +87,13 @@ services:
     <<: *django-service
     command: sh -c "while true; do python manage.py health_report --email; sleep 300; done"
 
+  notifications:
+    <<: *django-service
+    profiles: [notifications]
+    command: sh -c "GOOGLE_APPLICATION_CREDENTIALS=/run/secrets/firebase python manage.py run_notifications"
+    secrets:
+      - firebase
+
   client:
     build:
       context: ..
@@ -108,3 +115,7 @@ services:
 
 volumes:
   db-data:
+
+secrets:
+  firebase:
+    file: ../secrets/firebase-service-account.json

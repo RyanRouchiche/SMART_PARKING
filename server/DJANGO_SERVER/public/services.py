@@ -8,9 +8,10 @@ from django.core.mail import send_mail
 from django.db import transaction
 
 from detection.interface import parking_availability
-from parking.interface import create_draft_parking, published_parking, published_parkings_in_box
+from parking.interface import create_draft_parking, published_parking, published_parkings_in_box, published_parkings_with_ids
 from users.interface import owner_account
 from shared.geo import bounding_box, distance_m
+from .models import DriverDevice, Favorite
 
 MAX_RESULTS = 20
 FAILED_LOGIN_LIMIT = 5
@@ -134,3 +135,30 @@ def accept_owner_request(owner_request):
         owner_request.status = 'accepted'
         owner_request.save(update_fields=['parking', 'status'])
     return parking
+
+
+def favorites(user):
+    notify = {str(f.parking_id): f.notify for f in Favorite.objects.filter(user=user)}
+    return [
+        {**summary(p), **availability(p), 'notify': notify[str(p['id'])]}
+        for p in published_parkings_with_ids(list(notify))
+    ]
+
+
+def set_favorite(user, parking_id, notify):
+    if published_parking(parking_id) is None:
+        return None
+    favorite, _ = Favorite.objects.update_or_create(user=user, parking_id=parking_id, defaults={'notify': notify})
+    return favorite
+
+
+def remove_favorite(user, parking_id):
+    return Favorite.objects.filter(user=user, parking_id=parking_id).delete()[0] > 0
+
+
+def register_device(user, token, platform):
+    DriverDevice.objects.update_or_create(token=token, defaults={'user': user, 'platform': platform})
+
+
+def forget_device(user, token):
+    DriverDevice.objects.filter(user=user, token=token).delete()

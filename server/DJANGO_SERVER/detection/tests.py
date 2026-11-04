@@ -428,3 +428,36 @@ class StatsTests(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["days"], 90)
         self.assertEqual(self.client.get(self.URL, {"days": "x"}).status_code, 400)
+
+
+class FreedEventTests(TestCase):
+    def setUp(self):
+        cache.clear()
+        self.stream = events.stream_client()
+        self.stream.delete(events.STREAM)
+
+    def tearDown(self):
+        cache.clear()
+        self.stream.delete(events.STREAM)
+
+    def store(self, area, free, total=3):
+        details = [{"spot": f"S{i}", "status": "empty" if i < free else "occupied"} for i in range(total)]
+        state.store("p1", area, {"area": area, "available_spots": free, "spot_details": details})
+
+    def test_only_a_full_parking_that_frees_up_is_announced(self):
+        self.store(1, 0)
+        self.store(2, 0)
+        self.assertFalse(events.announce_if_freed("p1", [1, 2]))
+        self.store(2, 1)
+        self.assertTrue(events.announce_if_freed("p1", [1, 2]))
+        self.store(1, 2)
+        self.assertFalse(events.announce_if_freed("p1", [1, 2]))
+        entries = self.stream.xrange(events.STREAM)
+        self.assertEqual(len(entries), 1)
+        self.assertEqual(entries[0][1][b"parking_id"], b"p1")
+        self.assertEqual(entries[0][1][b"free_after"], b"1")
+
+    def test_unknown_previous_state_is_not_announced(self):
+        self.store(1, 2)
+        self.assertFalse(events.announce_if_freed("p1", [1]))
+        self.assertEqual(self.stream.xlen(events.STREAM), 0)

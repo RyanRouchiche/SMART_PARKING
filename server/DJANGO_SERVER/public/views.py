@@ -1,5 +1,5 @@
 from rest_framework import status
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle, BaseThrottle, ScopedRateThrottle, UserRateThrottle
@@ -19,7 +19,7 @@ from users.interface import (
     rotate_tokens,
 )
 from . import services
-from .serializers import ContactSerializer, OwnerRequestSerializer
+from .serializers import ContactSerializer, DeviceSerializer, FavoriteSerializer, OwnerRequestSerializer
 
 DRIVER = 'driver'
 DEFAULT_RADIUS = 3000
@@ -171,4 +171,51 @@ class AccountView(APIView):
         if request.user.user_type != DRIVER:
             return Response({'error': 'This account must be deleted from the web application'}, status=403)
         delete_account(request.user.id)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class DriverAPIView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    throttle_classes = [UserRateThrottle]
+
+    def initial(self, request, *args, **kwargs):
+        super().initial(request, *args, **kwargs)
+        if request.user.user_type != DRIVER:
+            raise PermissionDenied('Drivers only')
+
+
+class FavoritesView(DriverAPIView):
+    def get(self, request):
+        return Response({'results': services.favorites(request.user)})
+
+
+class FavoriteView(DriverAPIView):
+    def put(self, request, parking_id):
+        serializer = FavoriteSerializer(data=body(request))
+        serializer.is_valid(raise_exception=True)
+        favorite = services.set_favorite(request.user, parking_id, serializer.validated_data['notify'])
+        if favorite is None:
+            return Response({'error': 'Parking not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'id': str(parking_id), 'notify': favorite.notify})
+
+    def delete(self, request, parking_id):
+        if not services.remove_favorite(request.user, parking_id):
+            return Response({'error': 'Favorite not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class DevicesView(DriverAPIView):
+    def post(self, request):
+        serializer = DeviceSerializer(data=body(request))
+        serializer.is_valid(raise_exception=True)
+        if 'platform' not in serializer.validated_data:
+            raise ValidationError({'platform': 'This field is required.'})
+        services.register_device(request.user, **serializer.validated_data)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def delete(self, request):
+        serializer = DeviceSerializer(data=body(request))
+        serializer.is_valid(raise_exception=True)
+        services.forget_device(request.user, serializer.validated_data['token'])
         return Response(status=status.HTTP_204_NO_CONTENT)

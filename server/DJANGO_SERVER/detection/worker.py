@@ -91,6 +91,13 @@ def parking_time(now=None):
     return (now or timezone.now()).astimezone(ZoneInfo(settings.PARKING_TIME_ZONE))
 
 
+def parking_areas():
+    areas = {}
+    for parking_id, number, _, _ in all_zone_layouts():
+        areas.setdefault(str(parking_id), []).append(number)
+    return areas
+
+
 def load_zones(shard=0, shards=1, now=None):
     paths = {(str(p), a): path for (p, a), path in all_camera_paths().items()}
     moment = parking_time(now)
@@ -125,6 +132,8 @@ class Supervisor:
 
     def sync(self):
         close_old_connections()
+        if hasattr(self.publish, 'areas'):
+            self.publish.areas = parking_areas()
         wanted = {c.key: c for c in load_zones(self.shard, self.shards)}
         for key, worker in list(self.workers.items()):
             if wanted.get(key) != worker.config:

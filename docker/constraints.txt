@@ -4,6 +4,7 @@ channels_redis==4.2.1
 daphne==4.1.2
 djangorestframework==3.16.1
 djangorestframework_simplejwt==5.5.1
+firebase-admin==7.7.0
 keras==3.5.0
 numpy==2.1.1
 opencv-python==4.11.0.86
