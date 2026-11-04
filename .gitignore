@@ -19,3 +19,4 @@ server/DJANGO_SERVER/parking/Data/
 
 client/node_modules/
 client/dist/
+secrets/
