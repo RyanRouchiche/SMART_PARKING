@@ -1,3 +1,4 @@
+import hashlib
 import logging
 from datetime import datetime, timezone
 
@@ -90,20 +91,8 @@ def detail(parking_id):
     }
 
 
-def account(username):
-    return username.strip().lower()
-
-
-def failure_key(username, client):
-    return f"login_failures:{account(username)}:{client}"
-
-
-def account_failure_key(username):
-    return f"login_failures:{account(username)}"
-
-
-def known_address_key(username, client):
-    return f"login_known:{account(username)}:{client}"
+def login_key(kind, username, client=''):
+    return f"login_{kind}:{hashlib.sha256(username.encode()).hexdigest()}:{client}"
 
 
 def attempt(key, window):
@@ -117,19 +106,17 @@ def attempt(key, window):
 
 
 def start_login(username, client):
-    per_address = attempt(failure_key(username, client), FAILED_LOGIN_WINDOW)
-    per_account = attempt(account_failure_key(username), ACCOUNT_FAILURE_WINDOW)
-    if per_address > FAILED_LOGIN_LIMIT:
+    if attempt(login_key('address', username, client), FAILED_LOGIN_WINDOW) > FAILED_LOGIN_LIMIT:
         return False
-    if per_account > ACCOUNT_FAILURE_LIMIT:
-        return bool(cache.get(known_address_key(username, client)))
+    if attempt(login_key('account', username), ACCOUNT_FAILURE_WINDOW) > ACCOUNT_FAILURE_LIMIT:
+        return bool(cache.get(login_key('known', username, client)))
     return True
 
 
 def login_succeeded(username, client):
-    cache.delete(failure_key(username, client))
+    cache.delete(login_key('address', username, client))
     try:
-        cache.decr(account_failure_key(username))
+        cache.decr(login_key('account', username))
     except ValueError:
         pass
-    cache.set(known_address_key(username, client), True, KNOWN_ADDRESS_TTL)
+    cache.set(login_key('known', username, client), True, KNOWN_ADDRESS_TTL)

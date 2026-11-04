@@ -264,3 +264,20 @@ class DistributedGuessingTests(APITestCase):
         from public import services
         results = [services.start_login("Victim", "192.0.2.9") for _ in range(6)]
         self.assertEqual(results, [True] * 5 + [False])
+
+    def test_refused_attempts_do_not_fill_the_account_cap(self):
+        for i in range(40):
+            self.login(f"guess{i}", "203.0.113.77")
+        self.assertEqual(self.login("Str0ng-pass-word", "198.51.100.50"), 200)
+
+    def test_crafted_usernames_cannot_reach_another_drivers_counters(self):
+        for i in range(10):
+            self.client.post("/api/public/v1/auth/login/", {"username": "Victim:198.51.100.60", "password": f"x{i}"}, format="json", HTTP_X_FORWARDED_FOR=f"203.0.113.{i}")
+        self.assertEqual(self.login("Str0ng-pass-word", "198.51.100.60"), 200)
+
+    def test_another_spelling_does_not_share_the_known_address(self):
+        User.objects.create_user(username="victim", password="Other-pass-word1", user_type="driver", is_active=True)
+        self.assertEqual(self.client.post("/api/public/v1/auth/login/", {"username": "victim", "password": "Other-pass-word1"}, format="json", HTTP_X_FORWARDED_FOR="203.0.113.150").status_code, 200)
+        for i in range(30):
+            self.login(f"guess{i}", f"203.0.113.{i}")
+        self.assertEqual(self.login("Str0ng-pass-word", "203.0.113.150"), 429)
