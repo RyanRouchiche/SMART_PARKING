@@ -1,12 +1,25 @@
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.db import transaction
-from django.db.models.signals import post_delete
+from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
 from users.interface import user_deactivated
 from .access import access_group
-from .models import ParkingMembership
+from .models import Invoice, Parking, ParkingMembership, Subscription
+from .subscriptions import record_payment
+
+
+@receiver(post_save, sender=Parking)
+def parking_created(sender, instance, created, raw=False, **kwargs):
+    if created and not raw:
+        Subscription.objects.get_or_create(parking=instance)
+
+
+@receiver(post_save, sender=Invoice)
+def invoice_saved(sender, instance, raw=False, **kwargs):
+    if instance.paid_on and not raw:
+        record_payment(instance)
 
 
 def revoke_access(user_id, parking_ids):

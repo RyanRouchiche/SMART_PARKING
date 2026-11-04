@@ -127,3 +127,7 @@ def delete_account(user_id):
         ignore_conflicts=True,
     )
     User.objects.filter(id=user_id).delete()
+
+
+def owner_account(email):
+    return User.objects.filter(email__iexact=email, user_type='admin', is_active=True).order_by('date_joined').first()

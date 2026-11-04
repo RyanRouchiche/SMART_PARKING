@@ -5,9 +5,11 @@ from datetime import datetime, timezone
 from django.conf import settings
 from django.core.cache import cache
 from django.core.mail import send_mail
+from django.db import transaction
 
 from detection.interface import parking_availability
-from parking.interface import published_parking, published_parkings_in_box
+from parking.interface import create_draft_parking, published_parking, published_parkings_in_box
+from users.interface import owner_account
 from shared.geo import bounding_box, distance_m
 
 MAX_RESULTS = 20
@@ -120,3 +122,15 @@ def login_succeeded(username, client):
     except ValueError:
         pass
     cache.set(login_key('known', username, client), True, KNOWN_ADDRESS_TTL)
+
+
+def accept_owner_request(owner_request):
+    owner = owner_account(owner_request.email)
+    if owner is None:
+        return None
+    with transaction.atomic():
+        parking = create_draft_parking(owner, owner_request.parking_name, owner_request.address, owner_request.capacity)
+        owner_request.parking = parking
+        owner_request.status = 'accepted'
+        owner_request.save(update_fields=['parking', 'status'])
+    return parking

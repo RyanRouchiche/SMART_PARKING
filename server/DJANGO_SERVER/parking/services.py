@@ -1,7 +1,7 @@
 from django.db import transaction
 
 from users.interface import delete_account, send_activation_email
-from .models import Parking, ParkingMembership, Zone
+from .models import Parking, ParkingMembership, Subscription, Zone
 
 
 def zone_layouts(parking):
@@ -21,7 +21,7 @@ def save_zone_spots(parking, number, spots, camera_id):
 
 
 def all_zone_layouts():
-    zones = Zone.objects.exclude(spots={}).select_related('parking')
+    zones = Zone.objects.exclude(spots={}).exclude(parking__subscription__status=Subscription.CANCELLED).select_related('parking')
     return [(z.parking_id, z.number, z.ordered_spots, z.parking.opening_hours) for z in zones]
 
 
@@ -31,6 +31,7 @@ PUBLIC_FIELDS = ('id', 'name', 'address', 'latitude', 'longitude', 'capacity', '
 def published_parkings():
     return (
         Parking.objects.filter(is_published=True, latitude__isnull=False, longitude__isnull=False)
+        .filter(subscription__status__in=Subscription.VISIBLE)
         .filter(zones__in=Zone.objects.exclude(spots={}))
         .distinct()
     )
@@ -76,3 +77,32 @@ def remove_operator(user_id, owned):
         if not memberships.exists():
             delete_account(user_id)
     return True
+
+
+def create_draft_parking(owner, name, address, capacity):
+    with transaction.atomic():
+        parking = Parking.objects.create(name=name, address=address, capacity=capacity)
+        ParkingMembership.objects.create(user=owner, parking=parking, role=ParkingMembership.OWNER)
+    return parking
+
+
+def supervised_parkings():
+    visible = set(published_parkings().values_list('pk', flat=True))
+    parkings = (
+        Parking.objects.exclude(subscription__status=Subscription.CANCELLED)
+        .select_related('subscription')
+        .prefetch_related('zones')
+        .order_by('name')
+    )
+    return [
+        {
+            'id': p.pk,
+            'name': p.name,
+            'visible': p.pk in visible,
+            'opening_hours': p.opening_hours,
+            'areas': sorted(z.number for z in p.zones.all() if z.spots),
+            'subscription': p.subscription.get_status_display(),
+            'period_end': p.subscription.period_end,
+        }
+        for p in parkings
+    ]

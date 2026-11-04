@@ -18,7 +18,7 @@
 }
 
 .capture__title .caption {
-  margin-left: auto;
+  margin-inline-start: auto;
 }
 
 .capture__canvas {
@@ -84,8 +84,8 @@
 
 .savebar {
   position: fixed;
-  left: calc(232px + 40px);
-  right: 40px;
+  inset-inline-start: calc(232px + 40px);
+  inset-inline-end: 40px;
   bottom: 24px;
   display: flex;
   align-items: center;
@@ -104,8 +104,8 @@
 
 @media (max-width: 959px) {
   .savebar {
-    left: 16px;
-    right: 16px;
+    inset-inline-start: 16px;
+    inset-inline-end: 16px;
     flex-wrap: wrap;
   }
 }

@@ -1,0 +1,55 @@
+{% extends "admin/base_site.html" %}
+
+{% block extrahead %}{{ block.super }}<meta http-equiv="refresh" content="30">{% endblock %}
+
+{% block breadcrumbs %}<div class="breadcrumbs"><a href="{% url 'admin:index' %}">Accueil</a> › Supervision</div>{% endblock %}
+
+{% block content %}
+<div id="content-main">
+  {% if report.problems %}
+    <ul class="messagelist">{% for problem in report.problems %}<li class="error">{{ problem }}</li>{% endfor %}</ul>
+  {% else %}
+    <ul class="messagelist"><li class="success">Aucun problème : le serveur du modèle répond et les parkings ouverts reçoivent des données.</li></ul>
+  {% endif %}
+
+  <h2>Serveur du modèle</h2>
+  <p>{% if report.model_up %}Répond{% else %}<strong>Injoignable</strong>{% endif %}</p>
+
+  <h2>Tunnels</h2>
+  <p>Non configurés : ils arrivent avec l'hébergement (phase 0).</p>
+
+  <h2>Parkings</h2>
+  <table>
+    <thead>
+      <tr><th>Parking</th><th>Abonnement</th><th>Fin de période</th><th>Dans l'app</th><th>Ouvert</th><th>Zone</th><th>Places libres</th><th>Dernière donnée</th></tr>
+    </thead>
+    <tbody>
+      {% for parking in report.parkings %}
+        {% for zone in parking.zones %}
+          <tr>
+            {% if forloop.first %}
+              <td rowspan="{{ parking.zones|length }}"><a href="{% url 'admin:parking_parking_change' parking.id %}">{{ parking.name }}</a></td>
+              <td rowspan="{{ parking.zones|length }}">{{ parking.subscription }}</td>
+              <td rowspan="{{ parking.zones|length }}">{{ parking.period_end|default:"—" }}</td>
+              <td rowspan="{{ parking.zones|length }}">{{ parking.visible|yesno:"Oui,Non" }}</td>
+              <td rowspan="{{ parking.zones|length }}">{{ parking.open|yesno:"Oui,Non" }}</td>
+            {% endif %}
+            <td>{{ zone.area }}</td>
+            <td>{% if zone.ok %}{{ zone.free }} / {{ zone.total }}{% else %}—{% endif %}</td>
+            <td>{% if zone.age is None %}<strong>aucune</strong>{% elif zone.late %}<strong>il y a {{ zone.age }} s</strong>{% else %}il y a {{ zone.age }} s{% endif %}</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td><a href="{% url 'admin:parking_parking_change' parking.id %}">{{ parking.name }}</a></td>
+            <td>{{ parking.subscription }}</td>
+            <td>{{ parking.period_end|default:"—" }}</td>
+            <td>{{ parking.visible|yesno:"Oui,Non" }}</td>
+            <td>{{ parking.open|yesno:"Oui,Non" }}</td>
+            <td colspan="3">Aucune zone dessinée</td>
+          </tr>
+        {% endfor %}
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,6 +1,26 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 
 const FR = {
+  "Statistics": "Statistiques",
+  "Share of occupied spots, from the detection history.": "Part des places occupées, d'après l'historique de détection.",
+  "Period": "Période",
+  "{n} days": "{n} jours",
+  "Could not load the statistics.": "Impossible de charger les statistiques.",
+  "Loading…": "Chargement…",
+  "No history yet. Statistics appear after the first hour of detection.": "Pas encore d'historique. Les statistiques apparaissent après la première heure de détection.",
+  "Average occupancy": "Occupation moyenne",
+  "Peak hour": "Heure de pointe",
+  "{h} h": "{h} h",
+  "{value} occupied on average": "{value} occupées en moyenne",
+  "Busiest day": "Jour le plus chargé",
+  "Typical week": "Semaine type",
+  "Hover a cell to see its value.": "Survolez une case pour voir sa valeur.",
+  "Hover a bar to see its value.": "Survolez une barre pour voir sa valeur.",
+  "Average occupancy by day and hour": "Occupation moyenne par jour et par heure",
+  "Day": "Jour",
+  "no data": "pas de donnée",
+  "no data (closed or offline)": "pas de donnée (fermé ou hors ligne)",
+  "Average occupancy per day": "Occupation moyenne par jour",
   "10 cameras at a time": "10 caméras à la fois",
   "Account activated": "Compte activé",
   "Account created. Open the activation link sent to {email}.": "Compte créé. Ouvrez le lien d'activation envoyé à {email}.",
@@ -142,6 +162,160 @@ const FR = {
   "{n} zone(s) need attention": "{n} zone(s) à surveiller",
 };
 
+const AR = {
+  "10 cameras at a time": "10 كاميرات في كل مرة",
+  "Account activated": "تم تفعيل الحساب",
+  "Account created. Open the activation link sent to {email}.": "تم إنشاء الحساب. افتح رابط التفعيل المرسل إلى {email}.",
+  "Account deleted.": "تم حذف الحساب.",
+  "Actions": "الإجراءات",
+  "Add a camera": "إضافة كاميرا",
+  "Add a camera whose stream responds, then come back to draw its spots.": "أضف كاميرا يستجيب بثها، ثم عد لرسم أماكنها.",
+  "Add a camera, then draw its spots to create the first zone.": "أضف كاميرا، ثم ارسم أماكنها لإنشاء المنطقة الأولى.",
+  "Add the first one to see its zone appear on the network.": "أضف الأولى لتظهر منطقتها على الشبكة.",
+  "Add the spot": "إضافة المكان",
+  "Administrator": "مسؤول",
+  "All cameras are working": "جميع الكاميرات تعمل",
+  "Already have an account?": "لديك حساب بالفعل؟",
+  "Available": "متاح",
+  "Average occupancy": "متوسط الإشغال",
+  "Average occupancy by day and hour": "متوسط الإشغال حسب اليوم والساعة",
+  "Average occupancy per day": "متوسط الإشغال اليومي",
+  "Busiest day": "أكثر الأيام ازدحامًا",
+  "Camera image of zone {n}": "صورة كاميرا المنطقة {n}",
+  "Camera {ref} deleted.": "تم حذف الكاميرا {ref}.",
+  "Cameras": "الكاميرات",
+  "Cancel": "إلغاء",
+  "Choose a zone": "اختر منطقة",
+  "Click two opposite corners to draw a spot. Click a spot to select it, then press Delete or right-click to remove it.": "انقر على زاويتين متقابلتين لرسم مكان. انقر على مكان لتحديده، ثم اضغط على Delete أو انقر بالزر الأيمن لإزالته.",
+  "Close": "إغلاق",
+  "Confirm": "تأكيد",
+  "Connecting": "جارٍ الاتصال…",
+  "Could not delete camera {ref}.": "تعذر حذف الكاميرا {ref}.",
+  "Could not delete this account.": "تعذر حذف هذا الحساب.",
+  "Could not load the cameras.": "تعذر تحميل الكاميرات.",
+  "Could not load the statistics.": "تعذر تحميل الإحصائيات.",
+  "Create a guest": "إنشاء حساب زائر",
+  "Create an account": "إنشاء حساب",
+  "Create an administrator account": "إنشاء حساب مسؤول",
+  "Create one with the form to give someone read-only access.": "أنشئ حسابًا عبر النموذج لمنح شخص صلاحية الاطلاع فقط.",
+  "Create the account": "إنشاء الحساب",
+  "Create the guest": "إنشاء الزائر",
+  "Creating…": "جارٍ الإنشاء…",
+  "Data delayed": "البيانات متأخرة",
+  "Day": "اليوم",
+  "Delete": "حذف",
+  "Delete camera {ref}?": "حذف الكاميرا {ref}؟",
+  "Delete the account of {name}?": "حذف حساب {name}؟",
+  "Draw the spots of this camera on the Spots page.": "ارسم أماكن هذه الكاميرا في صفحة الأماكن.",
+  "Email": "البريد الإلكتروني",
+  "Enter a reference, for example CAM-01.": "أدخل مرجعًا، مثلًا CAM-01.",
+  "Enter a zone number.": "أدخل رقم المنطقة.",
+  "Enter the RTSP or HTTP address of the stream.": "أدخل عنوان البث RTSP أو HTTP.",
+  "Entrance": "المدخل",
+  "Exit": "خروج",
+  "Filling up": "يمتلئ",
+  "First name": "الاسم",
+  "Free": "شاغر",
+  "free spot": "مكان شاغر",
+  "free spots": "أماكن شاغرة",
+  "Free spots in real time, zone by zone, from your existing cameras.": "الأماكن الشاغرة في الوقت الحقيقي، منطقة بمنطقة، انطلاقًا من كاميراتك الحالية.",
+  "free spots out of {n}": "أماكن شاغرة من أصل {n}",
+  "FULL": "ممتلئ",
+  "Full": "ممتلئ",
+  "Go to login": "الذهاب إلى تسجيل الدخول",
+  "Guest": "زائر",
+  "Guest created. An activation email has been sent to {email}.": "تم إنشاء حساب الزائر. أُرسل بريد التفعيل إلى {email}.",
+  "Guests can view the network, the zones and the LCD screen.": "يمكن للزوار الاطلاع على الشبكة والمناطق وشاشة LCD.",
+  "Hover a bar to see its value.": "مرّر المؤشر على عمود لعرض قيمته.",
+  "Hover a cell to see its value.": "مرّر المؤشر على خانة لعرض قيمتها.",
+  "Invalid activation link": "رابط التفعيل غير صالح",
+  "Language": "اللغة",
+  "Last name": "اللقب",
+  "LCD screen": "شاشة LCD",
+  "Left": "يسار",
+  "Line status": "حالة الخطوط",
+  "Live, updated every 5 seconds": "مباشر، يُحدَّث كل 5 ثوانٍ",
+  "Loading…": "جارٍ التحميل…",
+  "Log in": "تسجيل الدخول",
+  "Log out": "تسجيل الخروج",
+  "Log out of Smart Parking?": "تسجيل الخروج من Smart Parking؟",
+  "Logging in…": "جارٍ تسجيل الدخول…",
+  "Logout failed": "تعذر تسجيل الخروج",
+  "Main navigation": "التنقل الرئيسي",
+  "Name": "الاسم",
+  "Name this spot": "سمِّ هذا المكان",
+  "Network": "الشبكة",
+  "New cameras": "كاميرات جديدة",
+  "No account yet?": "ليس لديك حساب بعد؟",
+  "No camera image available": "لا توجد صورة كاميرا",
+  "No camera yet": "لا توجد كاميرا بعد",
+  "no data": "لا توجد بيانات",
+  "no data (closed or offline)": "لا توجد بيانات (مغلق أو غير متصل)",
+  "no data yet": "لا توجد بيانات بعد",
+  "No guest yet": "لا يوجد زائر بعد",
+  "No history yet. Statistics appear after the first hour of detection.": "لا يوجد سجل بعد. تظهر الإحصائيات بعد الساعة الأولى من الرصد.",
+  "No spots in this zone": "لا توجد أماكن في هذه المنطقة",
+  "No stream": "لا يوجد بث",
+  "No zone yet": "لا توجد منطقة بعد",
+  "Occupied": "مشغول",
+  "Offline": "غير متصل",
+  "One camera films one zone. Checking each stream can take a few seconds.": "كل كاميرا تصوّر منطقة واحدة. قد يستغرق التحقق من كل بث بضع ثوانٍ.",
+  "Online": "متصل",
+  "Open zone {code}: {count} free spots": "فتح المنطقة {code}: {count} أماكن شاغرة",
+  "OUT OF SERVICE": "خارج الخدمة",
+  "Password": "كلمة المرور",
+  "Peak hour": "ساعة الذروة",
+  "Period": "الفترة",
+  "Prediction error": "خطأ في التنبؤ",
+  "Reference": "المرجع",
+  "Registration failed. Check the fields and try again.": "فشل التسجيل. تحقق من الحقول وأعد المحاولة.",
+  "Remove this row": "إزالة هذا السطر",
+  "Right": "يمين",
+  "Save the spots": "حفظ الأماكن",
+  "Save {n} camera(s)": "حفظ {n} كاميرا",
+  "Saving…": "جارٍ الحفظ…",
+  "Share of occupied spots, from the detection history.": "نسبة الأماكن المشغولة، حسب سجل الرصد.",
+  "Spot": "مكان",
+  "Spot {code} removed.": "تمت إزالة المكان {code}.",
+  "Spots": "الأماكن",
+  "spots": "أماكن",
+  "Spots saved.": "تم حفظ الأماكن.",
+  "Statistics": "الإحصائيات",
+  "Status": "الحالة",
+  "Stream address": "عنوان البث",
+  "Stream OK": "البث يعمل",
+  "Temporary password": "كلمة مرور مؤقتة",
+  "The cameras could not be saved.": "تعذر حفظ الكاميرات.",
+  "The guest could not be created. Check the highlighted fields.": "تعذر إنشاء حساب الزائر. تحقق من الحقول المشار إليها.",
+  "The link has expired or was already used. Ask an administrator for a new one.": "انتهت صلاحية الرابط أو استُعمل من قبل. اطلب رابطًا جديدًا من المسؤول.",
+  "The spots could not be saved.": "تعذر حفظ الأماكن.",
+  "This account is not activated yet. Open the link sent by email.": "هذا الحساب غير مفعل بعد. افتح الرابط المرسل عبر البريد الإلكتروني.",
+  "Typical week": "الأسبوع النموذجي",
+  "Undo changes": "التراجع عن التعديلات",
+  "Unknown": "غير معروف",
+  "unsaved change(s)": "تعديلات غير محفوظة",
+  "Unsaved changes": "تعديلات غير محفوظة",
+  "Updated {ago}": "حُدِّث {ago}",
+  "Use a unique name made of letters, digits, spaces, - or _.": "استعمل اسمًا فريدًا مكونًا من حروف وأرقام ومسافات و- أو _.",
+  "Username": "اسم المستخدم",
+  "Users": "المستخدمون",
+  "Wrong username or password.": "اسم المستخدم أو كلمة المرور غير صحيحة.",
+  "You can now log in.": "يمكنك الآن تسجيل الدخول.",
+  "Zone": "المنطقة",
+  "Zone network": "شبكة المناطق",
+  "Zone {n}": "المنطقة {n}",
+  "Zones": "المناطق",
+  "{h} h": "الساعة {h}",
+  "{n} camera(s) added.": "تمت إضافة {n} كاميرا.",
+  "{n} days": "{n} يومًا",
+  "{n} min ago": "منذ {n} دقيقة",
+  "{n} s ago": "منذ {n} ثانية",
+  "{n} zone(s) need attention": "{n} منطقة تحتاج إلى متابعة",
+  "{value} occupied on average": "{value} مشغولة في المتوسط",
+};
+
+const DICTIONARIES = { fr: FR, ar: AR };
+
 const LanguageContext = createContext(null);
 
 function storedLanguage() {
@@ -157,6 +331,7 @@ export function LanguageProvider({ children }) {
 
   useEffect(() => {
     document.documentElement.lang = lang;
+    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
     try {
       localStorage.setItem("language", lang);
     } catch {}
@@ -166,7 +341,7 @@ export function LanguageProvider({ children }) {
     (text, vars = {}) =>
       Object.entries(vars).reduce(
         (out, [key, value]) => out.replaceAll(`{${key}}`, value),
-        (lang === "fr" && FR[text]) || text
+        DICTIONARIES[lang]?.[text] || text
       ),
     [lang]
   );
@@ -176,6 +351,10 @@ export function LanguageProvider({ children }) {
       {children}
     </LanguageContext.Provider>
   );
+}
+
+export function useLanguage() {
+  return useContext(LanguageContext).lang;
 }
 
 export function useT() {
@@ -188,6 +367,7 @@ export function LanguageSelect() {
     <select aria-label={t("Language")} value={lang} onChange={(e) => setLang(e.target.value)}>
       <option value="fr">Français</option>
       <option value="en">English</option>
+      <option value="ar">العربية</option>
     </select>
   );
 }

@@ -217,7 +217,7 @@ export default function ZonePlan() {
       <header className="page__head">
         <div>
           <Link to="/" className="back caption">
-            <ArrowLeft size={14} aria-hidden="true" /> {t("Zone network")}
+            <ArrowLeft size={14} aria-hidden="true" className="flip" /> {t("Zone network")}
           </Link>
           <h1 className="page__title zone-title">
             <span className="zone-dot zone-dot--lg" style={{ background: zone.color }} aria-hidden="true" />

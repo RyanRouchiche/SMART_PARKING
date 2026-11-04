@@ -3,11 +3,15 @@ from django.contrib import admin
 from django.urls import include, path, re_path
 from django.views.static import serve
 
+from detection.views import supervision
+
 urlpatterns = [
+    path('admin/supervision/', admin.site.admin_view(supervision), name='supervision'),
     path('admin/', admin.site.urls),
     path('api/public/v1/', include('public.urls')),
     path('api/', include('users.urls')),
     path('api/', include('parking.urls')),
     path('api/', include('camera.urls')),
+    path('api/', include('detection.urls')),
     re_path(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT}),
 ]
