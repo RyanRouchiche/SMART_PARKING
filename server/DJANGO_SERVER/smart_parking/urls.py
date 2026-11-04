@@ -5,6 +5,7 @@ from django.views.static import serve
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/public/v1/', include('public.urls')),
     path('api/', include('users.urls')),
     path('api/', include('parking.urls')),
     path('api/', include('camera.urls')),

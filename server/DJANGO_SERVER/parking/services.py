@@ -1,7 +1,7 @@
 from django.db import transaction
 
 from users.interface import delete_account, send_activation_email
-from .models import ParkingMembership, Zone
+from .models import Parking, ParkingMembership, Zone
 
 
 def zone_layouts(parking):
@@ -23,6 +23,36 @@ def save_zone_spots(parking, number, spots, camera_id):
 def all_zone_layouts():
     zones = Zone.objects.exclude(spots={}).select_related('parking')
     return [(z.parking_id, z.number, z.ordered_spots, z.parking.opening_hours) for z in zones]
+
+
+PUBLIC_FIELDS = ('id', 'name', 'address', 'latitude', 'longitude', 'capacity', 'opening_hours', 'pricing_text')
+
+
+def published_parkings():
+    return (
+        Parking.objects.filter(is_published=True, latitude__isnull=False, longitude__isnull=False)
+        .filter(zones__in=Zone.objects.exclude(spots={}))
+        .distinct()
+    )
+
+
+def public_parking(parking):
+    return {
+        **{field: getattr(parking, field) for field in PUBLIC_FIELDS},
+        'areas': sorted({z.number for z in parking.zones.all() if z.spots}),
+    }
+
+
+def published_parkings_in_box(lat_min, lat_max, lng_min, lng_max):
+    parkings = published_parkings().filter(
+        latitude__range=(lat_min, lat_max), longitude__range=(lng_min, lng_max)
+    ).prefetch_related('zones')
+    return [public_parking(p) for p in parkings]
+
+
+def published_parking(parking_id):
+    parking = published_parkings().prefetch_related('zones').filter(pk=parking_id).first()
+    return public_parking(parking) if parking else None
 
 
 def operator_ids(parking):
