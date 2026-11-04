@@ -94,7 +94,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  padding-right: 8px;
+  padding-inline-end: 8px;
 }
 
 .slot {
@@ -104,14 +104,14 @@
   justify-content: center;
   align-items: center;
   border: 0;
-  border-left: 2px solid var(--zone);
+  border-inline-start: 2px solid var(--zone);
   background: var(--surface);
   cursor: pointer;
   transition: background-color 300ms;
 }
 
 .slot:last-child {
-  border-right: 2px solid var(--zone);
+  border-inline-end: 2px solid var(--zone);
 }
 
 .slot--occupied {

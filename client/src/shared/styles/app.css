@@ -26,7 +26,7 @@
   --lcd-free: #5eead4;
   --lcd-alert: #fbbf24;
 
-  --font: "Hanken Grotesk", system-ui, sans-serif;
+  --font: "Hanken Grotesk", "Almarai", system-ui, sans-serif;
   --r-sm: 6px;
   --r-md: 10px;
   --r-lg: 14px;
@@ -204,7 +204,7 @@ select {
   display: flex;
   align-items: center;
   gap: 10px;
-  text-align: left;
+  text-align: start;
 }
 
 .rail .rail__button:hover {
@@ -413,7 +413,7 @@ select {
 }
 
 .table th {
-  text-align: left;
+  text-align: start;
   font-size: 0.8125rem;
   font-weight: 500;
   color: var(--text-muted);
@@ -437,11 +437,11 @@ select {
 }
 
 .table .right {
-  text-align: right;
+  text-align: end;
 }
 
 .table .num {
-  text-align: right;
+  text-align: end;
 }
 
 .skeleton {
@@ -515,7 +515,7 @@ select {
 
 .toasts {
   position: fixed;
-  right: 24px;
+  inset-inline-end: 24px;
   bottom: 24px;
   display: flex;
   flex-direction: column;
@@ -584,12 +584,13 @@ select {
   }
 
   .rail__brand {
-    padding: 0 8px 0 0;
+    padding: 0;
+    padding-inline-end: 8px;
   }
 
   .rail__foot {
     margin-top: 0;
-    margin-left: auto;
+    margin-inline-start: auto;
     flex-direction: row;
     border-top: 0;
     padding-top: 0;
@@ -620,4 +621,8 @@ select {
     animation-duration: 1ms !important;
     transition-duration: 1ms !important;
   }
+}
+
+[dir="rtl"] .flip {
+  transform: scaleX(-1);
 }

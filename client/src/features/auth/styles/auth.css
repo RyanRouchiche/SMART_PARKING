@@ -78,7 +78,7 @@
 .auth__lang {
   position: absolute;
   top: 24px;
-  right: 24px;
+  inset-inline-end: 24px;
 }
 
 .auth__lang select {

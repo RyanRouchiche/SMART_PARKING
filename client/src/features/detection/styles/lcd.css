@@ -108,7 +108,7 @@
 }
 
 .lcd__spots p:last-child:not(:first-child) {
-  margin-left: auto;
+  margin-inline-start: auto;
 }
 
 @keyframes lcd-swap {

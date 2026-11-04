@@ -8,7 +8,6 @@ const HOURS = Array.from({ length: 24 }, (_, h) => h);
 
 const weekdayOf = (date) => (new Date(`${date}T12:00:00`).getDay() + 6) % 7;
 const mean = (values) => (values.length ? values.reduce((a, b) => a + b, 0) / values.length : null);
-const pct = (value) => `${Math.round(value)} %`;
 
 function summarize(rows) {
   const cells = Array.from({ length: 7 }, () => HOURS.map(() => []));
@@ -63,6 +62,10 @@ export default function Stats() {
   const weekdayNames = useMemo(() => {
     const format = new Intl.DateTimeFormat(locale, { weekday: "long" });
     return Array.from({ length: 7 }, (_, i) => format.format(new Date(2026, 10, 2 + i)));
+  }, [locale]);
+  const pct = useMemo(() => {
+    const format = new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 0 });
+    return (value) => format.format(value / 100);
   }, [locale]);
   const dayFormat = useMemo(() => new Intl.DateTimeFormat(locale, { day: "numeric", month: "short" }), [locale]);
   const summary = useMemo(() => (rows?.length ? summarize(rows) : null), [rows]);
@@ -155,9 +158,9 @@ export default function Stats() {
               </table>
             </div>
             <div className="legend" aria-hidden="true">
-              <span>0 %</span>
+              <span>{pct(0)}</span>
               <span className="legend__ramp" />
-              <span>100 %</span>
+              <span>{pct(100)}</span>
               <span className="legend__none" />
               <span>{t("no data (closed or offline)")}</span>
             </div>
@@ -169,7 +172,7 @@ export default function Stats() {
               <p className="readout" aria-live="polite">{dayReadout ?? t("Hover a bar to see its value.")}</p>
             </div>
             <div className="bars-plot">
-            <div className="bars__scale" aria-hidden="true"><span>100 %</span><span>50 %</span><span>0 %</span></div>
+            <div className="bars__scale" aria-hidden="true"><span>{pct(100)}</span><span>{pct(50)}</span><span>{pct(0)}</span></div>
             <div className="bars" role="list">
               {summary.days.map(({ date, value }) => {
                 const label = `${dayFormat.format(new Date(`${date}T12:00:00`))} : ${pct(value)}`;

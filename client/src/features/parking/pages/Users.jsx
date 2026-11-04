@@ -41,7 +41,7 @@ export default function Users() {
   useEffect(() => {
     load();
     const onStatus = ({ detail }) =>
-      setUsers((list) => list?.map((u) => (u.id === detail.user_id ? { ...u, status: detail.status } : u)));
+      setUsers((list) => list && list.map((u) => (u.id === detail.user_id ? { ...u, status: detail.status } : u)));
     window.addEventListener("user-status", onStatus);
     return () => window.removeEventListener("user-status", onStatus);
   }, [load]);

@@ -237,7 +237,7 @@
   background: var(--surface);
   border: 1px solid var(--surface);
   border-radius: var(--r-md);
-  text-align: left;
+  text-align: start;
   cursor: pointer;
   transition: border-color 150ms;
 }
