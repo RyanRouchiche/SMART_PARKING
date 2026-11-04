@@ -1,6 +1,7 @@
 import os
 import tempfile
 import threading
+import time
 from datetime import datetime, timedelta, timezone as dt_timezone
 from unittest import mock
 
@@ -9,7 +10,8 @@ import numpy as np
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from channels.testing import WebsocketCommunicator
-from django.test import SimpleTestCase, TestCase, TransactionTestCase
+from django.core import mail
+from django.test import SimpleTestCase, TestCase, TransactionTestCase, override_settings
 
 from camera.models import Camera
 from .consumers import VideoFeedConsumer
@@ -17,7 +19,7 @@ from parking.models import Parking, ParkingMembership, Zone
 from django.core.cache import cache
 
 from users.models import User
-from . import events, history, state
+from . import events, health, history, state
 from .models import AvailabilitySnapshot
 from shared.geometry import crop_size, order_corners
 from shared.hours import is_open
@@ -322,3 +324,67 @@ class HistoryTests(TestCase):
             supervisor.maintain(self.NOW + timedelta(seconds=60))
         self.assertEqual(record.call_count, 2)
         self.assertEqual(purge.call_count, 1)
+
+
+class SupervisionTests(TestCase):
+    SPOTS = {"Spot 1": [[0, 0], [10, 0], [10, 10], [0, 10]], "Spot 2": [[0, 0], [10, 0], [10, 10], [0, 10]]}
+
+    def setUp(self):
+        cache.clear()
+        self.visible = self.parking("Visible", published=True)
+        self.draft = self.parking("Draft", published=False)
+        self.closed = self.parking("Closed", published=True, hours={day: [] for day in ("mon", "tue", "wed", "thu", "fri", "sat", "sun")})
+        up = mock.patch("detection.health.model_server_up", return_value=True)
+        up.start()
+        self.addCleanup(up.stop)
+
+    def tearDown(self):
+        cache.clear()
+
+    def parking(self, name, published, hours=None):
+        from parking.models import Subscription
+        parking = Parking.objects.create(name=name, latitude=36.7, longitude=3.0, is_published=published, opening_hours=hours or {})
+        Subscription.objects.filter(parking=parking).update(status=Subscription.ACTIVE)
+        Zone.objects.create(parking=parking, number=1, spots=self.SPOTS)
+        return parking
+
+    def publish(self, parking, statuses, age=0):
+        details = [{"spot": f"Spot {i}", "status": s} for i, s in enumerate(statuses, 1)]
+        state.store(parking.pk, 1, {"area": 1, "available_spots": statuses.count("empty"), "spot_details": details}, now=time.time() - age)
+
+    def problems(self):
+        return [p for p in health.report()["problems"] if "Visible" in p or "Draft" in p or "Closed" in p or "modèle" in p]
+
+    def test_only_open_visible_parkings_without_recent_data_are_problems(self):
+        self.assertEqual(self.problems(), ["Visible, zone 1 : aucune donnée"])
+        self.publish(self.visible, ["empty", "occupied"])
+        self.assertEqual(self.problems(), [])
+
+    def test_a_short_gap_is_tolerated_but_a_dead_camera_is_not(self):
+        self.publish(self.visible, ["empty", "occupied"], age=60)
+        self.assertEqual(self.problems(), [])
+        self.publish(self.visible, ["error", "error"])
+        self.assertEqual(self.problems(), ["Visible, zone 1 : dernière donnée il y a 0 s"])
+
+    def test_model_server_outage_is_reported(self):
+        self.publish(self.visible, ["empty", "occupied"])
+        with mock.patch("detection.health.model_server_up", return_value=False):
+            self.assertEqual(self.problems(), ["Serveur du modèle injoignable"])
+
+    @override_settings(TEAM_EMAIL="team@example.com")
+    def test_alerts_are_sent_only_when_problems_change(self):
+        self.assertTrue(health.alert(["A"]))
+        self.assertFalse(health.alert(["A"]))
+        self.assertTrue(health.alert([]))
+        self.assertEqual([m.subject for m in mail.outbox], ["Supervision : 1 problème(s)", "Supervision : tout est rétabli"])
+
+    def test_the_page_is_for_staff_only(self):
+        url = "/admin/supervision/"
+        User.objects.create_user(username="owner", password="x", user_type="admin")
+        self.client.login(username="owner", password="x")
+        self.assertEqual(self.client.get(url).status_code, 302)
+        User.objects.create_user(username="staff", password="x", is_staff=True)
+        self.client.login(username="staff", password="x")
+        response = self.client.get(url)
+        self.assertContains(response, "Visible")
+        self.assertContains(response, "aucune donnée")

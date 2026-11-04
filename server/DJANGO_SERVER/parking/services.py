@@ -84,3 +84,25 @@ def create_draft_parking(owner, name, address, capacity):
         parking = Parking.objects.create(name=name, address=address, capacity=capacity)
         ParkingMembership.objects.create(user=owner, parking=parking, role=ParkingMembership.OWNER)
     return parking
+
+
+def supervised_parkings():
+    visible = set(published_parkings().values_list('pk', flat=True))
+    parkings = (
+        Parking.objects.exclude(subscription__status=Subscription.CANCELLED)
+        .select_related('subscription')
+        .prefetch_related('zones')
+        .order_by('name')
+    )
+    return [
+        {
+            'id': p.pk,
+            'name': p.name,
+            'visible': p.pk in visible,
+            'opening_hours': p.opening_hours,
+            'areas': sorted(z.number for z in p.zones.all() if z.spots),
+            'subscription': p.subscription.get_status_display(),
+            'period_end': p.subscription.period_end,
+        }
+        for p in parkings
+    ]
