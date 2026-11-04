@@ -34,7 +34,7 @@ MODEL_SERVER_URL = os.getenv('MODEL_SERVER_URL', 'http://127.0.0.1:8001')
 
 CAMERA_MEDIA_ROOT = Path(os.getenv('CAMERA_MEDIA_ROOT', BASE_DIR / 'parking' / 'Data'))
 CAMERA_NETWORKS = [ipaddress.ip_network(n.strip()) for n in os.getenv('CAMERA_NETWORKS', '').split(',') if n.strip()]
-os.environ.setdefault('OPENCV_FFMPEG_CAPTURE_OPTIONS', 'protocol_whitelist;file,crypto,tcp,tls,udp,rtp,rtsp,http,https')
+os.environ.setdefault('OPENCV_FFMPEG_CAPTURE_OPTIONS', 'protocol_whitelist;file,crypto,tcp,tls,udp,rtp,rtsp,http,https|rtsp_transport;tcp')
 
 INSTALLED_APPS = [
     'camera',

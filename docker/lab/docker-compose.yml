@@ -21,8 +21,11 @@ services:
         iptables -P FORWARD DROP
         iptables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
         iptables -A FORWARD ! -i wg0 -o wg0 -d 10.100.0.0/16 -p tcp --dport 8554 -j ACCEPT
+        iptables -A FORWARD ! -i wg0 -o wg0 -d 10.200.2.0/24 -p tcp --dport 8080 -j ACCEPT
         iptables -t nat -A POSTROUTING -o wg0 -j MASQUERADE
         exec sleep infinity
+    ports:
+      - "51820:51820/udp"
     networks:
       wan:
         ipv4_address: 172.30.0.2
@@ -79,6 +82,7 @@ services:
         apk add -q iproute2
         hub=$$(nslookup wg-hub 127.0.0.11 | awk '/^Address: /{print $$2}' | tail -1)
         ip route replace 10.100.0.0/16 via "$$hub"
+        ip route replace 10.200.0.0/16 via "$$hub"
         echo "detection -> 10.100.0.0/16 via $$hub"
 
 networks:
