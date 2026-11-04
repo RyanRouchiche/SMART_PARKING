@@ -4,6 +4,7 @@ from datetime import timedelta
 from zoneinfo import ZoneInfo
 
 from django.conf import settings
+from django.core.cache import cache
 from django.core.mail import send_mail
 from django.utils import timezone
 
@@ -46,6 +47,8 @@ def start_trial(subscription, today):
 
 
 def record_payment(invoice):
+    if invoice.period_end < local_today():
+        return
     subscription = invoice.subscription
     if subscription.period_end is None or invoice.period_end > subscription.period_end:
         subscription.period_end = invoice.period_end
@@ -85,6 +88,7 @@ def run_daily(today):
         for subscription in Subscription.objects.filter(
             status__in=(Subscription.TRIAL, Subscription.ACTIVE), period_end=today + timedelta(days=days)
         ).select_related('parking'):
-            remind(subscription, days)
-            reminded += 1
+            if cache.add(f"reminded:{subscription.pk}:{subscription.period_end}:{days}", True, 3 * 24 * 3600):
+                remind(subscription, days)
+                reminded += 1
     return {'expired': expired, 'cancelled': lapsed, 'reminded': reminded}

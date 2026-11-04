@@ -4,6 +4,7 @@ from io import StringIO
 
 from django.contrib.auth.models import AnonymousUser
 from django.core import mail
+from django.core.cache import cache
 from django.core.management import call_command
 from django.test import TestCase, override_settings
 from rest_framework.test import APITestCase
@@ -145,6 +146,9 @@ TODAY = date(2026, 11, 30)
 
 @override_settings(TRIAL_MONTHS=3, GRACE_DAYS=15, TEAM_EMAIL="team@example.com")
 class SubscriptionTests(TestCase):
+    def setUp(self):
+        cache.clear()
+
     def subscribed(self, name, status, period_end):
         parking = Parking.objects.create(name=name)
         Subscription.objects.filter(parking=parking).update(status=status, period_end=period_end)
@@ -186,6 +190,7 @@ class SubscriptionTests(TestCase):
         ParkingMembership.objects.create(user=operator, parking=Parking.objects.get(name="P30"), role="operator")
 
         self.assertEqual(run_daily(TODAY)["reminded"], 2)
+        self.assertEqual(run_daily(TODAY)["reminded"], 0)
 
         sent = {m.to[0]: m.subject for m in mail.outbox}
         self.assertEqual(set(sent), {"o30@example.com", "o7@example.com"})
@@ -203,6 +208,12 @@ class SubscriptionTests(TestCase):
         invoice.save()
         subscription.refresh_from_db()
         self.assertEqual((subscription.status, subscription.period_end), (Subscription.ACTIVE, date(2027, 11, 30)))
+
+    def test_saving_an_invoice_for_a_past_period_does_not_reactivate(self):
+        subscription = self.subscribed("Old", Subscription.CANCELLED, date(2020, 1, 31))
+        Invoice.objects.create(subscription=subscription, reference="F-OLD", amount_da=1, period_end=date(2020, 1, 31), paid_on=date(2020, 1, 2))
+        subscription.refresh_from_db()
+        self.assertEqual((subscription.status, subscription.period_end), (Subscription.CANCELLED, date(2020, 1, 31)))
 
     def test_cancelled_parkings_are_no_longer_watched(self):
         kept = self.subscribed("Kept", Subscription.REQUEST, None)
