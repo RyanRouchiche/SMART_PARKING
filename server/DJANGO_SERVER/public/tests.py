@@ -13,6 +13,7 @@ from camera.models import Camera
 from detection import state
 from parking.models import Parking, ParkingMembership, Subscription, Zone
 from users.models import User
+from . import services
 from .models import OwnerRequest
 
 SQUARE = [[10, 10], [60, 10], [60, 60], [10, 60]]
@@ -268,7 +269,6 @@ class DistributedGuessingTests(APITestCase):
         self.assertEqual(self.login("Str0ng-pass-word", "198.51.100.1"), 200)
 
     def test_attempts_are_counted_before_the_password_check(self):
-        from public import services
         results = [services.start_login("Victim", "192.0.2.9") for _ in range(6)]
         self.assertEqual(results, [True] * 5 + [False])
 
@@ -288,3 +288,32 @@ class DistributedGuessingTests(APITestCase):
         for i in range(30):
             self.login(f"guess{i}", f"203.0.113.{i}")
         self.assertEqual(self.login("Str0ng-pass-word", "203.0.113.150"), 429)
+
+
+class OwnerRequestAcceptanceTests(APITestCase):
+    def request(self, email="Owner@Example.com"):
+        return OwnerRequest.objects.create(
+            name="Amine", phone="0555 12 34 56", email=email, parking_name="Parking Port",
+            address="Rue du Port", capacity=40, cameras=2,
+        )
+
+    def test_without_an_owner_account_nothing_is_created(self):
+        User.objects.create_user(username="drv", email="owner@example.com", password="x", user_type="driver", is_active=True)
+        User.objects.create_user(username="sleepy", email="owner@example.com", password="x", user_type="admin", is_active=False)
+        owner_request = self.request()
+        self.assertIsNone(services.accept_owner_request(owner_request))
+        self.assertFalse(Parking.objects.filter(name="Parking Port").exists())
+        owner_request.refresh_from_db()
+        self.assertEqual(owner_request.status, "new")
+
+    def test_accepting_creates_a_draft_parking_for_the_owner(self):
+        owner = User.objects.create_user(username="boss", email="owner@example.com", password="x", user_type="admin", is_active=True)
+        owner_request = self.request()
+
+        parking = services.accept_owner_request(owner_request)
+
+        self.assertEqual((parking.name, parking.address, parking.capacity, parking.is_published), ("Parking Port", "Rue du Port", 40, False))
+        self.assertTrue(ParkingMembership.objects.filter(user=owner, parking=parking, role="owner").exists())
+        self.assertEqual(parking.subscription.status, Subscription.REQUEST)
+        owner_request.refresh_from_db()
+        self.assertEqual((owner_request.status, owner_request.parking), ("accepted", parking))

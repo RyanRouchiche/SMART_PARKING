@@ -24,6 +24,7 @@ class OwnerRequest(models.Model):
     message = models.TextField(blank=True, max_length=2000)
     language = models.CharField(max_length=2, choices=LANGUAGE_CHOICES, default='fr')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new')
+    parking = models.ForeignKey('parking.Parking', on_delete=models.SET_NULL, null=True, blank=True, related_name='owner_requests')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

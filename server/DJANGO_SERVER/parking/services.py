@@ -77,3 +77,10 @@ def remove_operator(user_id, owned):
         if not memberships.exists():
             delete_account(user_id)
     return True
+
+
+def create_draft_parking(owner, name, address, capacity):
+    with transaction.atomic():
+        parking = Parking.objects.create(name=name, address=address, capacity=capacity)
+        ParkingMembership.objects.create(user=owner, parking=parking, role=ParkingMembership.OWNER)
+    return parking
