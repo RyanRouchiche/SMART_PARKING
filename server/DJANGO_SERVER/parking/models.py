@@ -22,6 +22,45 @@ class Parking(models.Model):
         return self.name
 
 
+class Subscription(models.Model):
+    REQUEST = 'request'
+    TRIAL = 'trial'
+    ACTIVE = 'active'
+    PAST_DUE = 'past_due'
+    CANCELLED = 'cancelled'
+    STATUS_CHOICES = (
+        (REQUEST, 'Demande'),
+        (TRIAL, 'Essai gratuit'),
+        (ACTIVE, 'Actif'),
+        (PAST_DUE, 'Impayé (délai de grâce)'),
+        (CANCELLED, 'Résilié'),
+    )
+    VISIBLE = (TRIAL, ACTIVE, PAST_DUE)
+
+    parking = models.OneToOneField(Parking, on_delete=models.CASCADE, related_name='subscription')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=REQUEST)
+    period_end = models.DateField(null=True, blank=True, help_text="Vide : sans date de fin.")
+    notes = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"{self.parking} · {self.get_status_display()}"
+
+
+class Invoice(models.Model):
+    subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE, related_name='invoices')
+    reference = models.CharField(max_length=40, unique=True)
+    amount_da = models.PositiveIntegerField()
+    period_end = models.DateField(help_text="Fin de la période couverte par cette facture.")
+    paid_on = models.DateField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.reference
+
+
 class ParkingMembership(models.Model):
     OWNER = 'owner'
     OPERATOR = 'operator'

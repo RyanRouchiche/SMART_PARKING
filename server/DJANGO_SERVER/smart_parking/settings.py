@@ -140,6 +140,8 @@ AUTH_USER_MODEL = 'users.User'
 LANGUAGE_CODE = 'en'
 TIME_ZONE = 'UTC'
 PARKING_TIME_ZONE = os.getenv('PARKING_TIME_ZONE', 'Africa/Algiers')
+TRIAL_MONTHS = int(os.getenv('TRIAL_MONTHS', '3'))
+GRACE_DAYS = int(os.getenv('GRACE_DAYS', '15'))
 USE_I18N = True
 USE_TZ = True
 

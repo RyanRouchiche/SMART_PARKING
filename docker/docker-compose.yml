@@ -79,6 +79,10 @@ services:
     volumes:
       - ../server/DJANGO_SERVER/parking/Data:/app/DJANGO_SERVER/parking/Data:ro
 
+  scheduler:
+    <<: *django-service
+    command: sh -c "while true; do python manage.py subscriptions_daily; sleep 86400; done"
+
   client:
     build:
       context: ..

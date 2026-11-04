@@ -11,7 +11,7 @@ from rest_framework.throttling import AnonRateThrottle
 
 from camera.models import Camera
 from detection import state
-from parking.models import Parking, ParkingMembership, Zone
+from parking.models import Parking, ParkingMembership, Subscription, Zone
 from users.models import User
 from .models import OwnerRequest
 
@@ -24,9 +24,10 @@ def offset(meters_north, meters_east=0):
     return ALGIERS[0] + meters_north / 111320, ALGIERS[1] + meters_east / 89300
 
 
-def make_parking(name, north, published=True, zones=1, capacity=10):
+def make_parking(name, north, published=True, zones=1, capacity=10, subscription=Subscription.ACTIVE):
     lat, lng = offset(north)
     parking = Parking.objects.create(name=name, address=f"{name} street", latitude=lat, longitude=lng, is_published=published, capacity=capacity, pricing_text="50 DA / h")
+    Subscription.objects.filter(parking=parking).update(status=subscription)
     for number in range(1, zones + 1):
         Zone.objects.create(parking=parking, number=number, spots={"Secret spot A": SQUARE, "Secret spot B": SQUARE})
         Camera.objects.create(parking=parking, area=number, path=f"/media/{name}-cam.mp4", ref="CAM")
@@ -55,6 +56,12 @@ class NearbyTests(APITestCase):
 
     def get_nearby(self, **params):
         return self.client.get(NEARBY, {"lat": ALGIERS[0], "lng": ALGIERS[1], **params})
+
+    def test_only_subscribed_parkings_are_listed(self):
+        for status in (Subscription.REQUEST, Subscription.CANCELLED, Subscription.PAST_DUE, Subscription.TRIAL):
+            make_parking(status, 500, subscription=status)
+        names = {p["name"] for p in self.client.get(NEARBY, {"lat": ALGIERS[0], "lng": ALGIERS[1]}).json()["results"]}
+        self.assertEqual(names, {"Near", "Middle", Subscription.PAST_DUE, Subscription.TRIAL})
 
     def test_guests_get_published_parkings_sorted_by_distance(self):
         response = self.get_nearby()
