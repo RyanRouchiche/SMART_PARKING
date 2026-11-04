@@ -1,5 +1,4 @@
-from datetime import timedelta
-
+from django.conf import settings
 from django.contrib.auth import authenticate
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError
@@ -18,7 +17,7 @@ from rest_framework_simplejwt.utils import get_md5_hash_password
 from .emails import send_username_taken_email, send_verif_email
 from .models import RefreshSession, User, hash_token
 
-SESSION_LIFETIME = timedelta(hours=1)
+SESSION_LIFETIME = settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME']
 
 
 class AuthError(Exception):
