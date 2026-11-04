@@ -1,0 +1,97 @@
+name: parkili-lab
+
+x-wireguard: &wireguard
+  image: alpine:3.20
+  cap_add: [NET_ADMIN]
+  sysctls:
+    net.ipv4.ip_forward: "1"
+  restart: unless-stopped
+
+services:
+  hub:
+    <<: *wireguard
+    volumes:
+      - ./generated/hub:/etc/wireguard:ro
+    command:
+      - sh
+      - -c
+      - |
+        apk add -q wireguard-tools iptables iproute2
+        wg-quick up wg0
+        iptables -P FORWARD DROP
+        iptables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+        iptables -A FORWARD ! -i wg0 -o wg0 -d 10.100.0.0/16 -p tcp --dport 8554 -j ACCEPT
+        iptables -t nat -A POSTROUTING -o wg0 -j MASQUERADE
+        exec sleep infinity
+    networks:
+      wan:
+        ipv4_address: 172.30.0.2
+      parking:
+        aliases: [wg-hub]
+
+  site1:
+    <<: *wireguard
+    volumes:
+      - ./generated/site1:/etc/wireguard:ro
+    depends_on: [hub]
+    command:
+      - sh
+      - -c
+      - |
+        apk add -q wireguard-tools iptables iproute2
+        wg-quick up wg0
+        iptables -P INPUT DROP
+        iptables -A INPUT -i lo -j ACCEPT
+        iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+        iptables -P FORWARD DROP
+        iptables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+        iptables -A FORWARD -i wg0 -s 10.200.0.1 -d 10.100.1.0/24 -p tcp --dport 8554 -j ACCEPT
+        iptables -t nat -A POSTROUTING -d 10.100.1.0/24 -j MASQUERADE
+        exec sleep infinity
+    networks:
+      wan:
+        ipv4_address: 172.30.0.3
+      site1-lan:
+        ipv4_address: 10.100.1.1
+
+  camera1:
+    image: bluenviron/mediamtx:1.9.3-ffmpeg
+    environment:
+      MTX_PROTOCOLS: tcp
+      MTX_PATHS_SUB_RUNONINIT: ffmpeg -re -stream_loop -1 -i /video.mp4 -c copy -f rtsp rtsp://localhost:8554/sub
+      MTX_PATHS_SUB_RUNONINITRESTART: "yes"
+    volumes:
+      - ../../server/DJANGO_SERVER/parking/Data/videoplayback.mp4:/video.mp4:ro
+    networks:
+      site1-lan:
+        ipv4_address: 10.100.1.10
+    restart: unless-stopped
+
+  route-detection:
+    image: alpine:3.20
+    cap_add: [NET_ADMIN]
+    network_mode: container:smart-parking-detection-1
+    depends_on: [hub]
+    command:
+      - sh
+      - -c
+      - |
+        apk add -q iproute2
+        hub=$$(nslookup wg-hub 127.0.0.11 | awk '/^Address: /{print $$2}' | tail -1)
+        ip route replace 10.100.0.0/16 via "$$hub"
+        echo "detection -> 10.100.0.0/16 via $$hub"
+
+networks:
+  wan:
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+  site1-lan:
+    internal: true
+    ipam:
+      config:
+        - subnet: 10.100.1.0/24
+          gateway: 10.100.1.254
+  parking:
+    external: true
+    name: smart-parking_default
