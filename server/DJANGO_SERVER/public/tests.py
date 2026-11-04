@@ -243,3 +243,24 @@ class ThrottleIdentityTests(APITestCase):
             self.login(f"guess{i}", "198.51.100.30")
         self.assertEqual(self.login("Str0ng-pass-word", "198.51.100.30"), 200)
         self.assertEqual([self.login(f"again{i}", "198.51.100.30") for i in range(5)], [401] * 5)
+
+
+class DistributedGuessingTests(APITestCase):
+    def setUp(self):
+        cache.clear()
+        User.objects.create_user(username="Victim", password="Str0ng-pass-word", user_type="driver", is_active=True)
+
+    def login(self, password, address):
+        return self.client.post("/api/public/v1/auth/login/", {"username": "Victim", "password": password}, format="json", HTTP_X_FORWARDED_FOR=address).status_code
+
+    def test_many_addresses_hit_an_account_wide_cap(self):
+        self.assertEqual(self.login("Str0ng-pass-word", "198.51.100.1"), 200)
+        codes = [self.login(f"guess{i}", f"203.0.113.{i}") for i in range(30)]
+        self.assertEqual(set(codes), {401})
+        self.assertEqual(self.login("Str0ng-pass-word", "203.0.113.200"), 429)
+        self.assertEqual(self.login("Str0ng-pass-word", "198.51.100.1"), 200)
+
+    def test_attempts_are_counted_before_the_password_check(self):
+        from public import services
+        results = [services.start_login("Victim", "192.0.2.9") for _ in range(6)]
+        self.assertEqual(results, [True] * 5 + [False])

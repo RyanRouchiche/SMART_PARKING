@@ -12,6 +12,9 @@ from shared.geo import bounding_box, distance_m
 MAX_RESULTS = 20
 FAILED_LOGIN_LIMIT = 5
 FAILED_LOGIN_WINDOW = 60
+ACCOUNT_FAILURE_LIMIT = 30
+ACCOUNT_FAILURE_WINDOW = 15 * 60
+KNOWN_ADDRESS_TTL = 30 * 24 * 3600
 
 logger = logging.getLogger(__name__)
 
@@ -87,22 +90,46 @@ def detail(parking_id):
     }
 
 
+def account(username):
+    return username.strip().lower()
+
+
 def failure_key(username, client):
-    return f"login_failures:{username.strip().lower()}:{client}"
+    return f"login_failures:{account(username)}:{client}"
 
 
-def login_blocked(username, client):
-    return cache.get(failure_key(username, client), 0) >= FAILED_LOGIN_LIMIT
+def account_failure_key(username):
+    return f"login_failures:{account(username)}"
 
 
-def record_login_failure(username, client):
-    key = failure_key(username, client)
-    if not cache.add(key, 1, FAILED_LOGIN_WINDOW):
-        try:
-            cache.incr(key)
-        except ValueError:
-            cache.set(key, 1, FAILED_LOGIN_WINDOW)
+def known_address_key(username, client):
+    return f"login_known:{account(username)}:{client}"
 
 
-def clear_login_failures(username, client):
+def attempt(key, window):
+    if cache.add(key, 1, window):
+        return 1
+    try:
+        return cache.incr(key)
+    except ValueError:
+        cache.set(key, 1, window)
+        return 1
+
+
+def start_login(username, client):
+    per_address = attempt(failure_key(username, client), FAILED_LOGIN_WINDOW)
+    per_account = attempt(account_failure_key(username), ACCOUNT_FAILURE_WINDOW)
+    if per_address > FAILED_LOGIN_LIMIT:
+        return False
+    if per_account > ACCOUNT_FAILURE_LIMIT:
+        return bool(cache.get(known_address_key(username, client)))
+    return True
+
+
+def login_succeeded(username, client):
     cache.delete(failure_key(username, client))
+    try:
+        cache.decr(account_failure_key(username))
+    except ValueError:
+        pass
+    cache.set(known_address_key(username, client), True, KNOWN_ADDRESS_TTL)

@@ -99,18 +99,17 @@ class LoginView(AuthAPIView):
         if not isinstance(username, str) or not isinstance(password, str) or not username or not password:
             return Response({'error': 'Username and password are required'}, status=400)
         client = BaseThrottle().get_ident(request)
-        if services.login_blocked(username, client):
-            return Response({'error': 'Too many failed attempts, try again in a minute'}, status=429)
+        if not services.start_login(username, client):
+            return Response({'error': 'Too many failed attempts, try again later'}, status=429)
         try:
             user = authenticate_user(username, password)
         except InvalidCredentials:
-            services.record_login_failure(username, client)
             return Response({'error': 'Invalid credentials'}, status=401)
         except InactiveAccount:
             return Response({'error': 'Your account is not activated, check your email'}, status=401)
+        services.login_succeeded(username, client)
         if user.user_type != DRIVER:
             return Response({'error': 'This account must use the web application'}, status=403)
-        services.clear_login_failures(username, client)
         access, refresh = issue_tokens(user)
         return Response({'access': access, 'refresh': refresh, 'user': driver_payload(user)})
 
