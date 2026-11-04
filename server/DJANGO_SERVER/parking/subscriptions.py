@@ -16,13 +16,13 @@ REMINDER_DAYS = (30, 7)
 
 REMINDER = {
     'fr': (
-        "Votre abonnement Mawqif se termine le {end}",
+        "Votre abonnement Parkili se termine le {end}",
         "Bonjour,\n\nL'abonnement du parking « {parking} » se termine le {end}, dans {days} jours. "
         "Après cette date, le parking restera visible {grace} jours dans l'application, puis il en sera retiré.\n\n"
         "Contactez-nous pour le renouveler : {team}",
     ),
     'ar': (
-        "ينتهي اشتراكك في موقف بتاريخ {end}",
+        "ينتهي اشتراكك في Parkili بتاريخ {end}",
         "مرحبًا،\n\nينتهي اشتراك الموقف « {parking} » بتاريخ {end}، أي بعد {days} يومًا. "
         "بعد هذا التاريخ، يبقى الموقف ظاهرًا في التطبيق لمدة {grace} يومًا، ثم يُسحب منه.\n\n"
         "اتصل بنا لتجديده: {team}",
