@@ -1,6 +1,26 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 
 const FR = {
+  "Statistics": "Statistiques",
+  "Share of occupied spots, from the detection history.": "Part des places occupées, d'après l'historique de détection.",
+  "Period": "Période",
+  "{n} days": "{n} jours",
+  "Could not load the statistics.": "Impossible de charger les statistiques.",
+  "Loading…": "Chargement…",
+  "No history yet. Statistics appear after the first hour of detection.": "Pas encore d'historique. Les statistiques apparaissent après la première heure de détection.",
+  "Average occupancy": "Occupation moyenne",
+  "Peak hour": "Heure de pointe",
+  "{h} h": "{h} h",
+  "{value} occupied on average": "{value} occupées en moyenne",
+  "Busiest day": "Jour le plus chargé",
+  "Typical week": "Semaine type",
+  "Hover a cell to see its value.": "Survolez une case pour voir sa valeur.",
+  "Hover a bar to see its value.": "Survolez une barre pour voir sa valeur.",
+  "Average occupancy by day and hour": "Occupation moyenne par jour et par heure",
+  "Day": "Jour",
+  "no data": "pas de donnée",
+  "no data (closed or offline)": "pas de donnée (fermé ou hors ligne)",
+  "Average occupancy per day": "Occupation moyenne par jour",
   "10 cameras at a time": "10 caméras à la fois",
   "Account activated": "Compte activé",
   "Account created. Open the activation link sent to {email}.": "Compte créé. Ouvrez le lien d'activation envoyé à {email}.",
@@ -176,6 +196,10 @@ export function LanguageProvider({ children }) {
       {children}
     </LanguageContext.Provider>
   );
+}
+
+export function useLanguage() {
+  return useContext(LanguageContext).lang;
 }
 
 export function useT() {

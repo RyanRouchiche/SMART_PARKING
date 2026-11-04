@@ -19,7 +19,9 @@ from parking.models import Parking, ParkingMembership, Zone
 from django.core.cache import cache
 
 from users.models import User
-from . import events, health, history, state
+from rest_framework.test import APITestCase
+
+from . import events, health, history, state, stats
 from .models import AvailabilitySnapshot
 from shared.geometry import crop_size, order_corners
 from shared.hours import is_open
@@ -388,3 +390,41 @@ class SupervisionTests(TestCase):
         response = self.client.get(url)
         self.assertContains(response, "Visible")
         self.assertContains(response, "aucune donnée")
+
+
+class StatsTests(APITestCase):
+    URL = "/api/parking/stats/"
+
+    def setUp(self):
+        self.parking = Parking.objects.create(name="Mine")
+        self.other = Parking.objects.create(name="Other")
+        self.owner = User.objects.create_user(username="boss", password="x", user_type="admin")
+        self.operator = User.objects.create_user(username="op", password="x")
+        ParkingMembership.objects.create(user=self.owner, parking=self.parking, role="owner")
+        ParkingMembership.objects.create(user=self.operator, parking=self.parking, role="operator")
+
+    def snap(self, parking, when, area, free, total):
+        AvailabilitySnapshot.objects.create(parking_id=parking.pk, area=area, taken_at=when, free=free, total=total)
+
+    def test_occupancy_is_aggregated_per_local_hour_over_zones(self):
+        nine = datetime(2026, 11, 2, 8, 0, tzinfo=dt_timezone.utc)
+        self.snap(self.parking, nine, 1, free=1, total=4)
+        self.snap(self.parking, nine, 2, free=3, total=4)
+        self.snap(self.parking, nine + timedelta(minutes=30), 1, free=0, total=4)
+        self.snap(self.parking, nine + timedelta(hours=1), 1, free=4, total=4)
+        self.snap(self.other, nine, 1, free=0, total=4)
+        self.snap(self.parking, nine - timedelta(days=91), 1, free=0, total=4)
+
+        rows = stats.hourly_occupancy(self.parking.pk, 90, now=nine + timedelta(hours=2))
+
+        self.assertEqual(rows, [["2026-11-02", 9, round(100 * (1 - 4 / 12), 1)], ["2026-11-02", 10, 0.0]])
+
+    def test_only_owners_see_their_statistics(self):
+        self.client.force_authenticate(self.operator)
+        self.assertEqual(self.client.get(self.URL).status_code, 403)
+        self.client.force_authenticate(self.owner)
+        self.assertEqual(self.client.get(self.URL, {"parking": str(self.other.pk)}).status_code, 403)
+        response = self.client.get(self.URL, {"days": "500"})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["days"], 90)
+        self.assertEqual(self.client.get(self.URL, {"days": "x"}).status_code, 400)

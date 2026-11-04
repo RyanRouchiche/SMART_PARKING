@@ -12,5 +12,6 @@ urlpatterns = [
     path('api/', include('users.urls')),
     path('api/', include('parking.urls')),
     path('api/', include('camera.urls')),
+    path('api/', include('detection.urls')),
     re_path(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT}),
 ]
