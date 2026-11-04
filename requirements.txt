@@ -8,6 +8,7 @@ uvicorn[standard]
 websockets
 psycopg[binary,pool]
 python-dotenv
+firebase-admin
 numpy
 opencv-python
 tensorflow==2.19.0

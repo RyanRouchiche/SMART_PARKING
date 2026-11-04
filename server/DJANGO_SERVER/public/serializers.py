@@ -27,3 +27,12 @@ class ContactSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=120)
     email = serializers.EmailField()
     message = serializers.CharField(max_length=4000)
+
+
+class DeviceSerializer(serializers.Serializer):
+    token = serializers.CharField(max_length=512)
+    platform = serializers.ChoiceField(choices=['android', 'ios'], required=False)
+
+
+class FavoriteSerializer(serializers.Serializer):
+    notify = serializers.BooleanField(default=False)

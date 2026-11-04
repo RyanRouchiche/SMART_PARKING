@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 
@@ -32,3 +33,22 @@ class OwnerRequest(models.Model):
 
     def __str__(self):
         return f"{self.parking_name} · {self.name}"
+
+
+class Favorite(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='favorites')
+    parking = models.ForeignKey('parking.Parking', on_delete=models.CASCADE, related_name='favorites')
+    notify = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['user', 'parking'], name='unique_favorite')]
+
+
+class DriverDevice(models.Model):
+    PLATFORM_CHOICES = (('android', 'Android'), ('ios', 'iOS'))
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='devices')
+    token = models.CharField(max_length=512, unique=True)
+    platform = models.CharField(max_length=10, choices=PLATFORM_CHOICES)
+    last_seen = models.DateTimeField(auto_now=True)
